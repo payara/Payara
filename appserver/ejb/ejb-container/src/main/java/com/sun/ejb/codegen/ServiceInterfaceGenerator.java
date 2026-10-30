@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,26 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.codegen;
 
 
+import jakarta.jws.WebMethod;
 import java.lang.reflect.Method;
-import java.util.List;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+import org.glassfish.pfl.dynamic.codegen.spi.Type;
 
-import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper.*;
-import org.glassfish.pfl.dynamic.codegen.spi.Type ;
-
-import java.util.logging.Logger;
-
-import jakarta.jws.WebMethod;
-
-import static java.lang.reflect.Modifier.*;
-
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
+import static java.lang.reflect.Modifier.ABSTRACT;
+import static java.lang.reflect.Modifier.PUBLIC;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._arg;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._end;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._interface;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._method;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._t;
 
 /**
  * This class is responsible for generating the SEI when it is not packaged 
@@ -64,81 +64,64 @@ import com.sun.logging.LogDomains;
  *
  * @author Jerome Dochez
  */
-public class ServiceInterfaceGenerator extends Generator 
-    implements ClassGeneratorFactory {
-
-    private static LocalStringManagerImpl localStrings =
-	    new LocalStringManagerImpl(ServiceInterfaceGenerator.class);
-    private static Logger _logger=null;
-    static{
-       _logger=LogDomains.getLogger(ServiceInterfaceGenerator.class, LogDomains.DPL_LOGGER);
-    }
- 
-    Class sib=null;
-    String serviceIntfName;
-    String packageName;
-    String serviceIntfSimpleName;
-    Method[] intfMethods;
+public class ServiceInterfaceGenerator extends Generator {
     
-   /**
+    private final Class<?> ejbClass;
+    private final String packageName;
+    private final String serviceIntfName;
+    private final String serviceIntfSimpleName;
+    private final Method[] intfMethods;
+
+    /**
      * Construct the Wrapper generator with the specified deployment
      * descriptor and class loader.
-     * @exception GeneratorException.
+     *
+     * @throws GeneratorException
      */
-    public ServiceInterfaceGenerator(ClassLoader cl, Class sib) 
-	    throws GeneratorException, ClassNotFoundException
-    {
-	    super();
+    public ServiceInterfaceGenerator(final ClassLoader classLoader, final Class<?> ejbClass) {
+        super(classLoader);
+        this.ejbClass = ejbClass;
+        packageName = getPackageName(ejbClass.getName());
+        serviceIntfSimpleName = getServiceIntfName(ejbClass);
+        serviceIntfName = (packageName == null ? "" : packageName + ".") + serviceIntfSimpleName;
+        intfMethods = calculateMethods(ejbClass, removeRedundantMethods(ejbClass.getMethods()));
 
-        this.sib = sib;
-        serviceIntfSimpleName = getServiceIntfName();
-
-	    packageName = getPackageName();
-        serviceIntfName = packageName + "." + serviceIntfSimpleName;
-	
-        intfMethods = calculateMethods(sib, removeDups(sib.getMethods()));
-        
         // NOTE : no need to remove ejb object methods because EJBObject
         // is only visible through the RemoteHome view.
-    }    
-    
-    public String getServiceIntfName() {
-        String serviceIntfSimpleName = sib.getSimpleName();
-        if (serviceIntfSimpleName.endsWith("EJB")) {
-            return serviceIntfSimpleName.substring(0, serviceIntfSimpleName.length()-3);
-        } else {
-            return serviceIntfSimpleName+"SEI";
-        }
     }
-    
-    public String getPackageName() {
-        return sib.getPackage().getName()+".internal.jaxws";
+
+    @Override
+    protected String getPackageName() {
+        return this.packageName;
     }
-    
+
     /**
      * Get the fully qualified name of the generated class.
      * Note: the remote/local implementation class is in the same package 
      * as the bean class, NOT the remote/local interface.
      * @return the name of the generated class.
      */
-    public String getGeneratedClass() {
+    @Override
+    public String getGeneratedClassName() {
         return serviceIntfName;
     }
 
-    // For corba codegen infrastructure
-    public String className() {
-        return getGeneratedClass();
+    private static String getServiceIntfName(Class<?> ejbClass) {
+        String serviceIntfSimpleName = ejbClass.getSimpleName();
+        if (serviceIntfSimpleName.endsWith("EJB")) {
+            return serviceIntfSimpleName.substring(0, serviceIntfSimpleName.length() - 3) + "_GeneratedSEI";
+        }
+        return serviceIntfSimpleName + "_GeneratedSEI";
     }
     
     private Method[] calculateMethods(Class sib, Method[] initialList) {
-
         // we start by assuming the @WebMethod was NOT used on this class
         boolean webMethodAnnotationUsed = false;
-        List<Method> list = new ArrayList<Method>();
+        List<Method> list = new ArrayList<>();
         
         for (Method m : initialList) {
             WebMethod wm = m.getAnnotation(WebMethod.class);
-            if ( (wm != null) && !webMethodAnnotationUsed) {
+            if (wm != null && !webMethodAnnotationUsed) {
                 webMethodAnnotationUsed=true;
                 // reset the list, this is the first annotated method we find
                 list.clear();
@@ -154,53 +137,43 @@ public class ServiceInterfaceGenerator extends Generator
         return list.toArray(new Method[list.size()]);
     }
 
-    public void evaluate() {
-
-        _clear();
-
-	    if (packageName != null) {
-	        _package(packageName);
-        }
-
-        _interface(PUBLIC, serviceIntfSimpleName);
-
-        for(int i = 0; i < intfMethods.length; i++) {
-	        printMethod(intfMethods[i]);
-	    }
-
-        _end();
-
-        return;
-
+    @Override
+    public Class<?> getAnchorClass() {
+        return ejbClass;
     }
 
+    @Override
+    protected void defineClassBody() {
+        _interface(PUBLIC, serviceIntfSimpleName);
 
-    private void printMethod(Method m)
-    {
-
-        boolean throwsRemoteException = false;
-        List<Type> exceptionList = new LinkedList<Type>();
-	    for(Class exception : m.getExceptionTypes()) {
-            exceptionList.add(Type.type(exception));
-            if( exception.getName().equals("java.rmi.RemoteException") ) {
-                throwsRemoteException = true;
-            }
-	}
-        if( !throwsRemoteException ) {
-            exceptionList.add(_t("java.rmi.RemoteException"));
+        for (Method intfMethod : intfMethods) {
+            printMethod(intfMethod);
         }
 
-        _method( PUBLIC | ABSTRACT, Type.type(m.getReturnType()),
-                 m.getName(), exceptionList);
+        _end();
+    }
+
+    private void printMethod(Method m) {
+        boolean throwsRemoteException = false;
+        List<Type> exceptionList = new LinkedList<>();
+        for (Class<?> exception : m.getExceptionTypes()) {
+            exceptionList.add(Type.type(exception));
+            if (exception.getName().equals(RemoteException.class.getName())) {
+                throwsRemoteException = true;
+            }
+        }
+        if (!throwsRemoteException) {
+            exceptionList.add(_t(RemoteException.class.getName()));
+        }
+
+        _method(PUBLIC | ABSTRACT, Type.type(m.getReturnType()), m.getName(), exceptionList);
 
         int i = 0;
 
-        for(Class param : m.getParameterTypes()) {
+        for (Class<?> param : m.getParameterTypes()) {
             _arg(Type.type(param), "param" + i);
             i++;
-	    }
-
+        }
         _end();
     }
-    
 }

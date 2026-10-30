@@ -8,7 +8,7 @@ from datetime import datetime
 
 
 # Setup
-asadminlib.PAYARA_PATH_BIN = os.path.abspath(os.environ["PAYARA_HOME"] if "PAYARA_HOME" in os.environ else "../../../../appserver/distributions/payara/target/stage/payara6")
+asadminlib.PAYARA_PATH_BIN = os.path.abspath(os.environ["PAYARA_HOME"] if "PAYARA_HOME" in os.environ else "../../../../appserver/distributions/payara/target/stage/payara7")
 
 
 def test_start_payara():

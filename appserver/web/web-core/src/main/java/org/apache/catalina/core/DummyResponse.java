@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2024 Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -116,9 +116,6 @@ public class DummyResponse
     public String getContentType() { return null; }
     public PrintWriter getReporter() { return null; }
     public void recycle() {}
-    public void write(int b) throws IOException {}
-    public void write(byte b[]) throws IOException {}
-    public void write(byte b[], int off, int len) throws IOException {}
     public void flushBuffer() throws IOException {}
     public int getBufferSize() { return -1; }
     public String getCharacterEncoding() { return null; }
@@ -152,19 +149,17 @@ public class DummyResponse
     public void addIntHeader(String name, int value) {}
     public boolean containsHeader(String name) { return false; }
     public String encodeRedirectURL(String url) { return null; }
-    public String encodeRedirectUrl(String url) { return null; }
     public String encodeURL(String url) { return null; }
-    public String encodeUrl(String url) { return null; }
     public String encode(String url) { return null; }
     public void sendAcknowledgement() throws IOException {}
     public void sendError(int status) throws IOException {}
     public void sendError(int status, String message) throws IOException {}
     public void sendRedirect(String location) throws IOException {}
+    public void sendRedirect(String location, int sc, boolean clearBuffer) throws IOException {}
     public void setDateHeader(String name, long value) {}
     public void setHeader(String name, String value) {}
     public void setIntHeader(String name, int value) {}
     public void setStatus(int status) {}
-    public void setStatus(int status, String message) {}
     public void setDetailMessage(String msg) {}
     public String getDetailMessage() { return null; }
 

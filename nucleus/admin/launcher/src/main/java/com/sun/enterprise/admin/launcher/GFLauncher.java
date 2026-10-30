@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.launcher;
 
@@ -53,11 +53,32 @@ import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclEntryPermission;
+import java.nio.file.attribute.AclEntryType;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,7 +102,6 @@ public abstract class GFLauncher {
     private Map<String, String> asenvProps;
     private JavaConfig javaConfig;
     private JvmOptions jvmOptions;
-    private Profiler profiler;
     private Map<String, String> sysPropsFromXml;
     private String javaExe;
     private String classpath;
@@ -98,8 +118,6 @@ public abstract class GFLauncher {
     private Process process;
     private ProcessStreamDrainer psd;
     private boolean logFilenameWasFixed = false;
-    private boolean needsAutoUpgrade = false;
-    private boolean needsManualUpgrade = false;
     private int debugPort = -1;
     private boolean debugSuspend = false;
     
@@ -149,30 +167,6 @@ public abstract class GFLauncher {
         launch();
     }
 
-    @SuppressWarnings("UseSpecificCatch")
-    public final void launchJVM(List<String> cmdsIn) throws GFLauncherException {
-        try {
-            setup();    // we only use one thing -- the java executable
-            List<String> commands = new LinkedList<String>();
-            commands.add(javaExe);
-
-            for (String cmd : cmdsIn) {
-                commands.add(cmd);
-            }
-
-            ProcessBuilder pb = new ProcessBuilder(commands);
-            Process p = pb.start();
-            ProcessStreamDrainer.drain("launchJVM", p); // just to be safe
-        } catch (GFLauncherException gfe) {
-            throw gfe;
-        } catch (Throwable t) {
-            // hk2 might throw a java.lang.Error
-            throw new GFLauncherException(STRINGS.get("unknownError", t.getMessage()), t);
-        } finally {
-            GFLauncherLogger.removeLogFileHandler();
-        }
-    }
-
     public void setup() throws GFLauncherException, MiniXmlParserException {
         ASenvPropertyReader pr;
         if (isFakeLaunch()) {
@@ -199,8 +193,7 @@ public abstract class GFLauncher {
             asenvProps.put(JAVA_ROOT_PROPERTY, jhome);
         }
         setJavaExecutable();
-        setupProfilerAndJvmOptions(parser);
-        setupUpgradeSecurity();
+        setupJvmOptions(parser);
 
         Map<String, String> realmprops = parser.getAdminRealmProperties();
         if (realmprops != null) {
@@ -213,14 +206,13 @@ public abstract class GFLauncher {
 
         secureAdminEnabled = parser.getSecureAdminEnabled();
 
-        renameOsgiCache();
         setupMonitoring(parser);
         sysPropsFromXml = parser.getSystemProperties();
         asenvProps.put(INSTANCE_ROOT_PROPERTY, getInfo().getInstanceRootDir().getPath());
 
         debugOptions = getDebug();
         parseDebug();
-        parser.setupConfigDir(getInfo().getConfigDir(), getInfo().getInstallDir());
+        parser.setupConfigDir(getInfo().getConfigDir());
         setLogFilename(parser);
         resolveAllTokens();
         fixLogFilename();
@@ -229,9 +221,6 @@ public abstract class GFLauncher {
         setCommandLine();
         logCommandLine();
         checkJDKVersion();
-        // if no <network-config> element, we need to upgrade this domain
-        needsAutoUpgrade = !parser.hasNetworkConfig();
-        needsManualUpgrade = !parser.hasDefaultConfig();
         setupCalledByClients = true;
     }
     
@@ -334,25 +323,7 @@ public abstract class GFLauncher {
         return debugPort >= 0 && debugSuspend;
     }
 
-    /**
-     * Does this domain need to be automatically upgraded before it can be
-     * started?
-     *
-     * @return true if the domain needs to be upgraded first
-     */
-    public final boolean needsAutoUpgrade() {
-        return needsAutoUpgrade;
-    }
 
-    /**
-     * Does this domain need to be manually upgraded before it can be started?
-     *
-     * @return true if the domain needs to be upgraded first
-     */
-    public final boolean needsManualUpgrade() {
-        return needsManualUpgrade;
-    }
-    
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     //////     ALL private and package-private below   ////////////////////////
@@ -549,7 +520,21 @@ public abstract class GFLauncher {
         //run the process and attach Stream Drainers
         try {
             closeStandardStreamsMaybe();
-            process = pb.start();
+
+            // Under SSH on Windows, an instance's child JVM inherits the SSH session's
+            // Job Object and is killed when the exec channel closes. Use a detached launch
+            // via schtasks (Password logon) to escape it. Restricted to instances: domain
+            // starts via SSH use the regular pb.start() path.
+            // SSH_CLIENT / SSH_CONNECTION are set by sshd for every exec channel and are
+            // absent for local subprocess launches (e.g. admin console start-instance),
+            // making them a reliable discriminator over System.console() == null alone.
+            if (OS.isWindows() && info.isInstance() && info.isSshNode() && !info.isVerboseOrWatchdog() && isRunningUnderSsh()) {
+                process = launchDetachedOnWindows(cmds, pb);
+            } else {
+                process = pb.start();
+                writeSecurityTokens(process);
+            }
+
             final String name = getInfo().getDomainName();
 
             // verbose trumps watchdog.
@@ -562,7 +547,6 @@ public abstract class GFLauncher {
             else {
                 psd = ProcessStreamDrainer.save(name, process);
             }
-            writeSecurityTokens(process);
         }
         catch (Exception e) {
             throw new GFLauncherException("jvmfailure", e, e);
@@ -679,7 +663,7 @@ public abstract class GFLauncher {
         if (jvmOptions != null)
             addIgnoreNull(cmdLine, jvmOptions.toStringArray());
 
-        GFLauncherNativeHelper nativeHelper = new GFLauncherNativeHelper(info, javaConfig, jvmOptions, profiler);
+        GFLauncherNativeHelper nativeHelper = new GFLauncherNativeHelper(info, javaConfig, jvmOptions);
         addIgnoreNull(cmdLine, nativeHelper.getCommands());
         addIgnoreNull(cmdLine, getMainClass());
 
@@ -789,14 +773,12 @@ public abstract class GFLauncher {
         all.put(SystemPropertyConstants.SERVER_NAME, getInfo().getInstanceName());
         all.putAll(sysPropsFromXml);
         all.putAll(jvmOptions.getCombinedMap());
-        all.putAll(profiler.getConfig());
         TokenResolver resolver = new TokenResolver(all);
         resolver.resolve(jvmOptions.xProps);
         resolver.resolve(jvmOptions.xxProps);
         resolver.resolve(jvmOptions.plainProps);
         resolver.resolve(jvmOptions.sysProps);
         resolver.resolve(javaConfig.getMap());
-        resolver.resolve(profiler.getConfig());
         resolver.resolve(debugOptions);
         //resolver.resolve(sysPropsFromXml);
         logFilename = resolver.resolve(logFilename);
@@ -822,7 +804,6 @@ public abstract class GFLauncher {
         List<File> sysCP = javaConfig.getSystemClasspath();
         List<File> prefixCP = javaConfig.getPrefixClasspath();
         List<File> suffixCP = javaConfig.getSuffixClasspath();
-        List<File> profilerCP = profiler.getClasspath();
         List<File> extCP = Collections.singletonList(
                 new File(info.getInstanceRootDir(), "lib/ext/*")
         );
@@ -831,7 +812,6 @@ public abstract class GFLauncher {
         List<File> all = new ArrayList<File>();
         all.addAll(extCP);
         all.addAll(prefixCP);
-        all.addAll(profilerCP);
         all.addAll(mainCP);
         all.addAll(sysCP);
         all.addAll(envCP);
@@ -871,14 +851,9 @@ public abstract class GFLauncher {
         return Collections.emptyList();
     }
 
-    private void setupProfilerAndJvmOptions(MiniXmlParser parser) throws MiniXmlParserException, GFLauncherException {
-        // add JVM options from Profiler *last* so they override config's
+    private void setupJvmOptions(MiniXmlParser parser) throws MiniXmlParserException, GFLauncherException {
         // JVM options
 
-        profiler = new Profiler(
-                parser.getProfilerConfig(),
-                parser.getProfilerJvmOptions(),
-                parser.getProfilerSystemProperties());
 
         Optional<JDK.Version> jdkVersion = getConfiguredJdkVersion(javaExe);
         List<String> rawJvmOptions = parser.getJvmOptions()
@@ -887,9 +862,6 @@ public abstract class GFLauncher {
                 .map(option -> option.option)
                 .collect(Collectors.toList());
         rawJvmOptions.addAll(getSpecialSystemProperties());
-        if (profiler.isEnabled()) {
-            rawJvmOptions.addAll(profiler.getJvmOptions());
-        }
         jvmOptions = new JvmOptions(rawJvmOptions);
         if (info.isDropInterruptedCommands()) {
             jvmOptions.sysProps.put(SystemPropertyConstants.DROP_INTERRUPTED_COMMANDS, Boolean.TRUE.toString());
@@ -935,58 +907,6 @@ public abstract class GFLauncher {
             GFLauncherLogger.fine(GFLauncherLogger.DEFAULT_JVM_OPTION, 
                     PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY,
                     PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
-        }
-    }
-
-    private void setupUpgradeSecurity() throws GFLauncherException {
-        // If this is an upgrade and the security manager is on,
-        // copy the current server.policy file to the domain
-        // before the upgrade.
-        if (info.isUpgrade()
-                && jvmOptions.sysProps.containsKey("java.security.manager")) {
-
-            GFLauncherLogger.info(GFLauncherLogger.COPY_SERVER_POLICY);
-
-            File source = new File(new File(new File(info.installDir, "lib"),
-                    "templates"), "server.policy");
-            File target = new File(info.getConfigDir(), "server.policy");
-
-            try {
-                FileUtils.copyFile(source, target);
-            }
-            catch (IOException ioe) {
-                // the actual error is wrapped differently depending on
-                // whether the problem was with the source or target
-                Throwable cause = ioe.getCause() == null ? ioe : ioe.getCause();
-                throw new GFLauncherException(STRINGS.get(
-                        "COPY_SERVER_POLICY_error", cause.getMessage()));
-            }
-        }
-    }
-
-    /**
-     * Because of some issues in GlassFish OSGi launcher, a server updated from
-     * version 3.0.x to 3.1 won't start if a OSGi cache directory populated with
-     * 3.0.x modules is used. So, as a work around, we rename the cache
-     * directory when upgrade path is used. See GLASSFISH-15772 for more
-     * details.
-     *
-     * @throws GFLauncherException if it fails to rename the cache directory
-     */
-    private void renameOsgiCache() throws GFLauncherException {
-        if (info.isUpgrade()) {
-            File osgiCacheDir = new File(info.getDomainRootDir(),
-                    "osgi-cache");
-            File backupOsgiCacheDir = new File(info.getDomainRootDir(),
-                    "osgi-cache-" + System.currentTimeMillis());
-            if (osgiCacheDir.exists() && !backupOsgiCacheDir.exists()) {
-                if (!FileUtils.renameFile(osgiCacheDir, backupOsgiCacheDir)) {
-                    throw new GFLauncherException(STRINGS.get("rename_osgi_cache_failed", osgiCacheDir, backupOsgiCacheDir));
-                }
-                else {
-                    GFLauncherLogger.fine("rename_osgi_cache_succeeded", osgiCacheDir, backupOsgiCacheDir);
-                }
-            }
         }
     }
 
@@ -1090,6 +1010,303 @@ public abstract class GFLauncher {
         }
 
         return ss;
+    }
+
+    private Process launchDetachedOnWindows(List<String> cmds, ProcessBuilder pb) throws IOException, GFLauncherException {
+
+        String windowsPassword = info.getWindowsPassword();
+        if (windowsPassword == null || windowsPassword.isBlank()) {
+            throw new GFLauncherException(
+                    "A Windows user password is required to launch a Payara instance via SSH on Windows. "
+                    + "Either pass it directly: asadmin start-local-instance --windowspassword <password> ..., "
+                    + "or set it on the node so start-instance supplies it automatically: "
+                    + "asadmin --passwordfile <file> create-node-ssh --nodehost <host> <node>");
+        }
+
+        String fullUser = resolveWindowsUser();
+
+        File tokenFile = File.createTempFile("payara-tokens-", ".tmp");
+        restrictToOwner(tokenFile);
+        try (BufferedWriter writer = Files.newBufferedWriter(tokenFile.toPath(), StandardCharsets.UTF_8)) {
+            for (String token : info.securityTokens) {
+                writer.write(token);
+                writer.newLine();
+            }
+        }
+
+        // @argfile avoids Windows 32 767-char CreateProcess limit
+        File argFile = File.createTempFile("payara-args-", ".tmp");
+        try (BufferedWriter writer = Files.newBufferedWriter(argFile.toPath(), StandardCharsets.UTF_8)) {
+            for (String arg : cmds.subList(1, cmds.size())) {
+                if (arg.contains(" ") || arg.contains("\t")) {
+                    writer.write("\"" + arg.replace("\\", "\\\\").replace("\"", "\\\"") + "\"");
+                } else {
+                    writer.write(arg);
+                }
+                writer.newLine();
+            }
+        }
+
+        // Batch: sets working directory, writes cmd.exe PID via WMI before starting Java,
+        // and redirects stdin from tokenFile with '<'.
+        File pidFile = File.createTempFile("payara-pid-", ".tmp");
+        File batchFile = File.createTempFile("payara-start-", ".bat");
+        try (BufferedWriter writer = Files.newBufferedWriter(batchFile.toPath(), StandardCharsets.UTF_8)) {
+            String pidFilePs = pidFile.getAbsolutePath().replace("'", "''");
+            String javaQ = cmds.getFirst().replace("\"", "\"\"");
+            String argQ = argFile.getAbsolutePath().replace("\"", "\"\"");
+            String tokQ = tokenFile.getAbsolutePath().replace("\"", "\"\"");
+            String workDirQ = (pb.directory() != null ? pb.directory() : new File(".")).getAbsolutePath().replace("\"", "\"\"");
+            writer.write("@echo off\r\n");
+            writer.write("cd /d \"" + workDirQ + "\"\r\n");
+            writer.write("powershell -NoProfile -NonInteractive -Command "
+                    + "\"(Get-WmiObject Win32_Process -Filter ('ProcessId='+$PID)).ParentProcessId"
+                    + " | Out-File -FilePath '" + pidFilePs + "' -Encoding ascii -NoNewline\"\r\n");
+            writer.write("\"" + javaQ + "\" \"@" + argQ + "\" < \"" + tokQ + "\"\r\n");
+        }
+
+        String taskName = "PayaraStart-" + UUID.randomUUID().toString().replace("-", "");
+
+        File xmlFile = File.createTempFile("payara-task-", ".xml");
+        writeTaskXml(xmlFile, batchFile.getAbsolutePath());
+
+        File stderrFile = File.createTempFile("payara-schtasks-stderr-", ".log");
+        List<File> toClean = new ArrayList<>(Arrays.asList(tokenFile, argFile, batchFile, pidFile, xmlFile, stderrFile));
+
+        List<String> createCmd = new ArrayList<>(Arrays.asList(
+                "schtasks", "/create",
+                "/xml", xmlFile.getAbsolutePath(),
+                "/tn", taskName,
+                "/f"));
+        createCmd.add("/ru");
+        createCmd.add(fullUser);
+        createCmd.add("/rp");
+        createCmd.add(windowsPassword);
+
+        ProcessBuilder createPb = new ProcessBuilder(createCmd);
+        createPb.redirectInput(new File("NUL"));
+        createPb.redirectOutput(new File("NUL"));
+        createPb.redirectError(stderrFile);
+
+        Process createPs = createPb.start();
+        try {
+            boolean finished = createPs.waitFor(30, TimeUnit.SECONDS);
+            if (!finished) {
+                createPs.destroyForcibly();
+                String err = readSilently(stderrFile);
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("schtasks /create timed out after 30 s"
+                        + (err.isEmpty() ? "" : ": " + err));
+            }
+            if (createPs.exitValue() != 0) {
+                String err = readSilently(stderrFile);
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("schtasks /create failed (exit=" + createPs.exitValue() + ")"
+                        + (err.isEmpty() ? "" : ": " + err));
+            }
+        } catch (InterruptedException ie) {
+            createPs.destroyForcibly();
+            toClean.forEach(File::delete);
+            Thread.currentThread().interrupt();
+            throw new GFLauncherException("schtasks /create interrupted");
+        }
+
+        File runStderrFile = File.createTempFile("payara-schtasks-run-stderr-", ".log");
+        toClean.add(runStderrFile);
+        Process runPs;
+        try {
+            runPs = new ProcessBuilder("schtasks", "/run", "/tn", taskName)
+                    .redirectInput(new File("NUL"))
+                    .redirectOutput(new File("NUL"))
+                    .redirectError(runStderrFile)
+                    .start();
+        } catch (IOException ioe) {
+            deleteTaskSilently(taskName);
+            toClean.forEach(File::delete);
+            throw ioe;
+        }
+        try {
+            boolean runFinished = runPs.waitFor(30, TimeUnit.SECONDS);
+            if (!runFinished) {
+                runPs.destroyForcibly();
+                String err = readSilently(runStderrFile);
+                deleteTaskSilently(taskName);
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("schtasks /run timed out after 30 s"
+                        + (err.isEmpty() ? "" : ": " + err));
+            }
+            if (runPs.exitValue() != 0) {
+                String err = readSilently(runStderrFile);
+                deleteTaskSilently(taskName);
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("schtasks /run failed (exit=" + runPs.exitValue() + ")"
+                        + (err.isEmpty() ? "" : ": " + err));
+            }
+        } catch (InterruptedException ie) {
+            runPs.destroyForcibly();
+            deleteTaskSilently(taskName);
+            toClean.forEach(File::delete);
+            Thread.currentThread().interrupt();
+            throw new GFLauncherException("schtasks /run interrupted");
+        }
+
+        int cmdPid = -1;
+        long deadline = System.currentTimeMillis() + 30_000;
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                String raw = new String(Files.readAllBytes(pidFile.toPath()), StandardCharsets.UTF_8).trim();
+                if (!raw.isEmpty()) {
+                    cmdPid = Integer.parseInt(raw);
+                    break;
+                }
+            } catch (IOException | NumberFormatException ignored) {
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("Interrupted waiting for Payara process PID");
+            }
+        }
+
+        new ProcessBuilder("schtasks", "/delete", "/tn", taskName, "/f")
+                .redirectInput(new File("NUL"))
+                .redirectOutput(new File("NUL"))
+                .redirectError(new File("NUL"))
+                .start();
+
+        if (cmdPid < 0) {
+            toClean.forEach(File::delete);
+            throw new GFLauncherException("Timed out waiting for Payara process PID file");
+        }
+
+        GFLauncherLogger.fine("launchDetachedOnWindows",
+                "Task launched via schtasks (Password logon). pid=" + cmdPid + " user=" + fullUser);
+
+        Thread cleanup = new Thread(() -> {
+            try {
+                Thread.sleep(120_000);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            toClean.forEach(File::delete);
+        }, "payara-launch-cleanup");
+        cleanup.setDaemon(true);
+        cleanup.start();
+
+        Process sentinel = new ProcessBuilder("powershell", "-NoProfile", "-NonInteractive", "-Command",
+                "$p=" + cmdPid + ";"
+                + "while(Get-Process -Id $p -ErrorAction SilentlyContinue){Start-Sleep -Seconds 1};"
+                + "exit 1")
+                .redirectInput(new File("NUL"))
+                .redirectOutput(new File("NUL"))
+                .redirectError(new File("NUL"))
+                .start();
+        Runtime.getRuntime().addShutdownHook(new Thread(sentinel::destroyForcibly, "payara-sentinel-killer"));
+        return sentinel;
+    }
+
+    private static String resolveWindowsUser() throws GFLauncherException {
+        try {
+            Process p = new ProcessBuilder("whoami").redirectErrorStream(true).start();
+            String out = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
+            p.waitFor(5, TimeUnit.SECONDS);
+            if (!out.isEmpty()) {
+                return out;
+            }
+        } catch (Exception ignored) {
+        }
+        // whoami unavailable — fall back to env vars
+        String userDomain = System.getenv("USERDOMAIN");
+        String userName = System.getenv("USERNAME");
+        if (userName == null || userName.isBlank()) {
+            throw new GFLauncherException(
+                    "Cannot determine Windows user identity: USERNAME environment variable is not set");
+        }
+        return (userDomain != null && !userDomain.isBlank()) ? userDomain + "\\" + userName : userName;
+    }
+
+    private static boolean isRunningUnderSsh() {
+        return System.getenv("SSH_CLIENT") != null || System.getenv("SSH_CONNECTION") != null;
+    }
+
+    private static String readSilently(File file) {
+        try {
+            return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).trim();
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private static void deleteTaskSilently(String taskName) {
+        try {
+            new ProcessBuilder("schtasks", "/delete", "/tn", taskName, "/f")
+                    .redirectInput(new File("NUL"))
+                    .redirectOutput(new File("NUL"))
+                    .redirectError(new File("NUL"))
+                    .start();
+        } catch (IOException ignored) {
+        }
+    }
+
+    static void writeTaskXml(File xmlFile, String batchPath) throws IOException {
+        String bat = escapeXml(batchPath);
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n"
+                + "<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n"
+                + "  <RegistrationInfo/>\r\n"
+                + "  <Triggers><TimeTrigger><StartBoundary>2000-01-01T00:00:00</StartBoundary>"
+                + "<Enabled>true</Enabled></TimeTrigger></Triggers>\r\n"
+                + "  <Principals><Principal id=\"Author\">"
+                + "<LogonType>Password</LogonType><RunLevel>LeastPrivilege</RunLevel>"
+                + "</Principal></Principals>\r\n"
+                + "  <Settings>\r\n"
+                + "    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n"
+                + "    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\r\n"
+                + "    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\r\n"
+                + "    <AllowHardTerminate>true</AllowHardTerminate>\r\n"
+                + "    <StartWhenAvailable>false</StartWhenAvailable>\r\n"
+                + "    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>\r\n"
+                + "    <IdleSettings/>\r\n"
+                + "    <AllowStartOnDemand>true</AllowStartOnDemand>\r\n"
+                + "    <Enabled>true</Enabled>\r\n"
+                + "    <Hidden>false</Hidden>\r\n"
+                + "    <RunOnlyIfIdle>false</RunOnlyIfIdle>\r\n"
+                + "    <WakeToRun>false</WakeToRun>\r\n"
+                + "    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>\r\n"
+                + "    <Priority>7</Priority>\r\n"
+                + "  </Settings>\r\n"
+                + "  <Actions Context=\"Author\"><Exec>"
+                + "<Command>cmd.exe</Command>"
+                + "<Arguments>/c &quot;" + bat + "&quot;</Arguments>"
+                + "</Exec></Actions>\r\n"
+                + "</Task>\r\n";
+        byte[] bom = {(byte) 0xFF, (byte) 0xFE};
+        byte[] content = xml.getBytes(StandardCharsets.UTF_16LE);
+        byte[] withBom = new byte[bom.length + content.length];
+        System.arraycopy(bom, 0, withBom, 0, bom.length);
+        System.arraycopy(content, 0, withBom, bom.length, content.length);
+        Files.write(xmlFile.toPath(), withBom);
+    }
+
+    private static String escapeXml(String s) {
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+    private static void restrictToOwner(File file) {
+        try {
+            AclFileAttributeView aclView = Files.getFileAttributeView(file.toPath(), AclFileAttributeView.class);
+            if (aclView == null) {
+                return;
+            }
+            UserPrincipal owner = Files.getOwner(file.toPath());
+            AclEntry ownerOnly = AclEntry.newBuilder().setType(AclEntryType.ALLOW).setPrincipal(owner).setPermissions(AclEntryPermission.values()).build();
+            aclView.setAcl(List.of(ownerOnly));
+        } catch (IOException ignored) {
+        }
     }
 
     private void setupLogLevels() {

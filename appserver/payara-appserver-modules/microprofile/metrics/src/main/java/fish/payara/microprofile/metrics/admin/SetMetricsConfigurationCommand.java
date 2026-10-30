@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -97,10 +97,6 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
-    @Deprecated
-    @Param(name = "secureMetrics", optional = true)
-    private Boolean secure;
-
     @Param(name = "dynamic", optional = true)
     private Boolean dynamic;
 
@@ -152,13 +148,7 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
                         metricsService.resetMetricsEnabledProperty();
                     }
                 }
-                if (secure != null) {
-                    actionReport.setMessage("--secureMetrics option is deprecated, replaced by --securityEnabled option.");
-                    configProxy.setSecureMetrics(secure.toString());
-                    if(dynamic != null && dynamic || Boolean.valueOf(metricsConfiguration.getDynamic())) {
-                        metricsService.resetMetricsSecureProperty();
-                    }
-                }
+
                 if (endpoint != null) {
                     configProxy.setEndpoint(endpoint);
                 }

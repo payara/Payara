@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -78,8 +78,6 @@ import org.xml.sax.SAXParseException;
  * @author tjquinn
  */
 public class AppClientContainerBuilder implements AppClientContainer.Builder {
-
-    private final static String ENDPOINTS_PROPERTY_NAME = "com.sun.appserv.iiop.endpoints";
 
     private static final LocalStringManager localStrings = new LocalStringManagerImpl(AppClientContainerBuilder.class);
     /** caller-specified target servers */
@@ -236,11 +234,6 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
                     targetServers[0].getAddress());
             defineIfNotDefined(GlassFishORBHelper.OMG_ORB_INIT_PORT_PROPERTY,
                     Integer.toString(targetServers[0].getPort()));
-        } else {
-            /*
-             * Currently, set a system property to specify multiple endpoints.
-             */
-            defineIfNotDefined(ENDPOINTS_PROPERTY_NAME, sb.toString());
         }
 
         if (isSSLRequired(targetServers, containerProperties)) {

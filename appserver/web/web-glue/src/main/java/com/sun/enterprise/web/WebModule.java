@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web;
 
@@ -143,8 +143,6 @@ import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.WebResourceCollectionImpl;
 import org.glassfish.web.deployment.runtime.CookieProperties;
-import org.glassfish.web.deployment.runtime.LocaleCharsetInfo;
-import org.glassfish.web.deployment.runtime.LocaleCharsetMap;
 import org.glassfish.web.deployment.runtime.SessionConfig;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.glassfish.web.deployment.runtime.SessionProperties;
@@ -200,14 +198,12 @@ public class WebModule extends PwcWebModule implements Context {
 
     private static final String WS_SERVLET_CONTEXT_LISTENER =
         "com.sun.xml.ws.transport.http.servlet.WSServletContextListener";
+    public static final String CACHE_TTL_APP_PROPERTY = "cacheTTL";
 
     // ----------------------------------------------------- Instance Variables
 
     // Object containing sun-web.xml information
     private SunWebAppImpl iasBean = null;
-
-    //locale-charset-info tag from sun-web.xml
-    private LocaleCharsetMap[] _lcMap = null;
 
     /**
      * Is the default-web.xml parsed?
@@ -361,112 +357,11 @@ public class WebModule extends PwcWebModule implements Context {
                                                 SunWebApp.DEFAULT_CHARSET);
         }
 
-        LocaleCharsetInfo lcinfo = iasBean.getLocaleCharsetInfo();
-        if (lcinfo != null) {
-            if (lcinfo.getAttributeValue(
-                            LocaleCharsetInfo.DEFAULT_LOCALE) != null) {
-               logger.warning(LogFacade.DEFAULT_LOCALE_DEPRECATED);
-            }
-            /*
-             * <parameter-encoding> subelem of <sun-web-app> takes precedence
-             * over that of <locale-charset-info>
-             */
-            if (lcinfo.isParameterEncoding()
-                    && !iasBean.isParameterEncoding()) {
-                formHintField = lcinfo.getAttributeValue(
-                                        LocaleCharsetInfo.PARAMETER_ENCODING,
-                                        LocaleCharsetInfo.FORM_HINT_FIELD);
-                defaultCharset = lcinfo.getAttributeValue(
-                                        LocaleCharsetInfo.PARAMETER_ENCODING,
-                                        LocaleCharsetInfo.DEFAULT_CHARSET);
-            }
-            _lcMap = lcinfo.getLocaleCharsetMap();
-        }
 
 		if (defaultCharset != null) {
 			setRequestCharacterEncoding(defaultCharset);
 			setResponseCharacterEncoding(defaultCharset);
 		}
-    }
-
-    /**
-     * return locale-charset-map
-     */
-    public LocaleCharsetMap[] getLocaleCharsetMap() {
-        return _lcMap;
-    }
-
-    /**
-     * Returns true if this web module specifies a locale-charset-map in its
-     * sun-web.xml, false otherwise.
-     *
-     * @return true if this web module specifies a locale-charset-map in its
-     * sun-web.xml, false otherwise
-     */
-    @Override
-    public boolean hasLocaleToCharsetMapping() {
-        LocaleCharsetMap[] locCharsetMap = getLocaleCharsetMap();
-        return (locCharsetMap != null && locCharsetMap.length > 0);
-    }
-
-    /**
-     * Matches the given request locales against the charsets specified in
-     * the locale-charset-map of this web module's sun-web.xml, and returns
-     * the first matching charset.
-     *
-     * @param locales Request locales
-     *
-     * @return First matching charset, or null if this web module does not
-     * specify any locale-charset-map in its sun-web.xml, or no match was
-     * found
-     */
-    @Override
-    public String mapLocalesToCharset(Enumeration locales) {
-
-        String encoding = null;
-
-        LocaleCharsetMap[] locCharsetMap = getLocaleCharsetMap();
-        if (locCharsetMap != null && locCharsetMap.length > 0) {
-            /*
-             * Check to see if there is a match between the request
-             * locales (in preference order) and the locales in the
-             * locale-charset-map.
-             */
-            boolean matchFound = false;
-            while (locales.hasMoreElements() && !matchFound) {
-                Locale reqLoc = (Locale) locales.nextElement();
-                for (int i=0; i<locCharsetMap.length && !matchFound; i++) {
-                    String language = locCharsetMap[i].getAttributeValue(
-                                                LocaleCharsetMap.LOCALE);
-                    if (language == null || "".equals(language)) {
-                        continue;
-                    }
-                    String country = null;
-                    int index = language.indexOf('_');
-                    if (index != -1) {
-                        country = language.substring(index+1);
-                        language = language.substring(0, index);
-                    }
-                    Locale mapLoc = null;
-                    if (country != null) {
-                        mapLoc = new Locale(language, country);
-                    } else {
-                        mapLoc = new Locale(language);
-                    }
-                    if (mapLoc.equals(reqLoc)) {
-                        /*
-                         * Match found. Get the charset to which the
-                         * matched locale maps.
-                         */
-                        encoding = locCharsetMap[i].getAttributeValue(
-                                                    LocaleCharsetMap.CHARSET);
-                        matchFound = true;
-                    }
-                }
-            }
-        }
-
-        return encoding;
     }
 
     /**
@@ -1008,24 +903,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Adds the given valve to this web module's ad-hoc pipeline.
-     *
-     * @param valve The valve to add
-     */
-    public void addAdHocValve(GlassFishValve valve) {
-        adHocPipeline.addValve(valve);
-    }
-
-    /**
-     * Removes the given valve from this web module's ad-hoc pipeline.
-     *
-     * @param valve The valve to remove
-     */
-    public void removeAdHocValve(GlassFishValve valve) {
-        adHocPipeline.removeValve(valve);
-    }
-
-    /**
      * Gets this web module's ad-hoc pipeline.
      *
      * @return This web module's ad-hoc pipeline
@@ -1161,28 +1038,8 @@ public class WebModule extends PwcWebModule implements Context {
             return;
         }
 
-        if (propName.startsWith("valve_")) {
-            addValve(propValue);
-        } else if (propName.startsWith("listener_")) {
+        if (propName.startsWith("listener_")) {
             addCatalinaListener(propValue);
-        }
-    }
-
-    /**
-     * Instantiates a <tt>Valve</tt> from the given <tt>className</tt>
-     * and adds it to the <tt>Pipeline</tt> of this WebModule.
-     *
-     * @param className the fully qualified class name of the <tt>Valve</tt>
-     */
-    protected void addValve(String className) {
-        Object valve = loadInstance(className);
-        if (valve instanceof Valve) {
-            super.addValve((Valve) valve);
-        } else if (valve instanceof GlassFishValve) {
-            super.addValve((GlassFishValve) valve);
-        } else {
-            logger.log(Level.WARNING, LogFacade.VALVE_CLASS_NAME_NO_VALVE,
-                       className);
         }
     }
 
@@ -1466,6 +1323,14 @@ public class WebModule extends PwcWebModule implements Context {
             configureProperty(vs, contextPath, name, value);
         }
 
+        if (getWebModuleConfig() != null && getWebModuleConfig().getDeploymentContext() != null) {
+            var appProperties = getWebModuleConfig().getDeploymentContext().getAppProps();
+            String cacheTTL = appProperties.getProperty(CACHE_TTL_APP_PROPERTY);
+            if (cacheTTL != null) {
+                configureProperty(vs, contextPath, CACHE_TTL_APP_PROPERTY, cacheTTL);
+            }
+        }
+
         // sen-web.xml preserved for backward compatibility
         final SunWebAppImpl configBean = getIasWebAppConfigBean();
         if (configBean != null && configBean.sizeWebProperty() > 0) {
@@ -1552,11 +1417,28 @@ public class WebModule extends PwcWebModule implements Context {
             vs.setDefaultWebXmlLocation(value);
         } else if(name.startsWith("alternatedocroot_")) {
             parseAlternateDocBase(name, value);
-        } else if(name.startsWith("valve_") ||
-            name.startsWith("listener_") ||
-            name.startsWith("send-error_")) {
-            // do nothing; these properties are dealt with
+        } else if(CACHE_TTL_APP_PROPERTY.equalsIgnoreCase(name)) {
+            setCacheTTL(Integer.parseInt(value));
+        } else if(name.startsWith("listener_")) {
+            // do nothing; the listener_ property is dealt with
             // in configureCatalinaProperties()
+        } else if ("allowRemoteAddress".equalsIgnoreCase(name) ||
+                "denyRemoteAddress".equalsIgnoreCase(name) ||
+                "allowRemoteHost".equalsIgnoreCase(name) ||
+                "denyRemoteHost".equalsIgnoreCase(name) ||
+                "contextXmlDefault".equalsIgnoreCase(name) ||
+                "sso-max-inactive-seconds".equalsIgnoreCase(name) ||
+                "sso-reap-interval-seconds".equalsIgnoreCase(name) ||
+                "errorReportValve".equalsIgnoreCase(name) ||
+                "authRealm".equalsIgnoreCase(name) ||
+                "setCacheControl".equalsIgnoreCase(name) ||
+                "accessLogBufferSize".equalsIgnoreCase(name) ||
+                "accessLogWriteInterval".equalsIgnoreCase(name) ||
+                "accessLogPrefix".equalsIgnoreCase(name) ||
+                "accessLoggingEnabled".equalsIgnoreCase(name) ||
+                name.startsWith("send-error_") ||
+                name.startsWith("redirect_")) {
+            // do nothing; these properties are handled at the VirtualServer level
         } else {
             Object[] params = {name, value};
             logger.log(Level.WARNING, LogFacade.INVALID_PROPERTY,

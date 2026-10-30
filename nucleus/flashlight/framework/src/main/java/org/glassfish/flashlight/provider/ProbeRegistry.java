@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.flashlight.provider;
 
 import java.util.Collection;
 import java.util.ArrayList;
 
-import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.impl.core.*;
 
 import org.jvnet.hk2.annotations.Service;
@@ -68,19 +68,6 @@ public class ProbeRegistry {
 
     public static ProbeRegistry getInstance() {
         return _me;
-    }
-
-    // bnevins -- todo this is a huge concurrency bug!
-    // why is it even here?!?
-    // @deprecated
-
-    @Deprecated
-    public static ProbeRegistry createInstance() {
-    	if (_me == null) {
-    		_me = new ProbeRegistry();
-    	}
-
-    	return _me;
     }
 
     public static void cleanup() {

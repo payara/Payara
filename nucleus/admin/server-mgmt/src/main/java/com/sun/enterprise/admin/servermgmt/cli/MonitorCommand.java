@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affilates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -68,8 +68,6 @@ public class MonitorCommand extends CLICommand {
     private String type;
     @Param(optional = true)
     private String filter;
-    @Param(optional = true)
-    private File fileName;
     @Param(primary = true, optional = true)
     private String target;	// XXX - not currently used
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(MonitorCommand.class);
@@ -81,7 +79,7 @@ public class MonitorCommand extends CLICommand {
         Timer timer = new Timer();
         try {
             MonitorTask monitorTask = new MonitorTask(timer, getRemoteArgs(),
-                    programOpts, env, type, filter, fileName);
+                    programOpts, env, type, filter);
             timer.scheduleAtFixedRate(monitorTask, 0, (long) interval * 1000);
             boolean done = false;
             final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));

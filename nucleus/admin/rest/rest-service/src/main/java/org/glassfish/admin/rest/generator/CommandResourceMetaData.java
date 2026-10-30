@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.generator;
 
 import java.lang.reflect.Method;
@@ -256,9 +258,7 @@ public class CommandResourceMetaData {
         {"IiopListener", "create-ssl", "POST", "create-ssl", "Create", "id=$parent", "type=iiop-listener"}, // Not used? IiopListener not in nucleus
         {"IiopService", "create-ssl", "POST", "create-ssl", "Create", "type=iiop-service"}, // Not used? IiopListener not in nucleus
         {"LbConfig", "create-http-listener", "POST", "create-http-listener", "create-http-listener"},
-        {"LbConfig", "delete-http-listener", "POST", "delete-http-listener", "delete-http-listener"},
-        {"ListApplication", "create-lifecycle-module", "POST", "create-lifecycle-module", "Create Lifecycle Module"}, // TODO: ListApplication not found
-        {"ListApplication", "delete-lifecycle-module", "DELETE", "delete-lifecycle-module", "Delete Lifecycle Module"},};
+        {"LbConfig", "delete-http-listener", "POST", "delete-http-listener", "delete-http-listener"}};
     private static final String[][] configBeanCustomResources = {
         // ConfigBean, Custom Resource Class, path
         {"Cluster", "SystemPropertiesCliResource", "system-properties"},

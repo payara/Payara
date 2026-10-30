@@ -10,12 +10,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -299,7 +299,6 @@
 		<echo message="Glassfish Distribution Build Deploy"/>
 		<ant dir="ejb/remoteview" target="build-deploy"/>
 		<ant dir="ejb/singleton" target="build-deploy"/>
-		<ant dir="ejb/cmp" target="build-deploy"/>
 		<ant dir="ejb/mdb" target="build"/>
 		<ant dir="jms/injection" target="build-deploy"/>
 		<!-- Temporarily jruby test is commented, because we need to integrate a newer version
@@ -334,7 +333,6 @@
 	<target name="undeploy-gd">
 		<ant dir="ejb/singleton" target="undeploy"/>
 		<ant dir="ejb/remoteview" target="undeploy"/>
-		<ant dir="ejb/cmp" target="undeploy"/>
 		<!-- Temporarily jruby test is commented, because we need to integrate a newer version
              for the test to pass. We are waiting for RE to release a newer version.
 	<ant dir="web/jruby" target="undeploy"/>

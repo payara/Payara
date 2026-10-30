@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -137,7 +137,7 @@ public interface ConnectorRuntime extends ConnectorConstants{
      * <p/>
      * If not found and <b>force</b> is true,  this api will try to get a wrapper datasource specified
      * by the jdbcjndi name. The motivation for having this
-     * API is to provide the CMP backend/ JPA-Java2DB a means of acquiring a connection during
+     * API is to provide the JPA-Java2DB a means of acquiring a connection during
      * the codegen phase. If a user is trying to deploy an JPA-Java2DB app on a remote server,
      * without this API, a resource reference has to be present both in the DAS
      * and the server instance. This makes the deployment more complex for the
@@ -156,7 +156,7 @@ public interface ConnectorRuntime extends ConnectorConstants{
      * <p/>
      * If not found and <b>force</b> is true, this api will try to get a wrapper datasource specified
      * by the jdbcjndi name. The motivation for having this
-     * API is to provide the CMP backend/ JPA-Java2DB a means of acquiring a connection during
+     * API is to provide the JPA-Java2DB a means of acquiring a connection during
      * the codegen phase. If a user is trying to deploy an JPA-Java2DB app on a remote server,
      * without this API, a resource reference has to be present both in the DAS
      * and the server instance. This makes the deployment more complex for the
@@ -177,7 +177,7 @@ public interface ConnectorRuntime extends ConnectorConstants{
      * <p/>
      * If not found and <b>force</b> is true,  this api will try to get a wrapper datasource specified
      * by the jdbcjndi name. The motivation for having this
-     * API is to provide the CMP backend/ JPA-Java2DB a means of acquiring a connection during
+     * API is to provide the JPA-Java2DB a means of acquiring a connection during
      * the codegen phase. If a user is trying to deploy an JPA-Java2DB app on a remote server,
      * without this API, a resource reference has to be present both in the DAS
      * and the server instance. This makes the deployment more complex for the
@@ -196,7 +196,7 @@ public interface ConnectorRuntime extends ConnectorConstants{
      * <p/>
      * If not found and <b>force</b> is true, this api will try to get a wrapper datasource specified
      * by the jdbcjndi name. The motivation for having this
-     * API is to provide the CMP backend/ JPA-Java2DB a means of acquiring a connection during
+     * API is to provide the JPA-Java2DB a means of acquiring a connection during
      * the codegen phase. If a user is trying to deploy an JPA-Java2DB app on a remote server,
      * without this API, a resource reference has to be present both in the DAS
      * and the server instance. This makes the deployment more complex for the

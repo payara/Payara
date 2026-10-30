@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.weld.connector;
 
@@ -168,7 +168,13 @@ public class WeldUtils {
         cdi.add(jakarta.ejb.Singleton.class);
 
         cdiEnablingAnnotationClasses = Collections.unmodifiableSet(cdi);
-        cdiEnablingAnnotations = cdiEnablingAnnotationClasses.stream().map(Class::getName).collect(Collectors.toSet());
+        Set<String> cdiEnablingAnnotationNames = cdiEnablingAnnotationClasses.stream().map(Class::getName)
+                .collect(Collectors.toCollection(HashSet::new));
+        // MicroProfile @RegisterRestClient is annotated with @Stereotype and @Dependent, making it a CDI bean-defining
+        // annotation. We add it here in case early boot (e.g. PostBootRunLevel) type scanning fails to resolve it
+        // via OSGi at this early point in time
+        cdiEnablingAnnotationNames.add("org.eclipse.microprofile.rest.client.inject.RegisterRestClient");
+        cdiEnablingAnnotations = Collections.unmodifiableSet(cdiEnablingAnnotationNames);
     }
 
 
@@ -501,15 +507,6 @@ public class WeldUtils {
         }
 
         return result;
-    }
-
-    public static boolean isCDIDevModeEnabled(DeploymentContext context) {
-        Object propValue = context.getAppProps().get(ServerTags.CDI_DEV_MODE_ENABLED_PROP);
-        return propValue != null && Boolean.parseBoolean((String) propValue);
-    }
-
-    public static void setCDIDevMode(DeploymentContext context, boolean enabled) {
-       context.getAppProps().setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, String.valueOf(enabled));
     }
     
     public static boolean isEmptyBeansXmlModeALL(DeploymentContext context) {

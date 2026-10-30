@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.jvnet.hk2.config.test;
 
-//import com.sun.enterprise.module.bootstrap.Populator;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.Descriptor;
@@ -68,7 +68,6 @@ import org.jvnet.hk2.config.InjectionTarget;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.Populator;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import org.jvnet.hk2.config.provider.internal.ConfigInstanceListener;
@@ -227,16 +226,14 @@ public class ConfigTest {
             ConfigSupport.apply(new SingleConfigCode<EjbContainerAvailability>() {
                 @Override
                 public Object run(EjbContainerAvailability param)
-                        throws PropertyVetoException, TransactionFailure {
+                        throws PropertyVetoException {
                     param.setSfsbHaPersistenceType("coherence");
-                    param.setSfsbCheckpointEnabled("**MUST BE**");
                     return null;
                 }
             }, ejb);
 
             //printEjb("AFTER CHANGES", ejb);
             assert(ejb.getSfsbHaPersistenceType().equals("coherence")
-                    && ejb.getSfsbCheckpointEnabled().equals("**MUST BE**")
                     && ejb.getAvailabilityEnabled().equals(avEnabled));
         } catch (Exception e) {
             e.printStackTrace();
@@ -258,9 +255,8 @@ public class ConfigTest {
             ConfigSupport.apply(new SingleConfigCode<EjbContainerAvailability>() {
                 @Override
                 public Object run(EjbContainerAvailability param)
-                        throws PropertyVetoException, TransactionFailure {
+                        throws PropertyVetoException {
                     param.setSfsbHaPersistenceType("99999.999");
-                    param.setSfsbCheckpointEnabled("**MUST BE**");
 
                     assert(origSFSBHaPersistenceType.equals(ejb.getSfsbHaPersistenceType()));
                     assert(! ejb.getSfsbHaPersistenceType().equals(param.getSfsbHaPersistenceType()));
@@ -270,7 +266,6 @@ public class ConfigTest {
 
             //printEjb("AFTER CHANGES", ejb);
             assert(ejb.getSfsbHaPersistenceType().equals("99999.999")
-                    && ejb.getSfsbCheckpointEnabled().equals("**MUST BE**")
                     && ejb.getAvailabilityEnabled().equals(origAVEnabled));
         } catch (Exception e) {
             e.printStackTrace();
@@ -291,17 +286,15 @@ public class ConfigTest {
             ConfigSupport.apply(new SingleConfigCode<EjbContainerAvailability>() {
                 @Override
                 public Object run(EjbContainerAvailability param)
-                        throws PropertyVetoException, TransactionFailure {
+                        throws PropertyVetoException {
                     param.setSfsbHaPersistenceType("DynamicData");
-                    param.setSfsbCheckpointEnabled("**MUST BE**");
                     assert(! ejb.getSfsbHaPersistenceType().equals(param.getSfsbHaPersistenceType()));
                     return null;
                 }
             }, ejb);
 
             //printEjb("AFTER CHANGES", ejb);
-            assert(ejb.getSfsbHaPersistenceType().equals("DynamicData")
-                    && ejb.getSfsbCheckpointEnabled().equals("**MUST BE**"));
+            assert(ejb.getSfsbHaPersistenceType().equals("DynamicData"));
 
             assert(ejbBean.getCount() == 1);
         } catch (Exception e) {
@@ -312,17 +305,15 @@ public class ConfigTest {
             ConfigSupport.apply(new SingleConfigCode<EjbContainerAvailability>() {
                 @Override
                 public Object run(EjbContainerAvailability param)
-                        throws PropertyVetoException, TransactionFailure {
+                        throws PropertyVetoException {
                     param.setSfsbHaPersistenceType("DynamicData1");
-                    param.setSfsbCheckpointEnabled("**MUST BE**");
                     assert(! ejb.getSfsbHaPersistenceType().equals(param.getSfsbHaPersistenceType()));
                     return null;
                 }
             }, ejb);
 
             //printEjb("AFTER CHANGES", ejb);
-            assert(ejb.getSfsbHaPersistenceType().equals("DynamicData1")
-                    && ejb.getSfsbCheckpointEnabled().equals("**MUST BE**"));
+            assert(ejb.getSfsbHaPersistenceType().equals("DynamicData1"));
 
             assert(ejbBean.getCount() == 2);
 
@@ -456,29 +447,6 @@ public class ConfigTest {
         Assert.assertEquals(1, locator.getAllServices(ConfigurationPopulator.class).size());
         Assert.assertEquals(1, locator.getAllServices(Transactions.class).size());
         Assert.assertEquals(1, locator.getAllServices(ConfigInstanceListener.class).size());
-    }
-
-    private static void printEjb(String message, EjbContainerAvailability ejb) {
-        StringBuilder sb = new StringBuilder(ejb.getClass().getName());
-        sb.append(" : " ).append(ejb.getAvailabilityEnabled())
-                .append("; ").append(ejb.getSfsbCheckpointEnabled())
-                .append("; ").append(ejb.getSfsbHaPersistenceType())
-                .append("; ").append(ejb.getSfsbQuickCheckpointEnabled())
-                .append(";").append(ejb.getSfsbStorePoolName());
-
-        System.out.println(message + " ==> " + sb.toString());
-    }
-
-    private static void printWeb(String message, WebContainerAvailability web) {
-        StringBuilder sb = new StringBuilder(web.getClass().getName());
-        sb.append(" : " ).append(web.getAvailabilityEnabled())
-                .append("; ").append(web.getDisableJreplica())
-                .append("; ").append(web.getPersistenceFrequency())
-                .append("; ").append(web.getPersistenceScope())
-                .append(";").append(web.getPersistenceType())
-                .append(";").append(web.getSsoFailoverEnabled());
-
-        System.out.println(message + " ==> " + sb.toString());
     }
 
     private static class InjectionTargetFilter

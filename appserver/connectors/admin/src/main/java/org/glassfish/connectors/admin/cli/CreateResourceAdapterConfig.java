@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.connectors.admin.cli;
 
@@ -87,9 +87,6 @@ public class CreateResourceAdapterConfig implements AdminCommand {
 
     @Param(name=PROPERTY, optional=true, separator=':')
     private Properties properties;
-
-    @Param(name=TARGET, optional=true, obsolete = true)
-    private String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
     @Param(name=RAC_THREAD_POOL_ID, optional=true, alias="threadPoolIds")
     private String threadPoolIds;
@@ -150,7 +147,7 @@ public class CreateResourceAdapterConfig implements AdminCommand {
 
         ResourceAdapterConfigManager resAdapterConfigMgr = new ResourceAdapterConfigManager();
         try {
-            rs = resAdapterConfigMgr.create(domain.getResources(), attrList, properties, target);
+            rs = resAdapterConfigMgr.create(domain.getResources(), attrList, properties, null);
         } catch (Exception ex) {
             Logger.getLogger(CreateResourceAdapterConfig.class.getName()).log(
                     Level.SEVERE,

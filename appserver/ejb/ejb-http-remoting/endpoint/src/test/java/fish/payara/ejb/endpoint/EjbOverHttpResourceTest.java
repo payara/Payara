@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -231,12 +231,10 @@ public class EjbOverHttpResourceTest {
     public void discover() {
         try (Response response = target.path("/").request().build("HEAD").invoke()) {
             assertEquals(Status.OK.getStatusCode(), response.getStatus());
-            assertEquals(2, response.getLinks().size());
+            assertEquals(1, response.getLinks().size());
             int port = target.getUri().getPort();
             assertEquals("http://localhost:" + port + "/jndi/lookup",
                     response.getLink("https://payara.fish/ejb-http-invoker/v1").getUri().toString());
-            assertEquals("http://localhost:" + port + "/ejb/lookup",
-                    response.getLink("https://payara.fish/ejb-http-invoker/v0").getUri().toString());
         }
     }
 

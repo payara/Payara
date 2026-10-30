@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -251,26 +251,28 @@ public class ResourceUtil {
     public static RestActionReporter runCommand(String commandName,
                                                 ParameterMap parameters,
                                                 Subject subject,
-                                                boolean managedJob) {            
+                                                boolean managedJob) {
+        CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
+        CommandModel model = cr.getModel(commandName, LOGGER);
+        ParameterMap normalizedParameters = resolveAliasedParameters(parameters, model);
+
         AsadminRecorderService asadminRecorderService = Globals.get(AsadminRecorderService.class);
         if (asadminRecorderService != null && asadminRecorderService.isEnabled()) {
-            asadminRecorderService.recordAsadminCommand(commandName, 
-                                                        parameters);
-        }
-        
-        AdminAuditService auditService = Globals.getDefaultHabitat().getService(AdminAuditService.class);
-        if (auditService != null && auditService.isEnabled()) {
-            auditService.recordAsadminCommand(commandName, parameters, subject);
+            asadminRecorderService.recordAsadminCommand(commandName, normalizedParameters);
         }
 
-        CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
+        AdminAuditService auditService = Globals.getDefaultHabitat().getService(AdminAuditService.class);
+        if (auditService != null && auditService.isEnabled()) {
+            auditService.recordAsadminCommand(commandName, normalizedParameters, subject);
+        }
+
         RestActionReporter ar = new RestActionReporter();
         final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar, subject);
         if (managedJob) {
             commandInvocation.managedJob();
         }
-        commandInvocation.parameters(parameters).execute();
-        addCommandLog(ar, commandName, parameters);
+        commandInvocation.parameters(normalizedParameters).execute();
+        addCommandLog(ar, commandName, normalizedParameters);
 
         return ar;
     }
@@ -292,6 +294,30 @@ public class ResourceUtil {
         }
 
         return runCommand(commandName, p, subject);
+    }
+
+    static ParameterMap resolveAliasedParameters(ParameterMap parameters, CommandModel model) {
+        if (model == null) {
+            return parameters;
+        }
+        Map<String, String> aliasToName = new HashMap<>();
+        for (CommandModel.ParamModel paramModel : model.getParameters()) {
+            String alias = paramModel.getParam().alias();
+            if (alias != null && !alias.isEmpty()) {
+                aliasToName.put(alias, paramModel.getName());
+            }
+        }
+        if (aliasToName.isEmpty()) {
+            return parameters;
+        }
+        ParameterMap normalized = new ParameterMap();
+        for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
+            String key = aliasToName.getOrDefault(entry.getKey(), entry.getKey());
+            for (String value : entry.getValue()) {
+                normalized.add(key, value);
+            }
+        }
+        return normalized;
     }
 
     public static EventOutput runCommandWithSse(final String commandName,
@@ -1184,7 +1210,7 @@ public class ResourceUtil {
     }
 
     /**
-     * Creates a new rearranged map of JVM options. Options {@code target} and {@code profiler} are forwarded 1:1. All
+     * Creates a new rearranged map of JVM options. Options {@code target} are forwarded 1:1. All
      * other options are joined in the result map for key {@code id} and are separated by semi-colon.
      *
      * An input key may include a value. In such case key and value are divided by an equals sign: {@code key=value}. In
@@ -1201,7 +1227,7 @@ public class ResourceUtil {
      * @param removeVersioning set {@code true} to erase any JVM version prefix from the keys, {@code false} to keep
      *                         keys as they are.
      * @return a map where most options are joined into one expression for key {@code id}. If existing {@code target}
-     *         and {@code profiler} keys are kept same as in input map.
+     *          keys are kept same as in input map.
      */
     public static Map<String, String> processJvmOptions(Map<String, String> jvmOptions, boolean removeVersioning) {
         Map<String, String> results = new HashMap<>();
@@ -1209,7 +1235,7 @@ public class ResourceUtil {
         String sep = "";
         for (Map.Entry<String, String> option : jvmOptions.entrySet()) {
             String key = option.getKey();
-            if ("target".equals(key) || "profiler".equals(key)) {
+            if ("target".equals(key)) {
                 results.put(key, option.getValue());
             } else if (key != null && !key.trim().isEmpty()) {
                 int endOfKey = key.indexOf('=');

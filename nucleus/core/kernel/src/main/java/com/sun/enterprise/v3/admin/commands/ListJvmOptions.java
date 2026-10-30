@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -84,9 +84,6 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
 
     @Param(name="target", optional=true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
-
-    @Param(name="profiler", optional=true)
-    Boolean profiler=false;
     
     @Inject
     Target targetService;
@@ -108,16 +105,7 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
     
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        List<JvmOption> opts;
-        if (profiler) {
-                if (jc.getProfiler() == null) {
-                    report.setMessage(lsm.getString("create.profiler.first"));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-            opts = jc.getProfiler().getJvmRawOptions().stream().map(JvmOption::new).collect(Collectors.toList());
-        } else
-            opts = jc.getJvmRawOptions().stream().map(JvmOption::new).collect(Collectors.toList());
+        List<JvmOption> opts = jc.getJvmRawOptions().stream().map(JvmOption::new).toList();
         //Collections.sort(opts); //sorting is garbled by Reporter anyway, so let's move sorting to the client side
         try {
             opts.forEach(option -> {

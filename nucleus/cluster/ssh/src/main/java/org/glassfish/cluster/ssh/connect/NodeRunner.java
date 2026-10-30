@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
 package org.glassfish.cluster.ssh.connect;
 
 import java.io.*;
@@ -50,8 +51,6 @@ import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
-import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-import org.glassfish.cluster.ssh.connect.NodeRunnerSsh;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -81,16 +80,6 @@ public class NodeRunner {
         if (node.getType() == null)
             return false;
         return node.getType().equals("SSH");
-    }
-
-    public boolean isDcomNode(Node node) {
-
-        if (node == null) {
-            throw new IllegalArgumentException("Node is null");
-        }
-        if (node.getType() == null)
-            return false;
-        return node.getType().equals("DCOM");
     }
 
     /**
@@ -147,7 +136,11 @@ public class NodeRunner {
             throw new IllegalArgumentException("Node is null");
         }
 
-        final List<String> stdinLines = new ArrayList<String>();
+        logger.fine("runAdminCommandOnNode: node=" + node.getName()
+                + " host=" + node.getNodeHost()
+                + " args=" + args);
+
+        List<String> stdinLines = new ArrayList<>();
         stdinLines.add(AsadminInput.versionSpecifier());
         stdinLines.add(AUTH_TOKEN_STDIN_LINE_PREFIX + authTokenManager.createToken(context.getSubject()));
         args.add(0, "--interactive=false");            // No prompting!
@@ -168,7 +161,7 @@ public class NodeRunner {
             ProcessManagerException {
         args.add(0, AsadminInput.CLI_INPUT_OPTION);
         args.add(1, AsadminInput.SYSTEM_IN_INDICATOR); // specified to read from System.in
-        List<String> fullcommand = new ArrayList<String>();
+        List<String> fullcommand = new ArrayList<>();
 
         if (!StringUtils.ok(node.getInstallDirUnixStyle())) {
             throw new IllegalArgumentException("Node does not have an installDir");
@@ -227,13 +220,7 @@ public class NodeRunner {
             return result;
         }
 
-        if ("DCOM".equals(type)) {
-            NodeRunnerDcom nrd = new NodeRunnerDcom(logger);
-            nrd.runAdminCommandOnRemoteNode(node, output, args, stdinLines);
-            return determineStatus(args, output);
-        }
-
-        throw new UnsupportedOperationException("Node is not of type SSH or DCOM");
+        throw new UnsupportedOperationException("Node is not of type SSH");
     }
 
     private void trace(String s) {
@@ -251,19 +238,4 @@ public class NodeRunner {
         return fullCommand.toString();
     }
 
-    /* hack TODO do not know how to get int status back from Windows
-     */
-    private int determineStatus(List<String> args, StringBuilder output) {
-        if (isDeleteFS(args) && output.toString().indexOf("UTIL6046") >= 0)
-            return 1;
-        return 0;
-    }
-
-    private boolean isDeleteFS(List<String> args) {
-        for (String arg : args) {
-            if ("_delete-instance-filesystem".equals(arg))
-                return true;
-        }
-        return false;
-    }
 }

@@ -87,7 +87,7 @@
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] start-domain [--help]
 [--debug={true|false}] [--domaindir domain-dir]
-[--dry-run={true|false}] [--upgrade={true|false}]
+[--dry-run={true|false}]
 [--verbose={true|false}] [--watchdog={true|false}]
 [domain-name]</code></pre>
 </div>
@@ -194,29 +194,6 @@ The default value is <code>false</code>.</p>
 that is to be restarted. If specified, the path must be accessible in
 the file system. The default location of the domain root directory is
 as-install`/domains`.</p>
-</dd>
-<dt class="hdlist1"><code>--upgrade</code></dt>
-<dd>
-<p>Specifies whether the configuration of the domain administration
-server (DAS) is upgraded to the current release. Normally, if the
-subcommand detects that the configuration is from an older release of
-\{product---name}, the configuration is upgraded automatically before
-being started. You should not need to use this option explicitly.<br>
-Possible values are as follows:<br></p>
-<div class="dlist">
-<dl>
-<dt class="hdlist1"><code>true</code></dt>
-<dd>
-<p>When the domain is started, the configuration is modified to be
-compatible with this release of \{product---name}, and the
-\{product---name} process stops.</p>
-</dd>
-<dt class="hdlist1"><code>false</code></dt>
-<dd>
-<p>The configuration of the DAS is not updated (default).</p>
-</dd>
-</dl>
-</div>
 </dd>
 <dt class="hdlist1"><code>--verbose</code></dt>
 <dt class="hdlist1"><code>-v</code></dt>

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -36,9 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
- * Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+
  */
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -77,8 +78,11 @@ import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.config.serverbeans.SshConnector;
+import com.sun.enterprise.config.serverbeans.SshAuth;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.StringUtils;
+import org.glassfish.internal.api.RelativePathResolver;
 
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 
@@ -120,9 +124,6 @@ public class StartInstanceCommand implements AdminCommand {
 
     @Param(optional = true, defaultValue = "false")
     private boolean terse;
-
-    @Param(optional = true, obsolete = true)
-    private String setenv;
 
     @Min(message = "Timeout must be at least 1 second long.", value = 1)
     @Param(optional = true, defaultValue = "120")
@@ -281,14 +282,45 @@ public class StartInstanceCommand implements AdminCommand {
             command.add("--debug");
         }
 
+        if ("SSH".equals(node.getType())) {
+            command.add("--sshnode=true");
+        }
+
         command.add(instanceName);
 
+        String sshPassword = null;
+        SshConnector sshConn = node.getSshConnector();
+        if (sshConn != null) {
+            SshAuth sshAuth = sshConn.getSshAuth();
+            if (sshAuth != null) {
+                String raw = sshAuth.getPassword();
+                if (raw != null) {
+                    try {
+                        sshPassword = RelativePathResolver.getRealPasswordFromAlias(raw);
+                    } catch (Exception e) {
+                        logger.warning("Failed to resolve SSH password alias: " + e.getMessage());
+                    }
+                }
+            }
+        }
+
         // Convert the command into a string representing the command
-        // a human should run.
+        // a human should run. Note: --windowspassword is appended AFTER
+        // this call so the plaintext password is never captured in humanCommand,
+        // which is logged and returned in failure error messages.
         humanCommand = makeCommandHuman(command);
 
+        if (sshPassword != null) {
+            int idx = command.size() - 1; // insert before instanceName operand
+            command.add(idx, "--windowspassword");
+            command.add(idx + 1, sshPassword);
+        }
+
         // First error message displayed if we fail
-        String firstErrorMessage = Strings.get("start.instance.failed", instanceName, noderef, nodeHost );
+        String firstErrorMessage = Strings.get("start.instance.failed", instanceName, noderef, nodeHost);
+        if ("SSH".equals(node.getType())) {
+            firstErrorMessage += "\n" + Strings.get("start.instance.failed.ssh.windows.hint", noderef);
+        }
 
         StringBuilder output = new StringBuilder();
 

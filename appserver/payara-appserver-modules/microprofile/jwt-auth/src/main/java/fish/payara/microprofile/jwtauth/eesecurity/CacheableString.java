@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -47,14 +47,16 @@ public class CacheableString {
 
     private String value;
     private Duration cacheTTL;
+    private Duration retainOnErrorDuration;
 
     public static CacheableString empty(Duration cacheTTL) {
-        return from(null, cacheTTL);
+        return from(null, cacheTTL, Duration.ZERO);
     }
 
-    public static CacheableString from(String value, Duration cacheTTL) {
+    public static CacheableString from(String value, Duration cacheTTL, Duration retainOnErrorDuration) {
         CacheableString instance = new CacheableString();
         instance.cacheTTL = cacheTTL;
+        instance.retainOnErrorDuration = retainOnErrorDuration;
         instance.value = value;
         return instance;
     }
@@ -71,4 +73,7 @@ public class CacheableString {
         return value != null;
     }
 
+    public Duration getRetainOnErrorDuration() {
+        return retainOnErrorDuration;
+    }
 }

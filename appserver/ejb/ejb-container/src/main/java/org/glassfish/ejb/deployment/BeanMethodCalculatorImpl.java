@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -57,7 +57,6 @@ import com.sun.logging.LogDomains;
 import java.util.Locale;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 
 /**
@@ -74,36 +73,6 @@ public final class BeanMethodCalculatorImpl {
 
     // TODO - change logger if/when other EJB deployment classes are changed
     static final private Logger _logger = LogDomains.getLogger(BeanMethodCalculatorImpl.class, LogDomains.DPL_LOGGER);
-
-    public static Vector<FieldDescriptor> getPossibleCmpCmrFields(ClassLoader cl, String className)
-            throws ClassNotFoundException {
-
-        Vector<FieldDescriptor> fieldDescriptors = new Vector<>();
-        Class<?> theClass = cl.loadClass(className);
-
-        // Start with all *public* methods
-        Method[] methods = theClass.getMethods();
-
-        // Find all accessors that could be cmp fields. This list 
-        // will contain all cmr field accessors as well, since there
-        // is no good way to distinguish between the two purely based
-        // on method signature.
-        for(int mIndex = 0; mIndex < methods.length; mIndex++) {
-            Method next = methods[mIndex];
-            String nextName = next.getName();
-            int nextModifiers = next.getModifiers();
-            if( Modifier.isAbstract(nextModifiers) ) {
-                if( nextName.startsWith("get") &&
-                        nextName.length() > 3 ) {
-                    String field = 
-                            nextName.substring(3,4).toLowerCase(Locale.US) +
-                            nextName.substring(4);
-                    fieldDescriptors.add(new FieldDescriptor(field));
-                }
-            }
-        }
-        return fieldDescriptors;
-    }
 
     public static Vector<Method> getMethodsFor(com.sun.enterprise.deployment.EjbDescriptor ejbDescriptor, ClassLoader classLoader)
             throws ClassNotFoundException

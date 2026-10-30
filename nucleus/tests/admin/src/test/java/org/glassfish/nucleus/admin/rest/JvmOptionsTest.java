@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -40,6 +40,7 @@
 
 package org.glassfish.nucleus.admin.rest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,14 +60,6 @@ import org.testng.annotations.Test;
 public class JvmOptionsTest extends RestTestBase {
     protected static final String URL_SERVER_JVM_OPTIONS = "/domain/configs/config/server-config/java-config/jvm-options";
     protected static final String URL_DEFAULT_JVM_OPTIONS = "/domain/configs/config/default-config/java-config/jvm-options";
-
-    protected static final String URL_SERVER_CONFIG_CREATE_PROFILER = "/domain/configs/config/server-config/java-config/create-profiler";
-    protected static final String URL_SERVER_CONFIG_DELETE_PROFILER = "/domain/configs/config/server-config/java-config/profiler/delete-profiler";
-    protected static final String URL_SERVER_CONFIG_PROFILER_JVM_OPTIONS = "/domain/configs/config/server-config/java-config/profiler/jvm-options";
-
-    protected static final String URL_DEFAULT_CONFIG_CREATE_PROFILER = "/domain/configs/config/default-config/java-config/create-profiler";
-    protected static final String URL_DEFAULT_CONFIG_DELETE_PROFILER = "/domain/configs/config/default-config/java-config/profiler/delete-profiler";
-    protected static final String URL_DEFAULT_CONFIG_PROFILER_JVM_OPTIONS = "/domain/configs/config/default-config/java-config/profiler/jvm-options";
 
     private ConfigTest configTest;
     private String testConfigName;
@@ -196,35 +189,6 @@ public class JvmOptionsTest extends RestTestBase {
     }
 
     @Test
-    public void testProfilerJvmOptions() {
-        final String profilerName = "profiler" + generateRandomString();
-        final String optionName = "-Doption" + generateRandomString();
-        Map<String, String> attrs = new HashMap<String, String>() {{
-            put("name", profilerName);
-            put("target", testConfigName);
-        }};
-        Map<String, String> newOptions = new HashMap<String, String>() {{
-//            put("target", testConfigName);
-//            put("profiler", "true");
-            put(optionName, "");
-        }};
-
-        deleteProfiler(URL_TEST_CONFIG + "/java-config/profiler/delete-profiler", testConfigName, false);
-
-        Response response = post(URL_TEST_CONFIG + "/java-config/create-profiler", attrs);
-        assertTrue(isSuccess(response));
-
-        response = post(URL_TEST_CONFIG + "/java-config/profiler/jvm-options", newOptions);
-        assertTrue(isSuccess(response));
-
-        response = get(URL_TEST_CONFIG + "/java-config/profiler/jvm-options");
-        List<String> jvmOptions = getJvmOptions(response);
-        assertTrue(jvmOptions.contains(optionName));
-
-        deleteProfiler(URL_TEST_CONFIG + "/java-config/profiler/delete-profiler", testConfigName, true);
-    }
-
-    @Test
     public void testJvmOptionWithColon() {
         final String optionName = "-XX:MaxPermSize";
         final String optionValue = "152m";
@@ -246,17 +210,20 @@ public class JvmOptionsTest extends RestTestBase {
         assertFalse(jvmOptions.contains(optionName+"="+optionValue));
     }
 
-    protected void deleteProfiler(final String url, final String target, final boolean failOnError) {
-        Response response = delete (url, new HashMap() {{ put ("target", target); }});
-        if (failOnError) {
-            assertTrue(isSuccess(response));
-        }
-    }
-
     protected List<String> getJvmOptions(Response response) {
         Map<String, Object> responseMap = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
-        List<String> jvmOptions = (List<String>)((Map)responseMap.get("extraProperties")).get("leafList");
-
+        List<Object> leafList = (List<Object>)((Map)responseMap.get("extraProperties")).get("leafList");
+        List<String> jvmOptions = new ArrayList<>();
+        for (Object entry : leafList) {
+            if (entry instanceof Map) {
+                Object jvmOption = ((Map) entry).get("jvmOption");
+                if (jvmOption != null) {
+                    jvmOptions.add(jvmOption.toString());
+                }
+            } else if (entry instanceof String) {
+                jvmOptions.add((String) entry);
+            }
+        }
         return jvmOptions;
     }
   

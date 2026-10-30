@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -91,6 +91,10 @@ public class OpenApiResource {
             LOGGER.info("No OpenAPI document found.");
             OpenAPI result = new BaseProcessor(new ArrayList<>()).process(new OpenAPIImpl(), null);
             return Response.status(Status.NOT_FOUND).entity(result).build();
+        }
+
+        if (((OpenAPIImpl) document).getEndpoints() != null) {
+            document.addExtension("x-endpoints", ((OpenAPIImpl) document).getEndpoints());
         }
 
         // Return the document

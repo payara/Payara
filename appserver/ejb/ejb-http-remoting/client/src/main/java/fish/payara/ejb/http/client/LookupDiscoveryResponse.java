@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -46,29 +46,15 @@ import jakarta.ws.rs.client.WebTarget;
 class LookupDiscoveryResponse {
 
     private URI resolvedRoot;
-    private WebTarget v0lookup;
     private WebTarget v1lookup;
 
-    public LookupDiscoveryResponse(URI resolvedRoot, WebTarget v0lookup) {
-        this(resolvedRoot, v0lookup, null);
-    }
-
-    public LookupDiscoveryResponse(URI resolvedRoot, WebTarget v0lookup, WebTarget v1lookup) {
+    public LookupDiscoveryResponse(URI resolvedRoot, WebTarget v1lookup) {
         this.resolvedRoot = resolvedRoot;
-        this.v0lookup = v0lookup;
         this.v1lookup = v1lookup;
     }
 
     public URI getResolvedRoot() {
         return resolvedRoot;
-    }
-
-    public boolean isV0target() {
-        return v0lookup != null;
-    }
-
-    public WebTarget getV0lookup() {
-        return v0lookup;
     }
 
     public boolean isV1target() {

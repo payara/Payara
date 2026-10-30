@@ -10,6 +10,7 @@ SYNOPSIS
            [--contextinfoenabled={false|true}]
            [--contextinfo={Classloader|JNDI|Security|WorkArea}]
            [--threadpriority threadpriority]
+           [--usevirtualthreads={false|true}]
            [--description description]
            [--property property]
            [--target target]
@@ -44,6 +45,15 @@ OPTIONS
        --threadpriority
            Specifies the priority to assign to created threads. The default
            value is 5.
+
+       --usevirtualthreads
+           If enabled, virtual threads will be used instead of the default platform
+           thread pool. They provide quick creation, minimal overhead, and
+           fast thread switching, but are executed on limited "carrying threads".
+           Use virtual threads for tasks which depend on external resources
+           like databases, micro-services, etc. Do not use them for long
+           calculation. 
+           The default value is false.
 
        --description
            Descriptive details about the resource.

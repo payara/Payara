@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,26 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package org.glassfish.appclient.client.acc.agent;
 
+import org.glassfish.appclient.common.ClassPathUtils;
+
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
-import java.util.ListIterator;
-import static java.util.logging.Level.FINEST;
-import java.util.logging.Logger;
 
 /**
  * Used as the system class loader during app client launch.
@@ -70,8 +64,6 @@ import java.util.logging.Logger;
  */
 public class ACCAgentClassLoader extends URLClassLoader {
 
-    private static final Logger LOGGER = Logger.getLogger(ACCAgentClassLoader.class.getName());
-
     private boolean isActive = true;
 
     public ACCAgentClassLoader(ClassLoader parent) {
@@ -84,19 +76,14 @@ public class ACCAgentClassLoader extends URLClassLoader {
          * and the second will temporarily handle the application resources -
          * typically for a splash screen.
          */
-        super(userClassPath(),
-                prepareLoader(GFSystemClassPath(), parent.getParent()));
+        super(new URL[] {},
+                prepareLoader(parent));
     }
     
-    private static URLClassLoader prepareLoader(final URL[] urls, final ClassLoader parent) {
-        return AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
-
-            @Override
-            public URLClassLoader run() {
-                return new URLClassLoader(urls, parent);
-            }
-            
-        });
+    private static URLClassLoader prepareLoader(final ClassLoader parent) {
+        return new URLClassLoader(
+                new URL[] {ClassPathUtils.getGFClientJarURL()},
+                new ClassLoaderWrapper(parent));
     }
 
     public ACCAgentClassLoader(URL[] urls) {
@@ -104,7 +91,7 @@ public class ACCAgentClassLoader extends URLClassLoader {
     }
 
     public ACCAgentClassLoader(URL[] urls, ClassLoader parent) {
-        super(urls, parent);
+        super(urls, new ClassLoaderWrapper(parent));
     }
 
     public ACCAgentClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
@@ -117,8 +104,8 @@ public class ACCAgentClassLoader extends URLClassLoader {
      *
      * @param path
      */
-    void appendToClassPathForInstrumentation(String path) {
-        LOGGER.log(FINEST, "Added to system class path : {0}", path);
+    void appendToClassPathForInstrumentation(String path) throws MalformedURLException {
+        addURL(new File(path).toURI().toURL());
     }
 
     @Override
@@ -154,56 +141,5 @@ public class ACCAgentClassLoader extends URLClassLoader {
             isActive = (propValue != null);
         }
         return isActive;
-    }
-
-    private static URL[] userClassPath() {
-        final URI GFSystemURI = GFSystemURI();
-        final List<URL> result = classPathToURLs(System.getProperty("java.class.path"));
-        for (ListIterator<URL> it = result.listIterator(); it.hasNext();) {
-            final URL url = it.next();
-            try {
-                if (url.toURI().equals(GFSystemURI)) {
-                    it.remove();
-                }
-            } catch (URISyntaxException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-//        result.addAll(classPathToURLs(System.getenv("APPCPATH")));
-
-        return result.toArray(new URL[result.size()]);
-    }
-
-    private static URL[] GFSystemClassPath() {
-        try {
-            return new URL[] {GFSystemURI().normalize().toURL()};
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private static URI GFSystemURI() {
-        try {
-            Class agentClass = Class.forName("org.glassfish.appclient.client.acc.agent.AppClientContainerAgent");
-            return agentClass.getProtectionDomain().getCodeSource().getLocation().toURI().normalize();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private static List<URL> classPathToURLs(final String classPath) {
-        if (classPath == null) {
-            return Collections.emptyList();
-        }
-        final List<URL> result = new ArrayList<URL>();
-        try {
-            for (String classPathElement : classPath.split(File.pathSeparator)) {
-                result.add(new File(classPathElement).toURI().normalize().toURL());
-            }
-            return result;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
     }
 }

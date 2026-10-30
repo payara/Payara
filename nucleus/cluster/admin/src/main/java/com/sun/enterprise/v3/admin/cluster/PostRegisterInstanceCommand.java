@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -42,6 +42,8 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.util.InstanceRegisterInstanceCommandParameters;
 import com.sun.enterprise.config.util.RegisterInstanceCommandParameters;
@@ -82,6 +84,12 @@ public class PostRegisterInstanceCommand extends RegisterInstanceCommandParamete
     @Inject
     private Target target;
 
+    @Inject
+    private Domain domain;
+
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
+
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -101,6 +109,14 @@ public class PostRegisterInstanceCommand extends RegisterInstanceCommandParamete
                     targets.add(s.getName());
                 }
 
+                // Deployment-group members each have their own config, unlike cluster members
+                // who share one, so a running member has to be given the new member's config or
+                // the config-ref carried by the server registered just below would dangle until
+                // the member is restarted. Push it first, only for the deployment-group case.
+                if (clusterName == null && deploymentGroup != null) {
+                    copyConfigToRunningMembers(instanceName, targets, context);
+                }
+
                 ClusterOperationUtil.replicateCommand(
                         "_register-instance-at-instance",
                         FailurePolicy.Warn,
@@ -114,5 +130,44 @@ public class PostRegisterInstanceCommand extends RegisterInstanceCommandParamete
                 report.failure(logger, e.getMessage());
             }
         }
+    }
+
+    /**
+     * Recreates the newly registered instance's config on the group's running members through
+     * {@code _copy-config-at-instance}, by serializing it on the DAS and having each member
+     * materialize it in its own configuration. The instance being created is not started yet, so
+     * it will pick up the other members' configs from the DAS on its first startup; only the
+     * existing running members need to be told about the new one's config here.
+     */
+    private void copyConfigToRunningMembers(String instanceName, List<String> targets, AdminCommandContext context) {
+        if (targets.isEmpty()) {
+            return;
+        }
+        Server server = domain.getServerNamed(instanceName);
+        if (server == null) {
+            return;
+        }
+        Config config = domain.getConfigNamed(server.getConfigRef());
+        if (config == null) {
+            return;
+        }
+        String configXml = configModularityUtils.serializeConfigBean(config);
+        if (configXml == null || configXml.isEmpty()) {
+            return;
+        }
+        ParameterMap parameters = new ParameterMap();
+        // The command declares the config name as its primary operand, so it travels under the
+        // "DEFAULT" key; see InstanceCopyConfigCommand.
+        parameters.add("DEFAULT", config.getName());
+        parameters.add("configxml", configXml);
+        ClusterOperationUtil.replicateCommand(
+                "_copy-config-at-instance",
+                FailurePolicy.Warn,
+                FailurePolicy.Ignore,
+                FailurePolicy.Ignore,
+                targets,
+                context,
+                parameters,
+                habitat);
     }
 }

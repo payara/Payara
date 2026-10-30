@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -42,24 +42,20 @@ package com.sun.enterprise.configapi.tests;
 
 import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
-import com.sun.enterprise.config.serverbeans.Profiler;
 import com.sun.enterprise.config.serverbeans.AdminService;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.jvnet.hk2.config.AttributeChanges;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.jvnet.hk2.config.AttributeChanges;
 
 /**
  * User: Jerome Dochez
@@ -121,16 +117,6 @@ public class DirectCreationTest extends ConfigPersistence {
         }
 
         support.createAndSet(serviceBean, DasConfig.class, (List) null);
-
-        List<AttributeChanges> profilerChanges = new ArrayList<AttributeChanges>();
-        String[] values = { "-Xmx512m", "-RFtrq", "-Xmw24" };
-        ConfigSupport.MultipleAttributeChanges multipleChanges = new ConfigSupport.MultipleAttributeChanges("jvm-options", values );
-        String[] values1 = { "profile" };
-        ConfigSupport.MultipleAttributeChanges multipleChanges1 = new ConfigSupport.MultipleAttributeChanges("name", values1 );
-        profilerChanges.add(multipleChanges);
-        profilerChanges.add(multipleChanges1);
-        support.createAndSet((ConfigBean) ConfigBean.unwrap(habitat.<JavaConfig>getService(JavaConfig.class))
-                , Profiler.class, profilerChanges);
     }
 
     @Test

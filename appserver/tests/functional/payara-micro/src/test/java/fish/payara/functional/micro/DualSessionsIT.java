@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -64,7 +64,7 @@ public class DualSessionsIT {
 
     public static WebArchive createClusterJsp() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "clusterjsp.war")
-                .addAsWebInfResource(new File("src/test/resources/clusterjsp/clusterjsp-war/web/WEB-INF/sun-web.xml"))
+                .addAsWebInfResource(new File("src/test/resources/clusterjsp/clusterjsp-war/web/WEB-INF/payara-web.xml"))
                 .addAsWebInfResource(new File("src/test/resources/clusterjsp/clusterjsp-war/web/WEB-INF/web.xml"))
                 .addAsWebResource(new File("src/test/resources/clusterjsp/clusterjsp-war/web/HaJsp.jsp"))
                 .addAsWebResource(new File("src/test/resources/clusterjsp/clusterjsp-war/web/ClearSession.jsp"))

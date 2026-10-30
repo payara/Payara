@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.server;
 
@@ -141,10 +141,6 @@ public class DynamicReloader implements Runnable {
          for (ApplicationName m : applications.getModules()) {
              if (m instanceof Application) {
                  Application app = (Application) m;
-                 if (Boolean.parseBoolean(app.getDeployProperties().getProperty(ServerTags.IS_LIFECYCLE))) {
-                     // skip lifecycle modules
-                     continue;
-                 }
                  AppReloadInfo info = new AppReloadInfo(app);
                  appReloadInfo.put(app.getName(), info);
                  logger.log(Level.FINE, "[Reloader] Monitoring {0} at {1}", new Object[]{app.getName(), app.getLocation()});
@@ -199,10 +195,8 @@ public class DynamicReloader implements Runnable {
             if (m instanceof Application) {
                 Application app = (Application) m;
                 
-                if (app.getLocation() == null || Boolean.parseBoolean(app.getDeployProperties().getProperty
-                    (ServerTags.IS_LIFECYCLE))) {
+                if (app.getLocation() == null) {
                     // skip apps without a location
-                    // skip lifecycle modules
                     continue;
                 }
                 AppReloadInfo reloadInfo = findOrCreateAppReloadInfo(app);

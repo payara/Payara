@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.client;
 
@@ -115,14 +115,6 @@ public class DFDeploymentProperties extends Properties {
     public static final String RUNNING = "running";
     public static final String NON_RUNNING = "non-running";
 
-    // lifecycle module constants
-    public static final String LIFECYCLE_MODULE = "lifecycle-module";
-    public static final String CLASS_NAME = "class-name";
-    public static final String CLASSPATH = "classpath";
-    public static final String LOAD_ORDER = "load-order";
-    public static final String IS_FAILURE_FATAL = "is-failure-fatal";
-    public static final String IS_LIFECYCLE = "isLifecycle";
-    public static final String IS_COMPOSITE = "isComposite";
     public static final String MODULE_EXTENSION = "moduleExtension";
 
     public String getWsdlTargetHint() throws IllegalArgumentException {

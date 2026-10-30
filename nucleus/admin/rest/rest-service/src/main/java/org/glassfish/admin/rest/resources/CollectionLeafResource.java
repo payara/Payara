@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admin.rest.resources;
 
@@ -91,7 +91,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
     protected Dom parent;
     protected String tagName;
     protected String target;
-    protected String profiler = "false";
     protected boolean isJvmOptions = false;
 
     public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
@@ -135,7 +134,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 target = parent.parent().attribute("name");
             } else {
                 target = parent.parent().parent().attribute("name");
-                profiler = "true";
             }
         }
     }
@@ -183,23 +181,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 "\"{0}\" created successfully.", "rest.resource.post.forbidden","POST on \"{0}\" is forbidden.");
         }
         return response;
-    }
-
-    @PUT //create
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    @Deprecated
-    public Response add(HashMap<String, String> data) throws TransactionFailure {
-        String postCommand = getPostCommand();
-        Map<String, String> payload = null;
-
-        if (isJvmOptions(postCommand)) {
-            payload = processData(data, false);
-        } else {
-            payload = data;
-        }
-
-        return runCommand(postCommand, payload, "rest.resource.create.message",
-            "\"{0}\" created successfully.", "rest.resource.post.forbidden","POST on \"{0}\" is forbidden.");
     }
 
     @DELETE //delete
@@ -370,9 +351,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
         if (results.get("target") == null) {
             results.put("target", target);
         }
-        if (results.get("profiler") == null) {
-            results.put("profiler", profiler);
-        }
 
         return results;
     }
@@ -399,12 +377,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
         Map<String, String> existing = new HashMap<String, String>();
         existing.put("target", target);
         for (String option : getEntity()) {
-            int index = option.indexOf('=');
-            if (index > -1) {
-                existing.put(escapeOptionPart(option.substring(0, index)), escapeOptionPart(option.substring(index+1)));
-            } else {
-                existing.put(escapeOptionPart(option), "");
-            }
+            existing.put(escapeOptionPart(option), "");
         }
 
         runCommand(getDeleteCommand(), processData(existing, true),

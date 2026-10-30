@@ -1,4 +1,4 @@
-  /*
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.universal.xml;
 
@@ -71,6 +71,8 @@ import static javax.xml.stream.XMLStreamConstants.*;
 public class MiniXmlParser {
 
     private static final Logger LOGGER = Logger.getLogger(MiniXmlParser.class.getName());
+    private static final String DEFAULT_ADMIN_REALM = "admin-realm";
+
     public MiniXmlParser(File domainXml) throws MiniXmlParserException {
         this(domainXml, DEFAULT_VS_ID);  // default for a domain
     }
@@ -128,26 +130,7 @@ public class MiniXmlParser {
         return jvmOptions;
     }
 
-    public Map<String, String> getProfilerConfig() throws MiniXmlParserException {
-        if (!valid) {
-            throw new MiniXmlParserException(strings.get(INVALID));
-        }
-        return profilerConfig;
-    }
 
-    public List<String> getProfilerJvmOptions() throws MiniXmlParserException {
-        if (!valid) {
-            throw new MiniXmlParserException(strings.get(INVALID));
-        }
-        return profilerJvmOptions;
-    }
-
-    public Map<String, String> getProfilerSystemProperties() throws MiniXmlParserException {
-        if (!valid) {
-            throw new MiniXmlParserException(strings.get(INVALID));
-        }
-        return profilerSysProps;
-    }
 
     public Map<String, String> getSystemProperties() throws MiniXmlParserException {
         if (!valid) {
@@ -183,14 +166,6 @@ public class MiniXmlParser {
             throw new MiniXmlParserException(strings.get(INVALID));
         }
         return iiopSslAttributes;
-    }
-
-    /**
-     * @deprecated use {@link #setupConfigDir(java.io.File)} instead
-     */
-    @Deprecated
-    public void setupConfigDir(File configDir, File installDir) {
-        loggingConfig = new LoggingConfigImpl(configDir, configDir);
     }
     
     public void setupConfigDir(File configDir) {
@@ -689,33 +664,13 @@ public class MiniXmlParser {
         // cursor --> <java-config>
         // get the attributes for <java-config>
         javaConfig = parseAttributes();
-        parseJvmAndProfilerOptions();
+        parseJvmOptions();
     }
 
-    private void parseJvmAndProfilerOptions() throws XMLStreamException, EndDocumentException {
-        while (skipToButNotPast("java-config", "jvm-options", "profiler")) {
+    private void parseJvmOptions() throws XMLStreamException, EndDocumentException {
+        while (skipToButNotPast("java-config", "jvm-options")) {
             if ("jvm-options".equals(parser.getLocalName())) {
                 jvmOptions.add(new JvmOption(parser.getElementText()));
-            } else {// profiler
-                parseProfiler();
-            }
-        }
-    }
-
-    private void parseProfiler() throws XMLStreamException, EndDocumentException {
-        // cursor --> START_ELEMENT of profiler
-        // it has attributes and <jvm-options>'s and <property>'s
-        profilerConfig = parseAttributes();
-
-        // the default is true
-        if (!profilerConfig.containsKey("enabled"))
-            profilerConfig.put("enabled", "true");
-
-        while (skipToButNotPast("profiler", "jvm-options", PROPERTY)) {
-            if ("jvm-options".equals(parser.getLocalName())) {
-                profilerJvmOptions.add(parser.getElementText());
-            } else {
-                parseProperty(profilerSysProps);
             }
         }
     }
@@ -911,14 +866,11 @@ public class MiniXmlParser {
     }
 
     private void parseAdminService() throws XMLStreamException, EndDocumentException {
-        Map<String, String> attributes = null;
-
-        skipToButNotPast("admin-service", "jmx-connector");
-        String name = parser.getLocalName();
-        if ("jmx-connector".equals(name)) {
-            attributes = parseAttributes();
-            adminRealm = attributes.get("auth-realm-name");
+        adminRealm = parseAttributes().get("auth-realm-name");
+        if (adminRealm == null) {
+            adminRealm = DEFAULT_ADMIN_REALM;
         }
+        skipToEnd("admin-service");
     }
 
     private void populateAdminRealmProperties() throws
@@ -1206,10 +1158,7 @@ public class MiniXmlParser {
     private String serverName;
     private String configRef;
     private List<JvmOption> jvmOptions = new ArrayList<>();
-    private List<String> profilerJvmOptions = new ArrayList<>();
     private Map<String, String> javaConfig;
-    private Map<String, String> profilerConfig = Collections.emptyMap();
-    private Map<String, String> profilerSysProps = new HashMap<>();
     private boolean valid = false;
     private List<HostAndPort> adminAddresses = new ArrayList<>();
     private String domainName;

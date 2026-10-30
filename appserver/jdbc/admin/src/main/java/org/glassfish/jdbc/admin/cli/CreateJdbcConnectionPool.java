@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright (c) 2020-2025 Payara Foundation and/or affiliates
+// Portions Copyright (c) 2020-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.jdbc.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -186,9 +185,6 @@ public class CreateJdbcConnectionPool implements AdminCommand {
     
     @Param(name="property", optional=true, separator=':')
     Properties properties;
-
-    @Param(optional=true, obsolete = true)
-    String target = SystemPropertyConstants.DAS_SERVER_NAME;
     
     @Param(name="jdbc_connection_pool_id", alias = "name" /*Mapped to ResourceConstants.CONNECTION_POOL_NAME below */,  primary=true)
     String jdbc_connection_pool_id;
@@ -258,7 +254,7 @@ public class CreateJdbcConnectionPool implements AdminCommand {
 
         try {
             JDBCConnectionPoolManager connPoolMgr = new JDBCConnectionPoolManager();
-            rs = connPoolMgr.create(domain.getResources(), attrList, properties, target);
+            rs = connPoolMgr.create(domain.getResources(), attrList, properties, null);
         } catch(Exception e) {
             String actual = e.getMessage();
             String def = "JDBC connection pool: {0} could not be created, reason: {1}";

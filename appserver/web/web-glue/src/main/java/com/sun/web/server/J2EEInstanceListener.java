@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,37 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2021-2026] [Payara Foundation and/or its affiliates]
 package com.sun.web.server;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.security.SecurityContextProxy;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
 import com.sun.enterprise.security.integration.RealmInitializer;
-import com.sun.enterprise.security.integration.SecurityConstants;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.web.WebComponentInvocation;
 import com.sun.enterprise.web.WebModule;
-import org.apache.catalina.*;
-import org.apache.catalina.connector.RequestFacade;
-import org.apache.catalina.servlets.DefaultServlet;
-import org.glassfish.wasp.servlet.JspServlet;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.ServerContext;
-import org.glassfish.web.LogFacade;
-
+import jakarta.security.jacc.Policy;
+import jakarta.security.jacc.PolicyFactory;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletRequestWrapper;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.lang.String;
-import java.security.*;
+import org.apache.catalina.Context;
+import org.apache.catalina.InstanceEvent;
+import org.apache.catalina.InstanceListener;
+import org.apache.catalina.Realm;
+import org.apache.catalina.Wrapper;
+import org.apache.catalina.connector.RequestFacade;
+import org.apache.catalina.servlets.DefaultServlet;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.wasp.servlet.JspServlet;
+import org.glassfish.web.LogFacade;
+
+import java.security.AccessControlException;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -195,11 +206,10 @@ public final class J2EEInstanceListener implements InstanceListener {
                     }
 
                     else if (base instanceof RequestFacade) {
-                        // try to avoid the getUnWrappedCoyoteRequest call
-                        // when we can identify see we have the texact class.
-                        if (base.getClass() != RequestFacade.class) {
-                            basePrincipal = ((RequestFacade) base).getUnwrappedCoyoteRequest().getUserPrincipal();
-                        }
+                        // Always use getUnwrappedCoyoteRequest() — RequestFacade.getUserPrincipal()
+                        // unwraps WebPrincipal to its customPrincipal, which is not a SecurityContextProxy,
+                        // so setSecurityContextWithPrincipal would build a fresh roleless SecurityContext.
+                        basePrincipal = ((RequestFacade) base).getUnwrappedCoyoteRequest().getUserPrincipal();
                     } else {
                         basePrincipal = base.getUserPrincipal();
                     }
@@ -207,17 +217,21 @@ public final class J2EEInstanceListener implements InstanceListener {
                     break;
                 }
 
-                if (prin != null && prin == basePrincipal && prin.getClass().getName().equals(SecurityConstants.WEB_PRINCIPAL_CLASS)) {
-                    securityContext.setSecurityContextWithPrincipal(prin);
-                } else if (prin != basePrincipal) {
-
-                    // the wrapper has overridden getUserPrincipal
-                    // reject the request if the wrapper does not have
-                    // the necessary permission.
-
+                if (wrapped && prin != basePrincipal) {
+                    // A request wrapper has overridden getUserPrincipal() — honour the override,
+                    // but require the wrapper to hold the doAsPrivileged permission first.
                     checkObjectForDoAsPermission(hreq);
                     securityContext.setSecurityContextWithPrincipal(prin);
-
+                } else if (basePrincipal instanceof SecurityContextProxy) {
+                    // No override: use basePrincipal (the raw WebPrincipal) which carries the full
+                    // SecurityContext including groups. Bypasses RequestFacade.getUserPrincipal()
+                    // which unwraps WebPrincipal → customPrincipal and loses the SecurityContext
+                    // (FISH-991).
+                    securityContext.setSecurityContextWithPrincipal(basePrincipal);
+                } else if (prin != basePrincipal) {
+                    // Non-WebPrincipal auth: a wrapper or facade returned a different principal.
+                    checkObjectForDoAsPermission(hreq);
+                    securityContext.setSecurityContextWithPrincipal(prin);
                 }
 
             }
@@ -261,8 +275,8 @@ public final class J2EEInstanceListener implements InstanceListener {
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
                 public Void run() {
                     ProtectionDomain pD = o.getClass().getProtectionDomain();
-                    Policy p = Policy.getPolicy();
-                    if (!p.implies(pD, doAsPrivilegedPerm)) {
+                    Policy p = PolicyFactory.getPolicyFactory().getPolicy();
+                    if (!p.implies(doAsPrivilegedPerm, new HashSet<>(Arrays.asList(pD.getPrincipals())))) {
                         throw new AccessControlException("permission required to override getUserPrincipal", doAsPrivilegedPerm);
                     }
                     return null;

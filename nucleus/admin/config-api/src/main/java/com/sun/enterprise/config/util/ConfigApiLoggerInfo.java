@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.util;
 
@@ -239,21 +239,6 @@ public class ConfigApiLoggerInfo {
     public final static String installRootIsNull = LOGMSG_PREFIX + "-00023";
 
     @LogMessageInfo(
-            message = "default-config not detected during upgrade. Running DefaultConfigUpgrade to create default-config.",
-            publish = true,
-            level = "INFO")
-    public final static String runningDefaultConfigUpgrade = LOGMSG_PREFIX + "-00024";
-
-
-    @LogMessageInfo(
-            message = "Failure during upgrade - could not create default-config",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String defaultConfigUpgradeFailure = LOGMSG_PREFIX + "-00025";
-
-    @LogMessageInfo(
             message = "Failure creating SecurityService Config",
             cause = "unknown",
             action = "unknown",
@@ -406,32 +391,6 @@ public class ConfigApiLoggerInfo {
             publish = true,
             level = "SEVERE")
     public final static String problemParsingJaacProviderAttr = LOGMSG_PREFIX + "-00044";
-
-    @LogMessageInfo(
-            message = "Failure creating AuditModule config object",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String failureCreatingAuditModule = LOGMSG_PREFIX + "-00045";
-
-
-    @LogMessageInfo(
-            message = "Create AuditModule Property failed.",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String failureCreatingAuditModuleAttr = LOGMSG_PREFIX + "-00046";
-
-
-    @LogMessageInfo(
-            message = "Problem parsing audit-module property",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String failureParsingAuditModuleProp = LOGMSG_PREFIX + "-00047";
 
     @LogMessageInfo(
             message = "Failure creating ProviderConfig",
@@ -772,22 +731,6 @@ public class ConfigApiLoggerInfo {
     public final static String badEnv = LOGMSG_PREFIX + "-00086";
 
 
-    @LogMessageInfo(
-            message = "Successful Upgrade domain.xml with ",
-
-            publish = true,
-            level = "FINE")
-    public final static String successfulUpgrade = LOGMSG_PREFIX + "-00087";
-
-
-    @LogMessageInfo(
-            message = " upgrading domain.xml failed ",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String failedUpgrade = LOGMSG_PREFIX + "-00088";
-
 
     @LogMessageInfo(
             message = " does not exist or is empty, will use backup",
@@ -884,14 +827,6 @@ public class ConfigApiLoggerInfo {
             publish = true,
             level = "SEVERE")
     public final static String nullHttpService = LOGMSG_PREFIX + "-00101";
-
-    @LogMessageInfo(
-            message = "Failure while upgrading domain.xml",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String failUpgradeDomain = LOGMSG_PREFIX + "-00102";
 
     @LogMessageInfo(
             message = "Cannot get default configuration for: {0}",

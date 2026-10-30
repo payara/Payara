@@ -11,7 +11,7 @@
       "description": "ID of pet that needs to be updated",
       "required": true,
       "schema": {
-        "type": "string"
+        "type": ["string"]
       }
     }
   ],
@@ -19,15 +19,15 @@
     "content": {
       "application/x-www-form-urlencoded": {
         "schema": {
-          "type": "object",
+          "type": ["object"],
            "properties": {
               "name": { 
                 "description": "Updated name of the pet",
-                "type": "string"
+                "type": ["string"]
               },
               "status": {
                 "description": "Updated status of the pet",
-                "type": "string"
+                "type": ["string"]
              }
            },
         "required": ["status"] 

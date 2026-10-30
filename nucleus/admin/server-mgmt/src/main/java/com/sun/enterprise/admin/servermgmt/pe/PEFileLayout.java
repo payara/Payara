@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
@@ -203,12 +202,6 @@ public class PEFileLayout
     public File getJ2EEModulesDir()
     {
         return new File(getApplicationsRootDir(), J2EE_MODULES_DIR);
-    }
-
-    public static final String LIFECYCLE_MODULES_DIR = "lifecycle-modules";
-    public File getLifecycleModulesDir()
-    {
-        return new File(getApplicationsRootDir(), LIFECYCLE_MODULES_DIR);
     }
 
     public static final String MBEAN_FOLDER_NAME = "mbeans";
@@ -500,14 +493,6 @@ public class PEFileLayout
             return new File(getTemplatesDir(), templateName);
     }
 
-    public static final String IMQBROKERD_UNIX = "imqbrokerd";
-    public static final String IMQBROKERD_WIN = "imqbrokerd.exe";
-    public static final String IMQBROKERD = isWindows() ? IMQBROKERD_WIN : IMQBROKERD_UNIX;
-    public File getImqBrokerExecutable()
-    {
-        return new File(getImqBinDir(), IMQBROKERD);
-    }
-
     public static final String START_SERV_UNIX = "startserv";
     public static final String START_SERV_WIN = "startserv.bat";
     public static final String START_SERV_OS = isWindows() ? START_SERV_WIN : START_SERV_UNIX;
@@ -589,7 +574,7 @@ public class PEFileLayout
     }
 
     
-    public static final String ACC_XML_TEMPLATE = "glassfish-acc.xml";
+    public static final String ACC_XML_TEMPLATE = "payara-acc.xml";
     
     public Map<File,File> getAppClientContainerTemplateAndXml() {
         final Map<File,File> result = new HashMap<File,File>();
@@ -597,7 +582,7 @@ public class PEFileLayout
         return result;
     }
     
-    public static final String ACC_XML = "glassfish-acc.xml";
+    public static final String ACC_XML = "payara-acc.xml";
     
     public static final String SESSION_STORE = "session-store";
     public File getSessionStore()

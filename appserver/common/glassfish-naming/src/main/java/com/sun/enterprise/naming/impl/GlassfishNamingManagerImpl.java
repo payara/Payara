@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2024] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.naming.impl;
@@ -457,14 +457,20 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
             namespace.put("java:", jc);
             namespace.put("java:/", jc);
 
-                 JavaURLContext jApp = new JavaURLContext("java:app", null);
+            JavaURLContext jApp = new JavaURLContext("java:app", null);
             namespace.put("java:app", jApp);
             namespace.put("java:app/", jApp);
             JavaURLContext jAppEnv = new JavaURLContext("java:app/env", null);
             namespace.put("java:app/env", jAppEnv);
             namespace.put("java:app/env/", jAppEnv);
-
-        }
+            // Create also component id mapping, so the java:app/ binding is found later, even when called from a component
+            ComponentIdInfo appComponentIdInfo = new ComponentIdInfo();
+            appComponentIdInfo.appName = appName;
+            appComponentIdInfo.moduleName = appName;
+            appComponentIdInfo.componentId = appName;
+            appComponentIdInfo.treatComponentAsModule = true;
+            componentIdInfo.put(appName, appComponentIdInfo);
+         }
 
         return namespace;
     }
@@ -474,12 +480,12 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
         ComponentIdInfo info = componentIdInfo.get(componentId);
 
-        return (info != null) ?  getNamespace(info.appName, info.moduleName, componentId, logicalJndiName) :
-                getComponentNamespace(componentId);
+        return (info != null) ? getNamespace(info.appName, info.moduleName, componentId, logicalJndiName)
+                : getComponentNamespace(componentId);
     }
 
     private Map getNamespace(String appName, String moduleName,
-                             String componentId, String logicalJndiName) throws NamingException {
+            String componentId, String logicalJndiName) throws NamingException {
         Map namespace;
         if( logicalJndiName.startsWith("java:comp") ) {
             namespace = getComponentNamespace(componentId);

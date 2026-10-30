@@ -13,7 +13,7 @@ Logs above INFO are collected in files, to be assessed manually (some warnings a
 
 Set PAYARA_HOME to the tested Payara. For example:
 
-    export PAYARA_HOME=/path-to-my-payara-src/appserver/distributions/payara/target/stage/payara6
+    export PAYARA_HOME=/path-to-my-payara-src/appserver/distributions/payara/target/stage/payara7
 
 Install the Pytest plugin:
 

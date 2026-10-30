@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -38,13 +38,12 @@
  * holder.
  */
 
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.admin.report.ActionReporter;
@@ -151,7 +150,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
     }
 
     private String sanitizeResourceName(final String resourceName) {
-        return StringUtils.replace(resourceName, "[", "_ARRAY_");
+        return resourceName.replace("[", "_ARRAY_");
     }
     public void prepareList(AdminCommandContext c, String arg) {
         prepare(c, arg, OutputType.LIST);
@@ -693,8 +692,9 @@ public class MonitoringReporter extends V2DottedNameSupport {
             return false;
         }
 
-        if (targetService.isCluster(targetName) && targets.size() > 1)
+        if ((targetService.isCluster(targetName) || targetService.isDeploymentGroup(targetName)) && targets.size() > 1) {
             targetIsMultiInstanceCluster = true;
+        }
 
         return true;
     }

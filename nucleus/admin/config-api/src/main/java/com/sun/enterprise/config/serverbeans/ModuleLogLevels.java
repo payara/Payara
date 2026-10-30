@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -109,21 +109,6 @@ public interface ModuleLogLevels extends ConfigBeanProxy, PropertyBag {
      */
     public void setEjbContainer(String value) throws PropertyVetoException;
 
-    /**
-     * Gets the value of the cmpContainer property.
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "INFO")
-    public String getCmpContainer();
-
-    /**
-     * Sets the value of the cmpContainer property.
-     *
-     * @param value allowed object is {@link String }
-     * @throws PropertyVetoException
-     */
-    public void setCmpContainer(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the mdbContainer property.
@@ -429,21 +414,6 @@ public interface ModuleLogLevels extends ConfigBeanProxy, PropertyBag {
      */
     public void setJdo(String value) throws PropertyVetoException;
 
-    /**
-     * Gets the value of the cmp property.
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "INFO")
-    public String getCmp();
-
-    /**
-     * Sets the value of the cmp property.
-     *
-     * @param value allowed object is {@link String }
-     * @throws PropertyVetoException
-     */
-    public void setCmp(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the util property.
@@ -572,7 +542,6 @@ public interface ModuleLogLevels extends ConfigBeanProxy, PropertyBag {
             moduleLevels.put("server", me.getServer());
             moduleLevels.put("ejb-container", me.getEjbContainer());
             moduleLevels.put("web-container", me.getWebContainer());
-            moduleLevels.put("cmp-container", me.getCmpContainer());
             moduleLevels.put("mdb-container", me.getMdbContainer());
             moduleLevels.put("classloader", me.getClassloader());
             moduleLevels.put("configuration", me.getConfiguration());
@@ -591,7 +560,6 @@ public interface ModuleLogLevels extends ConfigBeanProxy, PropertyBag {
             moduleLevels.put("jms", me.getJms());
             moduleLevels.put("connector", me.getConnector());
             moduleLevels.put("jdo", me.getJdo());
-            moduleLevels.put("cmp", me.getCmp());
             moduleLevels.put("util", me.getUtil());
             moduleLevels.put("resource-adapter", me.getResourceAdapter());
             moduleLevels.put("synchronization", me.getSynchronization());

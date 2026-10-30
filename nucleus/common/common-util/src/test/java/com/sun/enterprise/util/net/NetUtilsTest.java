@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.util.net;
 
@@ -162,5 +163,43 @@ public class NetUtilsTest {
         unlikelyName = "unlikely_name_" + s;
     }
 
+    private static NetUtils.RequestInfoProvider provider(String remoteHost, String xRealIp, String xForwardedFor) {
+        return new NetUtils.RequestInfoProvider() {
+            @Override
+            public String getHeader(String name) {
+                return switch (name) {
+                    case "X-Real-IP" -> xRealIp;
+                    case "X-Forwarded-For" -> xForwardedFor;
+                    default -> null;
+                };
+            }
+            @Override
+            public String getRemoteHost() { return remoteHost; }
+        };
+    }
 
+    @Test
+    public void getRemoteHost_notBehindProxy_returnsRemoteHost() {
+        assertEquals("10.0.0.1", NetUtils.getRemoteHost(provider("10.0.0.1", "1.2.3.4", null), false));
+    }
+
+    @Test
+    public void getRemoteHost_behindProxy_xRealIpTakesPrecedence() {
+        assertEquals("1.2.3.4", NetUtils.getRemoteHost(provider("10.0.0.1", "1.2.3.4", "9.9.9.9"), true));
+    }
+
+    @Test
+    public void getRemoteHost_behindProxy_xForwardedForMultipleHops_returnsFirst() {
+        assertEquals("5.5.5.5", NetUtils.getRemoteHost(provider("10.0.0.1", null, "5.5.5.5, 6.6.6.6, 7.7.7.7"), true));
+    }
+
+    @Test
+    public void getRemoteHost_behindProxy_blankXRealIpFallsThrough() {
+        assertEquals("10.0.0.1", NetUtils.getRemoteHost(provider("10.0.0.1", "   ", null), true));
+    }
+
+    @Test
+    public void getRemoteHost_behindProxy_noProxyHeaders_returnsRemoteHost() {
+        assertEquals("10.0.0.1", NetUtils.getRemoteHost(provider("10.0.0.1", null, null), true));
+    }
 }

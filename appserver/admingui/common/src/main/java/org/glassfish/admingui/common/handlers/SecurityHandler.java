@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -490,7 +490,7 @@ public class SecurityHandler {
             List<Map> selectedRows = (List) obj;
             for(Map oneRow : selectedRows){
                 String user = (String)oneRow.get("name");
-                String endpoint = GuiUtil.getSessionValue("REST_URL") + "/configs/config/" + configName + "/admin-service/jmx-connector/system.json";
+                String endpoint = GuiUtil.getSessionValue("REST_URL") + "/configs/config/" + configName + "/admin-service.json";
                 Map<String, Object> responseMap = RestUtil.restRequest(endpoint, null, "get", handlerCtx, false);
                 Map<String, Object> valueMap = (Map<String, Object>) responseMap.get("data");
                 valueMap = (Map<String, Object>) ((Map<String, Object>) valueMap.get("extraProperties")).get("entity");
@@ -808,9 +808,9 @@ public class SecurityHandler {
             Map<String, Object> payload = new HashMap<String, Object>();
             payload.put("target", configName);
             for (Map<String, String> option : newOptions) {
-                ArrayList kv = InstanceHandler.getKeyValuePair(new JvmOption(UtilHandlers.escapePropertyValue(option.get(JVM_OPTION)),
-                        option.get(MIN_VERSION), option.get(MAX_VERSION)).toString());
-                payload.put((String)kv.get(0), kv.get(1));
+                String jvmOptionEscape = new JvmOption(UtilHandlers.escapePropertyValue(option.get(JVM_OPTION)),
+                        option.get(MIN_VERSION), option.get(MAX_VERSION)).toString();
+                payload.put(jvmOptionEscape, "");
             }
             RestUtil.restRequest(endpoint, payload, "POST", handlerCtx, false);
         }catch(Exception ex){

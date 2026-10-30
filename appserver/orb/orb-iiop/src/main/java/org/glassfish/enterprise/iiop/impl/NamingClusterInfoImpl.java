@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -85,7 +85,7 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
     public static final String FAILED_TO_RESOLVE_GROUPINFOSERVICE = "AS-ORB-00001";
 
     @LogMessageInfo(
-    message = "No Endpoints selected in com.sun.appserv.iiop.endpoints property. Using {0}:{1} instead")
+    message = "Using {0}:{1}")
     public static final String NO_ENDPOINT_SELECTED = "AS-ORB-00002";
 
     private RoundRobinPolicy rrPolicy;
@@ -166,12 +166,6 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
         list.addAll( lbList ) ;
 
         if (list.isEmpty()) {
-            final String iepv = getEnvSysProperty( env, IIOP_ENDPOINTS_PROPERTY);
-            final List<String> epList = splitOnComma(iepv) ;
-            list.addAll( epList ) ;
-        }
-
-        if (list.isEmpty()) {
             final String urlValue = (String)env.get(
                     ORBLocator.JNDI_PROVIDER_URL_PROPERTY) ;
             list.addAll( rrPolicy.getEndpointForProviderURL( urlValue ) ) ;
@@ -185,7 +179,7 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
 
             if (host != null && port != null) {
                 list.addAll(rrPolicy.getAddressPortList(host, port) ) ;
-                logger.log(Level.WARNING, NO_ENDPOINT_SELECTED, new Object[]{host, port});
+                logger.log(Level.INFO, NO_ENDPOINT_SELECTED, new Object[]{host, port});
             }
         }
 

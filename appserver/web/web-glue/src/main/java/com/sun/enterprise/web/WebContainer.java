@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web;
 
@@ -235,6 +235,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     @Inject
     private Deployment deployment;
 
+    @Inject
+    private SecurityDeployer securityDeployer;
+
     private final Map<String, WebConnector> connectorMap = new HashMap<>();
 
     private EmbeddedWebContainer _embedded;
@@ -316,9 +319,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @Inject
     ServerConfigLookup serverConfigLookup;
-
-    @Inject
-    private SecurityDeployer securityDeployer;
 
     protected JspProbeProvider jspProbeProvider;
     protected RequestProbeProvider requestProbeProvider;
@@ -571,21 +571,22 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             loadDefaultWebModulesAfterAllAppsProcessed();
         } else if (event.is(PREPARE_SHUTDOWN)) {
             isShutdown = true;
-        } else if (event.is(Deployment.DEPLOYMENT_COMMAND_FINISH)) {
-            // If this application is the default web module of a virtual server, reload the virtual server
+        } else if (event.is(APPLICATION_STARTED)) {
+            // FISH-10833: When an application is started (including during redeploy), check if it is
+            // the default web module of any virtual server and update the mapper accordingly.
+            // This event is fired locally on each instance after the context is registered,
+            // unlike DEPLOYMENT_COMMAND_FINISH which only fires on the DAS.
+            // Note: APPLICATION_LOADED fires before context registration, so we use APPLICATION_STARTED.
             ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-            if (applicationInfo.getSource().getArchiveMetaData("commandparams", DeployCommandParameters.class).isRedeploy()) {
-                for (VirtualServer vs : getVirtualServers()) {
-                    if (ADMIN_VS.equals(vs.getName())) {
-                        continue;
-                    }
-
-                    if (Objects.equals(vs.getDefaultWebModuleID(), applicationInfo.getName())) {
-                        try {
-                            updateHost(vs.getBean());
-                        } catch (LifecycleException e) {
-                            logger.log(Level.SEVERE, LogFacade.EXCEPTION_WEB_CONFIG, e);
-                        }
+            for (VirtualServer vs : getVirtualServers()) {
+                if (ADMIN_VS.equals(vs.getName())) {
+                    continue;
+                }
+                if (Objects.equals(vs.getDefaultWebModuleID(), applicationInfo.getName())) {
+                    try {
+                        updateHost(vs.getBean());
+                    } catch (LifecycleException e) {
+                        logger.log(Level.SEVERE, LogFacade.EXCEPTION_WEB_CONFIG, e);
                     }
                 }
             }
@@ -1153,10 +1154,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         String virtualServerId = vsBean.getId();
 
-        String docroot = vsBean.getPropertyValue("docroot");
-        if (docroot == null) {
-            docroot = vsBean.getDocroot();
-        }
+        String docroot = vsBean.getDocroot();
 
         validateDocroot(docroot, virtualServerId, vsBean.getDefaultWebModule());
 
@@ -1301,6 +1299,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         // Initialize the docroot
         VirtualServer virtualServer = (VirtualServer) _embedded.createHost(virtualServerId, virtualServerBean, docroot, virtualServerBean.getLogFile(), mimeMap);
 
+        virtualServer.setServerContext(getServerContext());
         virtualServer.configureState();
         virtualServer.configureRemoteAddressFilterValve();
         virtualServer.configureRemoteHostFilterValve();
@@ -1308,7 +1307,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         virtualServer.configureRedirect();
         virtualServer.configureErrorPage();
         virtualServer.configureErrorReportValve();
-        virtualServer.setServerContext(getServerContext());
         virtualServer.setServerConfig(serverConfig);
         virtualServer.setGrizzlyService(grizzlyService);
         virtualServer.setWebContainer(this);
@@ -1483,7 +1481,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     protected void loadStandaloneWebModule(VirtualServer virtualServer, WebModuleConfig webModuleConfig) {
         try {
             loadWebModule(virtualServer, webModuleConfig, "null", null);
-            securityDeployer.loadPolicy(webModuleConfig.getDescriptor(), false);
+            securityDeployer.loadWebPolicy(webModuleConfig.getDescriptor(), false);
         } catch (Throwable t) {
             logger.log(SEVERE, format(rb.getString(LOAD_WEB_MODULE_ERROR), webModuleConfig.getName()), t);
         }
@@ -1769,7 +1767,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
        processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
        processWebAppClassLoader(webModule, webModuleConfig);
 
-        // set i18n info from locale-charset-info tag in sun-web.xml
         webModule.setI18nInfo();
         if (webBundleDescriptor != null) {
             final boolean isSystem = webModuleConfig.isSystemObjectType();
@@ -2527,10 +2524,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         virtualServer.configureAliases();
 
         // support both docroot property and attribute
-        String docroot = vsBean.getPropertyValue("docroot");
-        if (docroot == null) {
-            docroot = vsBean.getDocroot();
-        }
+        String docroot = vsBean.getDocroot();
+
         if (docroot != null) {
             // Only update docroot if it is modified
             if (!virtualServer.getDocRoot().getAbsolutePath().equals(docroot)) {
@@ -2639,10 +2634,16 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
          * module has already been deployed at the root context, we don't have to do anything.
          */
         WebModuleConfig webModuleConfig = virtualServer.getDefaultWebModule(domain, serviceLocator.getService(WebArchivist.class), appRegistry);
-        if ((webModuleConfig != null) && (webModuleConfig.getContextPath() != null) && !"".equals(webModuleConfig.getContextPath()) && !"/".equals(webModuleConfig.getContextPath())) {
-            // Remove dummy context that was created off of docroot, if such
-            // a context exists
-            removeDummyModule(virtualServer);
+        if (webModuleConfig != null && webModuleConfig.getContextPath() != null) {
+            String contextPath = webModuleConfig.getContextPath();
+            // FISH-10833: For applications deployed at root context ("" or "/"), we still need to
+            // update the default web module to configure the mapper with the correct default context
+            // path for all virtual server aliases (hostname, etc.)
+            if (!"".equals(contextPath) && !"/".equals(contextPath)) {
+                // Remove dummy context that was created off of docroot, if such
+                // a context exists
+                removeDummyModule(virtualServer);
+            }
             updateDefaultWebModule(virtualServer, virtualServer.getNetworkListenerNames(), webModuleConfig);
         } else {
             WebModuleConfig wmc = virtualServer.createSystemDefaultWebModuleIfNecessary(serviceLocator.<WebArchivist>getService(WebArchivist.class));
@@ -2694,10 +2695,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             updateAlternateDocroot(virtualServer);
         } else if ("setCacheControl".equals(name)) {
             virtualServer.configureCacheControl(value);
-        } else if (ACCESS_LOGGING_ENABLED.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
-        } else if (ACCESS_LOG_PROPERTY.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if (ACCESS_LOG_WRITE_INTERVAL_PROPERTY.equals(name)) {
             virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if (ACCESS_LOG_BUFFER_SIZE_PROPERTY.equals(name)) {
@@ -2708,8 +2705,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             virtualServer.configureRemoteHostFilterValve();
         } else if ("allowRemoteAddress".equals(name) || "denyRemoteAddress".equals(name)) {
             virtualServer.configureRemoteAddressFilterValve();
-        } else if (SSO_ENABLED.equals(name)) {
-            virtualServer.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
         } else if ("authRealm".equals(name)) {
             virtualServer.configureAuthRealm(securityService);
         } else if (name.startsWith("send-error")) {
@@ -2847,6 +2842,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     if (defaultWebModulePath != null) {
                         try {
                             mapper.setDefaultContextPath(vs.getName(), defaultWebModulePath);
+                            // FISH-10833: Also configure default context path for all virtual server aliases
+                            // This ensures that requests using hostname aliases are correctly routed
+                            for (String alias : vs.findAliases()) {
+                                mapper.setDefaultContextPath(alias, defaultWebModulePath);
+                            }
                             vs.setDefaultContextPath(defaultWebModulePath);
                         } catch (Exception e) {
                             throw new LifecycleException(e);

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.configapi.tests.validation;
 
-import com.sun.enterprise.config.serverbeans.JmxConnector;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import java.util.HashMap;
@@ -125,41 +125,4 @@ public class ReferenceConstrainTest extends ConfigApiTest {
             fail("Can not reach this point");
         }
     }
-    
-    @Test
-    public void jmxConnectorAuthRealmRefInvalid() throws TransactionFailure {
-        JmxConnector jmxConnector = habitat.getService(JmxConnector.class, "system");
-        assertNotNull(jmxConnector);
-        ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(jmxConnector);
-        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
-        Map<String, String> configChanges = new HashMap<String, String>();
-        configChanges.put("auth-realm-name", "realm-not-exist");
-        changes.put(serverConfig, configChanges);
-        try {
-            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
-            cs.apply(changes);
-            fail("Can not reach this point");
-        } catch (TransactionFailure tf) {
-            ConstraintViolationException cv = findConstrViolation(tf);
-            assertNotNull(cv);
-        }
-    }
-    
-    @Test
-    public void jmxConnectorAuthRealmRefValid() throws TransactionFailure {
-        JmxConnector jmxConnector = habitat.getService(JmxConnector.class, "system");
-        assertNotNull(jmxConnector);
-        ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(jmxConnector);
-        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
-        Map<String, String> configChanges = new HashMap<String, String>();
-        configChanges.put("auth-realm-name", "file");
-        changes.put(serverConfig, configChanges);
-        try {
-            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
-            cs.apply(changes);
-        } catch (TransactionFailure tf) {
-            fail("Can not reach this point");
-        }
-    }
-    
 }

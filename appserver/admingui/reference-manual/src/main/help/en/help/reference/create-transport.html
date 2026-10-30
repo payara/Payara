@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -87,7 +87,6 @@
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-transport [--help]
 [--acceptorthreads acceptor-threads]
-[--buffersizebytes buffer-size]
 [--bytebuffertype byte-buffer-type]
 [--classname class-name]
 [--displayconfiguration={false|true}]
@@ -96,7 +95,6 @@
 [--maxconnectionscount max-connections]
 [--readtimeoutmillis read-timeout]
 [--writetimeoutmillis write-timeout]
-[--selectionkeyhandler selection-key-handler]
 [--selectorpolltimeoutmillis selector-poll-timeout]
 [--tcpnodelay={false|true}]
 [--target target]
@@ -130,12 +128,6 @@ options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> 
 <p>The number of acceptor threads for the transport. The recommended
 value is the number of processors in the machine. The default value is
 <code>1</code>.</p>
-</dd>
-<dt class="hdlist1"><code>--buffersizebytes</code></dt>
-<dd>
-<p>The size, in bytes, of the buffer to be provided for input streams
-created by the network listener that references this transport. The
-default value is <code>8192</code>.</p>
 </dd>
 <dt class="hdlist1"><code>--bytebuffertype</code></dt>
 <dd>
@@ -179,11 +171,6 @@ phase. The default is <code>30000</code> milliseconds, or 30 seconds.</p>
 <p>The amount of time the server waits before considering the remote
 client disconnected when writing the response. The default is <code>30000</code>
 milliseconds, or 30 seconds.</p>
-</dd>
-<dt class="hdlist1"><code>--selectionkeyhandler</code></dt>
-<dd>
-<p>The name of the selection key handler associated with this transport.
-There is no default.</p>
 </dd>
 <dt class="hdlist1"><code>--selectorpolltimeoutmillis</code></dt>
 <dd>

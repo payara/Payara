@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -188,21 +188,21 @@
                 disableComponent(textId, 'text');
                 document.getElementById(textId).value=textVal;
                 enableComponent(dropdownId, 'select');
-                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optB', false);
-                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optA', true);
+                require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setChecked(propId+':optB', false); });
+                require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setChecked(propId+':optA', true); });
                 document.getElementById(optionId).value='dropdown';
             }else{
                 enableComponent(textId, 'text');
                 disableComponent(dropdownId, 'select');
                 getTextElement(textId).focus();
-                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optB', true);
-                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optA', false);
+                require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setChecked(propId+':optB', true); });
+                require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setChecked(propId+':optA', false); });
                 document.getElementById(optionId).value='text';
             }         
       }
       function disableTwoRadioButtons(opt, propId, optionId){
-          #{themeJavascript.JS_PREFIX}.radiobutton.setDisabled(propId+':optA', opt);
-          #{themeJavascript.JS_PREFIX}.radiobutton.setDisabled(propId+':optB', opt);
+          require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setDisabled(propId+':optA', opt); });
+          require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setDisabled(propId+':optB', opt); });
           document.getElementById(optionId).value='';
       }
     </script>

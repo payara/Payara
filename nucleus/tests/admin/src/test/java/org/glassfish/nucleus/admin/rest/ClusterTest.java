@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
+
 package org.glassfish.nucleus.admin.rest;
 
 import java.util.HashMap;
@@ -65,28 +67,6 @@ public class ClusterTest extends RestTestBase {
         deleteCluster(clusterName);
     }
 
-    @Test
-    public void testListLifecycleModules() {
-        final String clusterName = "cluster_" + generateRandomString();
-        Map<String, String> newCluster = new HashMap<String, String>() {
-            {
-                put("id", clusterName);
-            }
-        };
-
-        Response response = post(URL_CLUSTER, newCluster);
-        checkStatusForSuccess(response);
-
-        response = get(URL_CLUSTER + "/" + clusterName + "/list-lifecycle-modules");
-        checkStatusForSuccess(response);
-
-        response = delete(URL_CLUSTER + "/" + clusterName); // + "/delete-cluster");
-        checkStatusForSuccess(response);
-
-        response = get(URL_CLUSTER + "/" + clusterName);
-        checkStatusForFailure(response);
-
-    }
 
     public String createCluster() {
         final String clusterName = "cluster_" + generateRandomString();

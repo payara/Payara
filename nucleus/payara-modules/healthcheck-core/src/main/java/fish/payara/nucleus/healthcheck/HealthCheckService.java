@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) [2016-2025] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -12,7 +12,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -75,9 +75,6 @@ import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import fish.payara.internal.notification.TimeUtil;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.events.PayaraHealthCheckServiceEvents;
@@ -89,7 +86,7 @@ import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
  */
 @Service(name = "healthcheck-core")
 @RunLevel(StartupRunLevel.VAL)
-public class HealthCheckService implements EventListener, ConfigListener, MonitoringDataSource {
+public class HealthCheckService implements EventListener, ConfigListener {
 
     private static final Logger logger = Logger.getLogger(HealthCheckService.class.getCanonicalName());
 
@@ -127,21 +124,6 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     private Long historicalTraceStoreTimeout;
     private ScheduledFuture<?> historicalTraceTask;
     private Set<ScheduledFuture<?>> scheduledCheckers;
-
-    @Override
-    public void collect(MonitoringDataCollector rootCollector) {
-        MonitoringDataCollector health = rootCollector.in("health");
-        for (Entry<String, HealthCheckTask> task : registeredTasks.entrySet()) {
-            BaseHealthCheck<?,?> check = task.getValue().getCheck();
-            if (check.isReady() && check.getChecksDone() > 0) {
-                HealthCheckResultStatus status = check.getMostRecentCumulativeStatus();
-                if (status != null) {
-                    health.collect(task.getKey(), status.getLevel());
-                }
-            }
-        }
-    }
-
 
     @Override
     public void event(Event event) {

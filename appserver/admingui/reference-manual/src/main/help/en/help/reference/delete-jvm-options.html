@@ -17,7 +17,8 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
+
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -50,13 +51,6 @@
 		</a>
 		</td>
 
-		<td align="left">
-		<a href="delete-lifecycle-module.html">
-			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Next</span>
-		</a>
-		</td>
-
 		<td align="right">
 		<a href="toc.html">
 			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
@@ -86,7 +80,7 @@
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] delete-jvm-options [--help]
-[--target target] [--profiler={true|false}]
+[--target target]
 (jvm-option-name[=jvm-option-value]) [:jvm-option-name[=jvm-option-name]]*</code></pre>
 </div>
 </div>
@@ -96,8 +90,7 @@
 <div class="paragraph">
 <p>The <code>delete-jvm-options</code> subcommand removes one or more command-line
 options for the Java application launcher. These options are removed
-from the Java configuration <code>java—config</code> element or the profiler
-<code>profiler</code> element of the <code>domain.xml</code> file. To see the Java application
+from the Java configuration <code>java—config</code> element. To see the Java application
 launcher options that can be deleted, use the
 <a href="list-jvm-options.html#list-jvm-options-1"><code>list-jvm-options</code>(1)</a>
 subcommand.</p>
@@ -186,12 +179,6 @@ Valid values are as follows:<br></p>
 </dl>
 </div>
 </dd>
-<dt class="hdlist1"><code>--profiler</code></dt>
-<dd>
-<p>Indicates whether the Java application launcher options are for the
-profiler. The option must have been set for a profiler for this option
-to be true.</p>
-</dd>
 </dl>
 </div>
 <div id="sthref828" class="paragraph">
@@ -259,20 +246,6 @@ Command delete-jvm-options executed successfully</code></pre>
 <div class="paragraph">
 <p><a id="GSRFM563"></a><a id="sthref831"></a></p>
 </div>
-<div class="paragraph">
-<p>Example 2   Deleting a Java Application Launcher Option From the
-Profiler</p>
-</div>
-<div class="paragraph">
-<p>This example removes a Java application launcher startup parameter for
-the profiler.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; delete-jvm-options --profiler=true -XX:MaxPermSize=192m
-Command delete-jvm-options executed successfully.</code></pre>
-</div>
-</div>
 <div id="sthref832" class="paragraph">
 <p>Exit Status</p>
 </div>
@@ -331,13 +304,6 @@ reference page for the operating system that you are using:</p>
 		<a href="delete-jndi-resource.html">
 			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
 			<span style="position:relative;top:-2px;">Previous</span>
-		</a>
-		</td>
-
-		<td align="left">
-		<a href="delete-lifecycle-module.html">
-			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Next</span>
 		</a>
 		</td>
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -54,6 +54,7 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
     private Contact contact;
     private License license;
     private String version;
+    private String summary;
 
     public static Info createInstance(AnnotationModel annotation) {
         Info from = new InfoImpl();
@@ -70,6 +71,7 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
             from.setLicense(LicenseImpl.createInstance(license));
         }
         from.setVersion(annotation.getValue("version", String.class));
+        from.setSummary(annotation.getValue("summary", String.class));
         return from;
     }
 
@@ -133,6 +135,16 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
         this.version = version;
     }
 
+    @Override
+    public String getSummary() {
+        return summary;
+    }
+
+    @Override
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
     public static void merge(Info from, Info to, boolean override) {
         if (from == null) {
             return;
@@ -142,6 +154,7 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
         to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setTermsOfService(mergeProperty(to.getTermsOfService(), from.getTermsOfService(), override));
+        to.setSummary(mergeProperty(to.getSummary(), from.getSummary(), override));
         if (from.getLicense() != null) {
             if (to.getLicense() == null) {
                 to.setLicense(new LicenseImpl());

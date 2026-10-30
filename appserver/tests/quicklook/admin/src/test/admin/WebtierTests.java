@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package test.admin;
 
@@ -77,22 +78,6 @@ public class WebtierTests extends BaseAsadminTest {
         }
     }
 
-    @Test(groups = {"pulse"}, dependsOnMethods = {"ensureDeletedListenerDoesNotExist"})
-    public void createListenerWithOldParam() {
-        String operand = LISTENER_NAME + "2";
-        if (!getListeners().contains(operand)) {
-            String CMD = "create-http-listener";
-            Map<String, String> options = getCreateOptions();
-            options.put("defaultvs", options.get("default-virtual-server"));
-				options.remove("default-virtual-server");
-            String up = GeneralUtils.toFinalURL(adminUrl, CMD, options, operand);
-            //Reporter.log("url: " + up);
-            Manifest man = super.invokeURLAndGetManifest(up);
-            String ec = GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.EXIT_CODE);
-            GeneralUtils.handleManifestFailure(man);
-        }
-    }
-
     @Test(groups = {"pulse"}, dependsOnMethods = {"createListener"})
     public void ensureCreatedListenerExists() { //should be run after createListener method
         if (!getListeners().contains(LISTENER_NAME)) {
@@ -112,18 +97,6 @@ public class WebtierTests extends BaseAsadminTest {
         String CMD = "delete-http-listener";
         Map<String, String> options = Collections.EMPTY_MAP;
         String operand = LISTENER_NAME;
-        String up = GeneralUtils.toFinalURL(adminUrl, CMD, options, operand);
-//        Reporter.log("url: " + up);
-        Manifest man = super.invokeURLAndGetManifest(up);
-        String ec = GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.EXIT_CODE);
-        GeneralUtils.handleManifestFailure(man);
-    }
-
-    @Test(groups = {"pulse"}, dependsOnMethods = {"createListenerWithOldParam"})
-    public void deleteListener2() {
-        String CMD = "delete-http-listener";
-        Map<String, String> options = Collections.EMPTY_MAP;
-        String operand = LISTENER_NAME + "2";
         String up = GeneralUtils.toFinalURL(adminUrl, CMD, options, operand);
 //        Reporter.log("url: " + up);
         Manifest man = super.invokeURLAndGetManifest(up);

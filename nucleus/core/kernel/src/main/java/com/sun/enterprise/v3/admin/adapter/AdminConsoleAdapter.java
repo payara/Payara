@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You 
  * may not use this file except in compliance with the License.  You can 
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
+
 package com.sun.enterprise.v3.admin.adapter;
 
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.v3.admin.AdminConsoleConfigUpgrade;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -122,7 +123,6 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     private AdapterState stateMsg = AdapterState.UNINITIAZED;
     private boolean installing = false;
     private boolean isOK = false;  // FIXME: initialize this with previous user choice
-    private AdminConsoleConfigUpgrade adminConsoleConfigUpgrade = null;
     private final CountDownLatch latch = new CountDownLatch(1);
     @Inject
     ApplicationRegistry appRegistry;
@@ -190,11 +190,6 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         if (!env.isDas()) {
             sendStatusNotDAS(req, res);
             return;
-        }
-
-        //This is needed to support the case where user update to 3.1 from previous release, and didn't run the upgrade tool.
-        if (adminConsoleConfigUpgrade == null) {
-            adminConsoleConfigUpgrade = habitat.getService(AdminConsoleConfigUpgrade.class);
         }
 
         try {

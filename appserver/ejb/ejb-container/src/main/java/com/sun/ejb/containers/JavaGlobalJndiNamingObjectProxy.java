@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
 import org.glassfish.api.naming.NamingObjectProxy;
 
 import javax.naming.Context;
+import java.lang.ref.WeakReference;
 
 /**
  * Used to register portable global JNDI names for LOCAL EJB 2.x / 3.x references.
@@ -50,18 +52,18 @@ import javax.naming.Context;
  */
 public class JavaGlobalJndiNamingObjectProxy
     implements NamingObjectProxy {
-    private BaseContainer container;
+    private WeakReference<BaseContainer> container;
 
     private String intfName;
 
     public JavaGlobalJndiNamingObjectProxy(BaseContainer container, String intfName) {
-        this.container = container;
+        this.container = new WeakReference<>(container);
         this.intfName = intfName;
     }
 
     public Object create(Context ic) {
         GenericEJBLocalHome genericLocalHome =
-                container.getEJBLocalBusinessHome(intfName);
+                container.get().getEJBLocalBusinessHome(intfName);
         return genericLocalHome.create(intfName);
     }
 }

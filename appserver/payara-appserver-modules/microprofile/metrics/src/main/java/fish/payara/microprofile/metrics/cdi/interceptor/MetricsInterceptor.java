@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  *     language governing permissions and limitations under the License.
  *
  *     When distributing the software, include this License Header Notice in each
- *     file and include the License file at glassfish/legal/LICENSE.txt.
+ *     file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -56,18 +56,9 @@
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import fish.payara.microprofile.metrics.MetricsService;
-import fish.payara.microprofile.metrics.cdi.MetricsAnnotationBinding;
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
+import fish.payara.microprofile.metrics.cdi.MetricsAnnotationBinding;
 import fish.payara.microprofile.metrics.impl.GaugeImpl;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Set;
-import java.util.function.BiConsumer;
-
 import jakarta.annotation.Priority;
 import jakarta.enterprise.inject.Intercepted;
 import jakarta.enterprise.inject.spi.Bean;
@@ -75,7 +66,13 @@ import jakarta.inject.Inject;
 import jakarta.interceptor.AroundConstruct;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
-
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
@@ -91,7 +88,12 @@ public class MetricsInterceptor {
 
     private MetricRegistry registry;
 
+    @Inject
+    @Intercepted
     private Bean<?> bean;
+
+    public MetricsInterceptor() {
+    }
 
     @Inject
     public MetricsInterceptor(MetricRegistry registry, @Intercepted Bean<?> bean) {
@@ -139,8 +141,8 @@ public class MetricsInterceptor {
     private <E extends Member & AnnotatedElement> void registerFromParentType(Class<?> bean,
                                                                               Class<?> superClassBean, E element,
                                                                               Object target, MetricsService metricsService) {
-        for (Annotation annotation: superClassBean.getAnnotations()) {
-            if(annotation.annotationType().isAssignableFrom(Timed.class)) {
+        for (Annotation annotation : superClassBean.getAnnotations()) {
+            if (annotation.annotationType().isAssignableFrom(Timed.class)) {
                 registerTimedMetric((Timed) annotation, bean, element, metricsService);
                 //review methods
                 for (Method method : superClassBean.getDeclaredMethods()) {
@@ -150,7 +152,7 @@ public class MetricsInterceptor {
                 }
             }
 
-            if(annotation.annotationType().isAssignableFrom(Counted.class)) {
+            if (annotation.annotationType().isAssignableFrom(Counted.class)) {
                 registerCountedMetric((Counted) annotation, bean, element, metricsService);
                 for (Method method : superClassBean.getDeclaredMethods()) {
                     if (!method.isSynthetic() && !Modifier.isPrivate(method.getModifiers())) {
@@ -159,8 +161,8 @@ public class MetricsInterceptor {
                 }
             }
 
-            if(annotation.annotationType().isAssignableFrom(Gauge.class)) {
-                registerGaugeMetric((Gauge) annotation, bean,element, target, metricsService);
+            if (annotation.annotationType().isAssignableFrom(Gauge.class)) {
+                registerGaugeMetric((Gauge) annotation, bean, element, target, metricsService);
                 for (Method method : superClassBean.getDeclaredMethods()) {
                     if (!method.isSynthetic()) {
                         registerGaugeMetric((Gauge) annotation, bean, element, target, metricsService);
@@ -171,11 +173,11 @@ public class MetricsInterceptor {
     }
 
     private <E extends Member & AnnotatedElement> void registerFromStereotypes(Set<Class<? extends Annotation>> stereotypes,
-                                                                               Class<?> bean,E element, Object target,
+                                                                               Class<?> bean, E element, Object target,
                                                                                MetricsService metricsService) {
         for (Class<? extends Annotation> a : stereotypes) {
             Annotation[] array = a.getAnnotations();
-            for (Annotation annotation: array) {
+            for (Annotation annotation : array) {
                 registerFromAnnotation(annotation, bean, element, target, metricsService);
             }
         }
@@ -186,21 +188,21 @@ public class MetricsInterceptor {
         Counted countedAnnotation = element.getAnnotation(Counted.class);
         Gauge gaugeAnnotation = element.getAnnotation(Gauge.class);
 
-        if(timedAnnotation != null && !isMethodPrivate(element)) {
+        if (timedAnnotation != null && !isMethodPrivate(element)) {
             registerTimedMetric(timedAnnotation, bean, element, metricsService);
         }
 
-        if(countedAnnotation != null && !isMethodPrivate(element)) {
+        if (countedAnnotation != null && !isMethodPrivate(element)) {
             registerCountedMetric(countedAnnotation, bean, element, metricsService);
         }
 
-        if(gaugeAnnotation != null) {
+        if (gaugeAnnotation != null) {
             registerGaugeMetric(gaugeAnnotation, bean, element, target, metricsService);
         }
 
         //we need to check if current class is annotated, then apply metrics to all public methods
-        if(timedAnnotation == null && countedAnnotation == null && gaugeAnnotation == null) {
-            for (Annotation annotation: bean.getAnnotations()) {
+        if (timedAnnotation == null && countedAnnotation == null && gaugeAnnotation == null) {
+            for (Annotation annotation : bean.getAnnotations()) {
                 registerFromAnnotation(annotation, bean, element, target, metricsService);
             }
         }
@@ -208,11 +210,12 @@ public class MetricsInterceptor {
 
     /**
      * Method to identify if the method is private from given element
+     *
      * @param element method to evaluate
      * @return boolean indicating if this is a private method
      */
     public static <E extends Member & AnnotatedElement> boolean isMethodPrivate(E element) {
-        if(element instanceof Method && Modifier.isPrivate(((Method)element).getModifiers())){
+        if (element instanceof Method && Modifier.isPrivate(((Method) element).getModifiers())) {
             return true;
         }
         return false;
@@ -220,39 +223,41 @@ public class MetricsInterceptor {
 
     /**
      * Method to evaluate which is the annotation used for the metric, options can be: Timed, Counted and Gauge
-     * @param annotation The annotation used to register the metric
-     * @param bean source class where the annotation is used
-     * @param element constructor or method element where the annotation is going to be applied
-     * @param target context target managed by the interceptor
+     *
+     * @param annotation     The annotation used to register the metric
+     * @param bean           source class where the annotation is used
+     * @param element        constructor or method element where the annotation is going to be applied
+     * @param target         context target managed by the interceptor
      * @param metricsService reference of the metrics service used to register the metrics
      */
-    private <E extends Member & AnnotatedElement> void registerFromAnnotation(Annotation annotation,Class<?> bean,
+    private <E extends Member & AnnotatedElement> void registerFromAnnotation(Annotation annotation, Class<?> bean,
                                                                               E element, Object target,
-                                                                              MetricsService metricsService ) {
-        if(annotation.annotationType().isAssignableFrom(Timed.class) && !isMethodPrivate(element)) {
+                                                                              MetricsService metricsService) {
+        if (annotation.annotationType().isAssignableFrom(Timed.class) && !isMethodPrivate(element)) {
             registerTimedMetric((Timed) annotation, bean, element, metricsService);
         }
 
-        if(annotation.annotationType().isAssignableFrom(Counted.class) && !isMethodPrivate(element)) {
+        if (annotation.annotationType().isAssignableFrom(Counted.class) && !isMethodPrivate(element)) {
             registerCountedMetric((Counted) annotation, bean, element, metricsService);
         }
 
-        if(annotation.annotationType().isAssignableFrom(Gauge.class)) {
-            registerGaugeMetric((Gauge) annotation, bean,element, target, metricsService);
+        if (annotation.annotationType().isAssignableFrom(Gauge.class)) {
+            registerGaugeMetric((Gauge) annotation, bean, element, target, metricsService);
         }
     }
 
     /**
      * Method to register Timed metric
+     *
      * @param timedAnnotation the Timed annotation used to register the metric
-     * @param bean source class where the annotation is used
-     * @param element element to apply like constructor or method
-     * @param metricsService reference of the metrics service used to register the metrics
+     * @param bean            source class where the annotation is used
+     * @param element         element to apply like constructor or method
+     * @param metricsService  reference of the metrics service used to register the metrics
      */
     private <E extends Member & AnnotatedElement> void registerTimedMetric(Timed timedAnnotation, Class<?> bean,
                                                                            E element, MetricsService metricsService) {
         String scope = timedAnnotation.scope();
-        if(scope != null) {
+        if (scope != null) {
             final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
             register(bean, element, AnnotationReader.TIMED, metricRegistry::timer);
         } else {
@@ -262,15 +267,16 @@ public class MetricsInterceptor {
 
     /**
      * Method to register Counted metric
+     *
      * @param countedAnnotation the Counted annotation used to register the metric
-     * @param bean source class where the annotation is used
-     * @param element element to apply like constructor or method
-     * @param metricsService reference of the metrics service used to register the metrics
+     * @param bean              source class where the annotation is used
+     * @param element           element to apply like constructor or method
+     * @param metricsService    reference of the metrics service used to register the metrics
      */
     private <E extends Member & AnnotatedElement> void registerCountedMetric(Counted countedAnnotation, Class<?> bean,
-                                                                           E element, MetricsService metricsService) {
+                                                                             E element, MetricsService metricsService) {
         String scope = countedAnnotation.scope();
-        if(scope != null) {
+        if (scope != null) {
             final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
             register(bean, element, AnnotationReader.COUNTED, metricRegistry::counter);
         } else {
@@ -280,18 +286,19 @@ public class MetricsInterceptor {
 
     /**
      * Method to register a Gauge Metric
+     *
      * @param gaugeAnnotation the Gauge annotation used to register the metric
-     * @param bean source class where the annotation is used
-     * @param element element to apply like constructor or method
-     * @param target context target managed by the interceptor
-     * @param metricsService reference of the metrics service used to register the metrics
+     * @param bean            source class where the annotation is used
+     * @param element         element to apply like constructor or method
+     * @param target          context target managed by the interceptor
+     * @param metricsService  reference of the metrics service used to register the metrics
      */
     private <E extends Member & AnnotatedElement> void registerGaugeMetric(Gauge gaugeAnnotation,
                                                                            Class<?> bean, E element,
                                                                            Object target, MetricsService metricsService) {
         String scope = gaugeAnnotation.scope();
 
-        if(scope != null) {
+        if (scope != null) {
             final MetricRegistry metricRegistry = metricsService.getContext(true).getOrCreateRegistry(scope);
             register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
                     metricRegistry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
@@ -302,7 +309,7 @@ public class MetricsInterceptor {
     }
 
     private static <E extends Member & AnnotatedElement, T extends Annotation> void register(Class<?> bean, E element,
-            AnnotationReader<T> reader, BiConsumer<Metadata, Tag[]> register) {
+                                                                                             AnnotationReader<T> reader, BiConsumer<Metadata, Tag[]> register) {
         if (reader.isPresent(bean, element)) {
             register.accept(reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
         }

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -70,7 +70,8 @@ class InstanceReaderFilter extends ServerReaderFilter {
     /**
      * This method is called for every element.  We are very interested
      * in server, config, cluster and deployment group.
-     * We will only filter out config and server and cluster elements never other elements
+     * We will only filter out config, server, cluster and deployment-group elements,
+     * never other elements.
      * We use this as a handy hook to get info about other elements -- which really
      * is a side-effect.
      *
@@ -98,7 +99,11 @@ class InstanceReaderFilter extends ServerReaderFilter {
             if (elementName.equals(CLUSTER)){
                 return handleCluster(reader);
             }
-            
+
+            if (elementName.equals(DEPLOYMENT_GROUP)){
+                return handleDeploymentGroup(reader);
+            }
+
             // keep everything else
             return false;
             
@@ -154,6 +159,24 @@ class InstanceReaderFilter extends ServerReaderFilter {
         String myCluster = dxpp.getClusterName();
 
         return !(StringUtils.ok(myCluster) && myCluster.equals(name));
+    }
+
+    /**
+     * Deployment groups are scoped the same way clusters are: an instance keeps only the
+     * groups it is actually a member of. Without this, every instance ended up holding every
+     * group in the domain -- along with the membership of groups it has nothing to do with --
+     * purely as a side effect of the whole domain.xml being copied over at startup, which is
+     * also why those stale entries only ever changed when the instance was restarted.
+     *
+     * Unlike a cluster, an instance may belong to several deployment groups, so this checks
+     * the element against the full set rather than against a single name.
+     *
+     * @return true if we want to filter out this deployment-group element
+     */
+    private boolean handleDeploymentGroup(XMLStreamReader reader) {
+        String name = reader.getAttributeValue(null, NAME);
+
+        return !(StringUtils.ok(name) && dxpp.getDGNames().contains(name));
     }
 
     private final DomainXmlPreParser dxpp;

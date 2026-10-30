@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -40,7 +40,8 @@
 
 -->
 
-<!-- Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2017-2026] [Payara Foundation and/or its affiliates.] -->
+<!-- Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license -->
 
 <!-- grizzly/httpAttr.inc -->
 
@@ -54,6 +55,10 @@
 
         <sun:property id="ServerNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.serverNameLabel}" helpText="$resource{i18n_web.http.serverNameHelp}" >
             <sun:textField id="ServerName" columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.serverName']}" text="#{pageSession.httpMap['serverName']}" />
+        </sun:property>
+
+        <sun:property id="behindProxy"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.BehindProxy}" helpText="$resource{i18n_web.http.BehindProxyHelp}" >
+            <sun:checkbox id="behindProxyEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['behindProxy']}" selectedValue="true" />
         </sun:property>
 
         <sun:property id="DefaultVirtServersProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.defVirtualServerLabel}" helpText="$resource{i18n_web.http.defVirtualServerLabelHelp}">
@@ -198,10 +203,6 @@
             <sun:textField id="DefaultResponseType"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.DefaultResponseType']}" text="#{pageSession.httpMap['defaultResponseType']}" />
         </sun:property>
 
-        <sun:property id="ForcedResponseType"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.ForcedResponseType}" helpText="$resource{i18n_web.http.ForcedResponseTypeHelp}" >
-            <sun:textField id="ForcedResponseType"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.ForcedResponseType']}" text="#{pageSession.httpMap['forcedResponseType']}" />
-        </sun:property>
-
         <sun:property id="adapter"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Adapter}" helpText="$resource{i18n_web.http.AdapterHelp}" >
             <sun:textField id="adapter"   columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.Adapter']}" text="#{pageSession.httpMap['adapter']}" />
         </sun:property>
@@ -215,10 +216,6 @@
             <sun:checkbox id="dnsLookupEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['dnsLookupEnabled']}" selectedValue="true" />
         </sun:property>
 
-        <sun:property id="RcmSupport"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.RcmSupport}" helpText="$resource{i18n_web.http.RcmSupportHelp}">
-            <sun:checkbox id="rcmSupportEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['rcmSupportEnabled']}" selectedValue="true" />
-        </sun:property>
-
         <sun:property id="Trace"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Trace}" helpText="$resource{i18n_web.http.TraceHelp}">
             <sun:checkbox id="traceEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['traceEnabled']}" selectedValue="true" />
         </sun:property>
@@ -229,10 +226,6 @@
 
         <sun:property id="chunking"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Chunking}" helpText="$resource{i18n_web.http.ChunkingHelp}" >
             <sun:checkbox id="chunkingEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['chunkingEnabled']}" selectedValue="true" />
-        </sun:property>
-
-        <sun:property id="XpoweredBy"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.XpoweredBy}" helpText="$resource{i18n_web.http.XpoweredByHelp}" >
-            <sun:checkbox id="xpoweredByEnabled" selected="#{pageSession.httpMap['xpoweredBy']}" selectedValue="true" />
         </sun:property>
     
         <sun:property id="ServerHeader"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.ServerHeader}" helpText="$resource{i18n_web.http.ServerHeaderHelp}" >
@@ -252,11 +245,11 @@
         </sun:property>
     
         <sun:property id="SchemeMapping"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.SchemeMapping}" helpText="$resource{i18n_web.http.SchemeMappingHelp}" >
-            <sun:textField id="SchemeMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.ForcedResponseType']}" text="#{pageSession.httpMap['schemeMapping']}" />
+            <sun:textField id="SchemeMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.DefaultResponseType']}" text="#{pageSession.httpMap['schemeMapping']}" />
         </sun:property>
     
         <sun:property id="RemoteUserMapping"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.RemoteUserMapping}" helpText="$resource{i18n_web.http.RemoteUserMappingHelp}" >
-            <sun:textField id="RemoteUserMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.ForcedResponseType']}" text="#{pageSession.httpMap['remoteUserMapping']}" />
+            <sun:textField id="RemoteUserMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.DefaultResponseType']}" text="#{pageSession.httpMap['remoteUserMapping']}" />
         </sun:property>
 
         <sun:property id="cookieSameSiteEnabled"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.EnableCookieSameSite}" helpText="$resource{i18n_web.http.EnableCookieSameSiteHelp}">

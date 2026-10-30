@@ -1,2 +1,3 @@
 org.glassfish.cdi.transaction.TransactionalExtension
 org.glassfish.cdi.transaction.TransactionScopedContextExtension
+org.glassfish.cdi.persistence.PersistenceExtension

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
@@ -59,6 +60,7 @@ import java.util.Set;
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Paths;
 import org.eclipse.microprofile.openapi.models.info.Info;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
@@ -78,6 +80,8 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
     protected Paths paths = new PathsImpl();
     protected Map<String, Set<String>> endpoints = createOrderedMap();
     protected Components components = new ComponentsImpl();
+    protected Map<String, PathItem> webhooks = createOrderedMap();
+    protected String jsonSchemaDialect;
 
     private ApiContext context;
 
@@ -96,10 +100,12 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         extractAnnotations(annotation, context, "securitySets", SecurityRequirementImpl::createInstances, from::addSecurityRequirement);
         extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         extractAnnotations(annotation, context, "tags", TagImpl::createInstance, from::addTag);
+        
         AnnotationModel components = annotation.getValue("components", AnnotationModel.class);
         if (components != null) {
             from.setComponents(ComponentsImpl.createInstance(components, context));
         }
+        extractAnnotations(annotation, context, "webhooks", "name", PathItemImpl::createInstance, from::addWebhook);
         from.setExtensions(parseExtensions(annotation));
         return from;
     }
@@ -247,6 +253,44 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
     }
 
     @Override
+    public Map<String, PathItem> getWebhooks() {
+        return webhooks;
+    }
+
+    @Override
+    public void setWebhooks(Map<String, PathItem> webhooks) {
+        this.webhooks = createOrderedMap(webhooks);
+    }
+
+    @Override
+    public OpenAPI addWebhook(String key, PathItem webhook) {
+        if (webhook != null) {
+            if (webhooks == null) {
+                webhooks = createOrderedMap();
+            }
+            webhooks.put(key, webhook);
+        }
+        return this;
+    }
+
+    @Override
+    public void removeWebhook(String key) {
+        if (webhooks != null) {
+            webhooks.remove(key);
+        }
+    }
+
+    @Override
+    public String getJsonSchemaDialect() {
+        return jsonSchemaDialect;
+    }
+
+    @Override
+    public void setJsonSchemaDialect(String jsonSchemaDialect) {
+        this.jsonSchemaDialect = jsonSchemaDialect;
+    }
+
+    @Override
     public Components getComponents() {
         return components;
     }
@@ -332,11 +376,21 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
                 toImpl.setEndpoints(ModelUtils.buildEndpoints(toImpl.getEndpoints(), root, paths));
             }
         }
+
+        Map<String, PathItem> webhooks = from.getWebhooks();
+        if (webhooks != null && !webhooks.isEmpty()) {
+            for (String webhookName : webhooks.keySet()) {
+                if (to.getWebhooks().containsKey(webhookName)) {
+                    PathItemImpl.merge(webhooks.get(webhookName), to.getWebhooks().get(webhookName), override);
+                } else {
+                    to.addWebhook(webhookName, webhooks.get(webhookName));
+                }
+            }
+        }
     }
 
     @Override
-    public OpenAPI clone()
-            throws CloneNotSupportedException {
+    public OpenAPI clone() throws CloneNotSupportedException {
         OpenAPI clonedObj = new OpenAPIImpl();
         clonedObj.setOpenapi(this.openapi);
         clonedObj.setInfo(this.info);
@@ -347,10 +401,13 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         clonedObj.setPaths(new PathsImpl(this.paths.getPathItems()));
         clonedObj.setComponents(this.components);
         clonedObj.setExtensions(this.extensions);
+        clonedObj.setWebhooks(this.webhooks);
+        clonedObj.setJsonSchemaDialect(this.jsonSchemaDialect);
         ((OpenAPIImpl) clonedObj).setEndpoints(new TreeMap<>(this.getEndpoints()));
         return clonedObj;
     }
 
+    @JsonIgnore
     public Map<String, Set<String>> getEndpoints() {
         return endpoints;
     }

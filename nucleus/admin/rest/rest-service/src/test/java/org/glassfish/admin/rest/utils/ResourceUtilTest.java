@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -80,11 +80,8 @@ public class ResourceUtilTest {
         Map<String, String> processed = processJvmOptions(data, removeVersioning);
         assertEquals("before=bvalue:" + expected + ":after=avalue", processed.get("id"));
         assertEquals("thetarget", processed.get("target"));
-        // and with profiler set
-        data.put("profiler", "theprofiler");
         processed = processJvmOptions(data, removeVersioning);
         assertEquals("before=bvalue:" + expected + ":after=avalue", processed.get("id"));
-        assertEquals("theprofiler", processed.get("profiler"));
         // and with an empty key in the map
         data.put("", "empty and therefore ignored");
         data.put(null, "null and therefore ignored");

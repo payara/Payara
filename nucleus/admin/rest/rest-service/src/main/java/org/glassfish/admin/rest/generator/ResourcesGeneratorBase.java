@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -36,9 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017-2020] [Payara Foundation]
  */
+// Portions Copyright 2017-2026 Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.generator;
 
 import java.util.HashMap;
@@ -464,11 +464,11 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
     //TODO - fetch command name from config bean(RestRedirect annotation).
     //RESTREdirect currently only support automatically these deletes:
     /*
-     * delete-admin-object delete-audit-module delete-auth-realm delete-connector-connection-pool delete-connector-resource
+     * delete-admin-object delete-auth-realm delete-connector-connection-pool delete-connector-resource
      * delete-custom-resource delete-http-listener delete-iiop-listener delete-javamail-resource delete-jdbc-connection-pool
-     * delete-jdbc-resource delete-jms-host delete-message-security-provider delete-profiler delete-resource-adapter-config
+     * delete-jdbc-resource delete-jms-host delete-message-security-provider delete-resource-adapter-config
      * delete-resource-ref delete-system-property delete-virtual-server What is missing is: delete-jms-resource delete-jmsdest
-     * delete-jndi-resource delete-lifecycle-module delete-message-security-provider delete-connector-security-map
+     * delete-jndi-resource delete-message-security-provider delete-connector-security-map
      * delete-connector-work-security-map delete-node-config delete-node-ssh delete-file-user delete-password-alias
      * delete-http-health-checker delete-http-lb-ref delete-http-redirect delete-instance
      */
@@ -476,7 +476,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
         {
             put("AdminObjectResource", "delete-admin-object");
-            put("AuditModule", "delete-audit-module");
             put("AuthRealm", "delete-auth-realm");
             put("ApplicationRef", "delete-application-ref");
             put("Cluster", "delete-cluster");
@@ -492,10 +491,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             put("JdbcResource", "delete-jdbc-resource");
             put("JaccProvider", "delete-jacc-provider");
 //            put("JmsHost", "delete-jms-host");
-            put("LbConfig", "delete-http-lb-config");
-            put("LoadBalancer", "delete-http-lb");
             put("NetworkListener", "delete-network-listener");
-            put("Profiler", "delete-profiler");
             put("Protocol", "delete-protocol");
             put("ProtocolFilter", "delete-protocol-filter");
             put("ProtocolFinder", "delete-protocol-finder");
@@ -514,11 +510,9 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
         {
             put("Application", "redeploy"); //TODO check : This row is not used
-            put("JavaConfig", "create-profiler"); // TODO check: This row is not used
             put("ListAdminObjectResource", "create-admin-object");
             put("ListApplication", "deploy");
             put("ListApplicationRef", "create-application-ref");
-            put("ListAuditModule", "create-audit-module");
             put("ListAuthRealm", "create-auth-realm");
             put("ListCluster", "create-cluster");
             put("ListConfig", "_create-config");
@@ -532,8 +526,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             put("ListJdbcConnectionPool", "create-jdbc-connection-pool");
             put("ListJdbcResource", "create-jdbc-resource");
             put("ListJmsHost", "create-jms-host");
-            put("ListLbConfig", "create-http-lb-config");
-            put("ListLoadBalancer", "create-http-lb");
             put("ListMailResource", "create-javamail-resource");
             put("ListMessageSecurityConfig", "create-message-security-provider");
             put("ListNetworkListener", "create-network-listener");

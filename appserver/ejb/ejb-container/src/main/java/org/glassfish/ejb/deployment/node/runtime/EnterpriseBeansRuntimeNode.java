@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.node.runtime;
 
@@ -44,6 +45,10 @@ import java.util.Iterator;
 
 import com.sun.enterprise.deployment.NameValuePairDescriptor;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+import com.sun.enterprise.deployment.node.ContextServiceDefinitionNode;
+import com.sun.enterprise.deployment.node.ManagedExecutorDefinitionNode;
+import com.sun.enterprise.deployment.node.ManagedScheduledExecutorDefinitionNode;
+import com.sun.enterprise.deployment.node.ManagedThreadFactoryDefinitionNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.MessageDestinationRuntimeNode;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
@@ -51,6 +56,7 @@ import com.sun.enterprise.deployment.node.runtime.WebServiceRuntimeNode;
 import com.sun.enterprise.deployment.node.runtime.common.RuntimeNameValuePairNode;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
@@ -68,11 +74,7 @@ public class EnterpriseBeansRuntimeNode extends RuntimeDescriptorNode {
         // we do not care about our standard DDS handles
         handlers = null;
         registerElementHandler(new XMLElement(RuntimeTagNames.EJB), 
-                               EjbNode.class);                    
-        registerElementHandler(new XMLElement(RuntimeTagNames.PM_DESCRIPTORS),
-                               PMDescriptorsNode.class);                    
-        registerElementHandler(new XMLElement(RuntimeTagNames.CMP_RESOURCE), 
-                               CmpResourceNode.class);                    
+                               EjbNode.class);;
         registerElementHandler
             (new XMLElement(RuntimeTagNames.MESSAGE_DESTINATION), 
              MessageDestinationRuntimeNode.class);
@@ -83,6 +85,15 @@ public class EnterpriseBeansRuntimeNode extends RuntimeDescriptorNode {
 
         registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
 				RuntimeNameValuePairNode.class, "addEnterpriseBeansProperty");
+        registerElementHandler(new XMLElement(TagNames.MANAGED_EXECUTOR),
+                ManagedExecutorDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MANAGED_SCHEDULED_EXECUTOR),
+                ManagedScheduledExecutorDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MANAGED_THREAD_FACTORY),
+                ManagedThreadFactoryDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONTEXT_SERVICE),
+                ContextServiceDefinitionNode.class, "addResourceDescriptor");
+
     }
 
     @Override
@@ -129,17 +140,6 @@ public class EnterpriseBeansRuntimeNode extends RuntimeDescriptorNode {
         for (Iterator ejbIterator = bundleDescriptor.getEjbs().iterator();ejbIterator.hasNext();) {
             EjbDescriptor ejbDescriptor = (EjbDescriptor) ejbIterator.next();
             ejbNode.writeDescriptor(ejbs, RuntimeTagNames.EJB, ejbDescriptor);
-        }
-        
-        // pm-descriptors?
-	PMDescriptorsNode pmsNode = new PMDescriptorsNode();
-	pmsNode.writeDescriptor(ejbs, RuntimeTagNames.PM_DESCRIPTORS, bundleDescriptor);
-        
-        // cmpresource?
-        ResourceReferenceDescriptor rrd = bundleDescriptor.getCMPResourceReference();
-        if ( rrd != null ) {
-            CmpResourceNode crn = new CmpResourceNode();
-            crn.writeDescriptor(ejbs, RuntimeTagNames.CMP_RESOURCE, rrd);
         }
         
 		// message-destination*

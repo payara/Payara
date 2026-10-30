@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates]
+ * Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
+ * Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
  */
 
 
@@ -63,16 +64,15 @@ import org.jvnet.hk2.config.types.PropertyBag;
 @Configured
 public interface Http extends ConfigBeanProxy, PropertyBag {
     boolean AUTH_PASS_THROUGH_ENABLED = false;
+    boolean BEHIND_PROXY = false;
     boolean CHUNKING_ENABLED = true;
     boolean COMET_SUPPORT_ENABLED = false;
     boolean ENCODED_SLASH_ENABLED = false;
     boolean DNS_LOOKUP_ENABLED = false;
-    boolean RCM_SUPPORT_ENABLED = false;
     boolean TIMEOUT_ENABLED = true;
     boolean TRACE_ENABLED = false;
     boolean UPLOAD_TIMEOUT_ENABLED = true;
     boolean WEBSOCKET_SUPPORT_ENABLED = true;
-    boolean XPOWERED_BY = true;
     boolean SERVER_HEADER = true;
     boolean XFRAME_OPTIONS = true;
     boolean COOKIE_SAME_SITE_ENABLED = false;
@@ -219,17 +219,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     void setFileCache(FileCache value);
 
     /**
-     * The response type to be forced if the content served cannot be matched by any of the MIME mappings for
-     * extensions. Specified as a semi-colon delimited string consisting of content-type, encoding, language, charset
-     */
-    @Deprecated
-    @Attribute()
-    String getForcedResponseType();
-
-    @Deprecated
-    void setForcedResponseType(String forcedResponseType);
-
-    /**
      * The size of the buffer used by the request processing threads for reading the request data
      */
     @Attribute(defaultValue = "" + HEADER_BUFFER_LENGTH, dataType = Integer.class)
@@ -269,12 +258,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getNoCompressionUserAgents();
 
     void setNoCompressionUserAgents(String agents);
-
-    @Attribute(defaultValue = "" + RCM_SUPPORT_ENABLED, dataType = Boolean.class)
-    @Deprecated
-    String getRcmSupportEnabled();
-
-    void setRcmSupportEnabled(String enable);
 
     /**
      * if the connector is supporting non-SSL requests and a request is received for which a matching
@@ -443,18 +426,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
 
     void setMaxResponseHeaders(String maxRequestHeaders);
 
-    /**
-     * The Servlet 2.4 spec defines a special X-Powered-By: Servlet/2.4 header, which containers may add to
-     * servlet-generated responses. This is complemented by the JSP 2.0 spec, which defines a X-Powered-By: JSP/2.0
-     * header to be added (on an optional basis) to responses utilizing JSP technology. The goal of these headers is to
-     * aid in gathering statistical data about the use of Servlet and JSP technology. If true, these headers will be
-     * added.
-     */
-    @Attribute(defaultValue = "" + XPOWERED_BY, dataType = Boolean.class)
-    String getXpoweredBy();
-
-    void setXpoweredBy(String xpoweredBy);
-
     @Attribute(defaultValue = "" + SERVER_HEADER, dataType = Boolean.class)
     String getServerHeader();
 
@@ -576,6 +547,15 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getHttp2PushEnabled();
 
     void setHttp2PushEnabled(String pushEnabled);
+
+    /**
+     * If set to true, the server is configured behind a reverse proxy and will trust
+     * X-Real-IP and X-Forwarded-For headers to determine the client's real IP address.
+     */
+    @Attribute(defaultValue = "" + BEHIND_PROXY, dataType = Boolean.class)
+    boolean isBehindProxy();
+
+    void setBehindProxy(boolean behindProxy);
 
     @DuckTyped
     @Override

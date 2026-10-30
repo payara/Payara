@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.apf.impl;
 
@@ -69,51 +70,8 @@ public class AnnotationUtils {
     }
         return logger;        
     }
-    
-    /**
-     * Sets the logger
-     * @deprecated Since 4.1.2.172 as unused in Payara
-     * @param lg 
-     * @see #getLogger() 
-     */
-    public static void setLogger(Logger lg) {
-        logger = lg;
-    }
-      
-    /**
-     * Sets what type of things are to logged
-     * @deprecated Since 4.1.2.172 as unused in Payara
-     * @param what
-     */
-    public static void setLoggerTarget(String what) {
-        whatToLog = what;
-    }
-    
-    /**
-     * @deprecated Since 4.1.2.172 as unused in Payara
-     * @return 
-     */
-    public static String getLoggerTarget() {
-        return whatToLog;
-    }
-    
-    /**
-     * @deprecated Since 4.1.2.172, use of different {@link Logger}s is the preferred method
-     * @param what
-     * @return
-     * @see Logger#getLogger(String) 
-     */
-    public static boolean shouldLog(String what) {
-        
-        if (logger.isLoggable(Level.FINER)) {
-            if (whatToLog.contains(what)) 
-                return true;
-            if ("*".equals(whatToLog))
-                return true;
-        }
-        return false;
-    }
-    
+
+
     public static String getLocalString(String key, String defaultString, Object... arguments){
         return MessageFormat.format(defaultString, arguments);
     }

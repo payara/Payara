@@ -16,7 +16,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 
 <p><a id="ref-security" name="ref-security"></a><a id="GHCOM00096" name="GHCOM00096"></a></p>
 
@@ -35,10 +35,6 @@
 <p>When this option is enabled, a JVM option, <code>-Djava.security.manager</code>, will be added to the JVM setting of the Payara Server. See <a href="task-jvmoptions.html">To Configure the JVM Options</a>. You must restart the server to enable this change.</p>
 <p>Ensure that you have granted correct permissions for all applications. You can turn off the security manager to enhance performance.</p>
 </dd>
-<dt>Audit Logging</dt>
-<dd>
-<p>If this option is enabled, the server will load and run all the audit modules specified in the Audit Modules setting. If the option is disabled, the server will not access audit modules. This option is disabled by default.</p>
-</dd>
 <dt>Default Realm</dt>
 <dd>
 <p>The active (default) realm that the server uses for authentication. Applications use this realm unless their deployment descriptor specifies a different realm. All configured realms appear in the list. The default value is <code>file</code>.</p>
@@ -55,10 +51,6 @@
 <dt>JACC</dt>
 <dd>
 <p>The class name of a configured JACC provider. The default value is <code>default</code>.</p>
-</dd>
-<dt>Audit Modules</dt>
-<dd>
-<p>The audit provider modules that will be used by the audit subsystem if audit logging is enabled. By default, the server uses an audit module named <code>default</code>.</p>
 </dd>
 <dt>Default Principal To Role Mapping Enabled</dt>
 <dd>
@@ -96,9 +88,6 @@
 <ul>
 <li>
 <p><a href="task-securitysettings.html">To Configure Security Settings</a></p>
-</li>
-<li>
-<p><a href="task-auditmodulenew.html">To Create an Audit Module</a></p>
 </li>
 <li>
 <p><a href="task-changeadminpasswd.html">To Change the Password for a User in the Admin Realm</a></p>

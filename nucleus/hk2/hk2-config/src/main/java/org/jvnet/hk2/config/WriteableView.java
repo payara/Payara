@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] [Payara Foundation and/or affiliates]
 
 package org.jvnet.hk2.config;
 
+import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.jvnet.hk2.config.ConfigModel.Property;
 
 import jakarta.validation.*;
@@ -90,12 +91,11 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
                }
             });
 
-       try {
+       try (ValidatorFactory validatorFactory = Validation.byDefaultProvider()
+               .configure().messageInterpolator(new ParameterMessageInterpolator())
+               .buildValidatorFactory()) {
            Thread.currentThread().setContextClassLoader(org.hibernate.validator.HibernateValidator.class.getClassLoader());
-
-           ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
            ValidatorContext validatorContext = validatorFactory.usingContext();
-           validatorContext.messageInterpolator(new MessageInterpolatorImpl());
            beanValidator = validatorContext.traversableResolver(
                        TRAVERSABLE_RESOLVER).getValidator();
        } finally {

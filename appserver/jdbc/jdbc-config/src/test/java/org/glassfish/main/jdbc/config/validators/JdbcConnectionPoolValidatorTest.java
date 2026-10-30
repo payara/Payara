@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  *  language governing permissions and limitations under the License.
  *
  *  When distributing the software, include this License Header Notice in each
- *  file and include the License file at glassfish/legal/LICENSE.txt.
+ *  file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -49,6 +49,8 @@ import java.util.function.Consumer;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
+
+import com.sun.enterprise.util.OS;
 import jakarta.validation.Payload;
 
 import org.glassfish.api.jdbc.SQLTraceListener;
@@ -125,13 +127,18 @@ public class JdbcConnectionPoolValidatorTest {
         assertFalse("steady pool size negative", this.validator.isValid(pool, null));
 
         updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${env.steadypoolsizeproperty}"));
-        assertFalse("undefined variable in steady pool size", this.validator.isValid(pool, null));
+        assertTrue("undefined variable in steady pool size", this.validator.isValid(pool, null));
 
         updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${ENV=steadypoolsizeproperty}"));
-        assertFalse("undefined variable in steady pool size", this.validator.isValid(pool, null));
+        assertTrue("undefined variable in steady pool size", this.validator.isValid(pool, null));
 
-        updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${ENV=USER}"));
-        assertFalse("env.USER variable in steady pool size is not a number", this.validator.isValid(pool, null));
+        if (OS.isWindows()) {
+            updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${ENV=USERNAME}"));
+            assertFalse("env.USERNAME variable in steady pool size is not a number", this.validator.isValid(pool, null));
+        } else {
+            updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${ENV=USER}"));
+            assertFalse("env.USER variable in steady pool size is not a number", this.validator.isValid(pool, null));
+        }
 
         updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${MPCONFIG=USER}"));
         try {
@@ -175,7 +182,7 @@ public class JdbcConnectionPoolValidatorTest {
         assertFalse("max pool size is 0", this.validator.isValid(pool, null));
 
         updateMock(pool, p -> expect(p.getMaxPoolSize()).andStubReturn("${ENV=maxpoolsizeproperty}"));
-        assertFalse("undefined variable in max pool size", this.validator.isValid(pool, null));
+        assertTrue("undefined variable in max pool size", this.validator.isValid(pool, null));
     }
 
 

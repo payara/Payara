@@ -1,7 +1,7 @@
 <!--
   ~    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
-  ~    Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
+  ~    Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
   ~
   ~    The contents of this file are subject to the terms of either the GNU
   ~    General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
   ~    language governing permissions and limitations under the License.
   ~
   ~    When distributing the software, include this License Header Notice in each
-  ~    file and include the License file at glassfish/legal/LICENSE.txt.
+  ~    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
   ~
   ~    GPL Classpath Exception:
   ~    The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -181,11 +181,6 @@
                 <version>${microprofile-config.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.microprofile.opentracing</groupId>
-                <artifactId>microprofile-opentracing-api</artifactId>
-                <version>${microprofile-opentracing.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
                 <artifactId>microprofile-fault-tolerance-api</artifactId>
                 <version>${microprofile-fault-tolerance.version}</version>
@@ -278,7 +273,7 @@
             <!-- These are hopefully no longer needed with this BOM, but just to be sure -->
             <dependency>
                 <groupId>fish.payara.arquillian</groupId>
-                <artifactId>payara-client-ee9</artifactId>
+                <artifactId>payara-client-ee11</artifactId>
                 <version>${payara-arquillian-container.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -355,6 +350,11 @@
                 <version>${cdi-api.version}</version>
             </dependency>
             <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                <version>${cdi-api.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
                 <version>${jakarta.inject.version}</version>
@@ -383,7 +383,7 @@
             <dependency>
                 <groupId>jakarta.authorization</groupId>
                 <artifactId>jakarta.authorization-api</artifactId>
-                <version>${jakarta.security.jacc-api.version}</version>
+                <version>${jakarta.authorization-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.exousia</groupId>
@@ -393,17 +393,12 @@
             <dependency>
                 <groupId>jakarta.authentication</groupId>
                 <artifactId>jakarta.authentication-api</artifactId>
-                <version>${jakarta.security.auth.message-api.version}</version>
+                <version>${jakarta.authentication-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.persistence</groupId>
                 <artifactId>jakarta.persistence-api</artifactId>
                 <version>${jakarta-persistence-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.security.auth.message</groupId>
-                <artifactId>jakarta.security.auth.message-api</artifactId>
-                <version>${jakarta.security.auth.message-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
@@ -449,6 +444,16 @@
                 <groupId>jakarta.enterprise.concurrent</groupId>
                 <artifactId>jakarta.enterprise.concurrent-api</artifactId>
                 <version>${concurrent-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.data</groupId>
+                <artifactId>jakarta.data-api</artifactId>
+                <version>${jakarta.data-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.agentic-ai</groupId>
+                <artifactId>jakarta.agentic-ai-api</artifactId>
+                <version>${jakarta.agentic-ai-api.version}</version>
             </dependency>
 
             <dependency>
@@ -517,8 +522,8 @@
             </dependency>
 
             <dependency>
-                <groupId>io.opentelemetry.instrumentation</groupId>
-                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
                 <version>${opentelemetry.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -567,15 +572,9 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>io.opentelemetry</groupId>
+                <groupId>io.opentelemetry.semconv</groupId>
                 <artifactId>opentelemetry-semconv</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-opentracing-shim</artifactId>
-                <version>${opentelemetry.version}</version>
+                <version>${opentelemetry-semconv.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -611,34 +610,15 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-                <version>${opentelemetry.version}</version>
+                <version>${opentelemetry-instrumentation-annotations.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
+                <version>${opentelemetry-instrumentation-annotation-support.version}</version>
                 <scope>provided</scope>
             </dependency>
-
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-api</artifactId>
-                <version>${opentracing.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-util</artifactId>
-                <version>${opentracing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-noop</artifactId>
-                <version>${opentracing.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
             <!-- Implementations -->
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
@@ -698,13 +678,18 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
-                <artifactId>jakarta.security.enterprise</artifactId>
-                <version>${jakarta.security.enterprise.version}</version>
+                <artifactId>soteria</artifactId>
+                <version>${soteria.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
                 <artifactId>soteria.spi.bean.decorator.weld</artifactId>
-                <version>${jakarta.security.enterprise.version}</version>
+                <version>${soteria.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.epicyro</groupId>
+                <artifactId>epicyro</artifactId>
+                <version>${epicyro.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
@@ -719,11 +704,6 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.jpa.jpql</artifactId>
-                <version>${eclipselink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.persistence</groupId>
-                <artifactId>org.eclipse.persistence.moxy</artifactId>
                 <version>${eclipselink.version}</version>
             </dependency>
             <dependency>
@@ -750,6 +730,14 @@
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.asm</artifactId>
                 <version>${eclipselink.asm.version}</version>
+            </dependency>
+            <!-- No longer shipped with server, but version managed, so that users of jersey-media-moxy
+                 would fetch correct version of moxy, 5.0.0-B1 advertised by it is incompatible -->
+            <dependency>
+                <groupId>org.eclipse.persistence</groupId>
+                <artifactId>org.eclipse.persistence.moxy</artifactId>
+                <version>${eclipselink.version}</version>
+                <scope>compile</scope>
             </dependency>
             <!-- Annotation processor is best suited for provided scope -->
             <dependency>
@@ -837,32 +825,28 @@
 
             <dependency>
                 <groupId>org.glassfish.mq</groupId>
-                <artifactId>imq</artifactId>
-                <version>${openmq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.mq</groupId>
-                <artifactId>imqjmx</artifactId>
-                <version>${openmq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.mq</groupId>
                 <artifactId>mq-distribution</artifactId>
                 <version>${openmq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.web</groupId>
-                <artifactId>jakarta.servlet.jsp.jstl</artifactId>
-                <version>${jakarta.servlet.jsp.jstl.version}</version>
+                <groupId>org.glassfish.mq</groupId>
+                <artifactId>mq-client</artifactId>
+                <version>${openmq.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>org.eclipse</groupId>
+                <groupId>org.eclipse.yasson</groupId>
                 <artifactId>yasson</artifactId>
                 <version>${yasson.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.parsson</groupId>
                 <artifactId>jakarta.json</artifactId>
+                <version>${parsson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.parsson</groupId>
+                <artifactId>parsson</artifactId>
                 <version>${parsson.version}</version>
             </dependency>
             <dependency>
@@ -889,12 +873,6 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.enterprise.concurrent</artifactId>
-                <version>${concurro.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.sun.istack</groupId>
                 <artifactId>istack-commons-runtime</artifactId>
                 <version>${istack-commons-runtime.version}</version>
@@ -914,6 +892,12 @@
                 <groupId>org.eclipse.krazo</groupId>
                 <artifactId>krazo-jersey</artifactId>
                 <version>${krazo.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.concurro</groupId>
+                <artifactId>concurro</artifactId>
+                <version>${concurro.version}</version>
             </dependency>
 
             <!-- Other libraries -->
@@ -968,12 +952,6 @@
                 <groupId>com.hazelcast</groupId>
                 <artifactId>hazelcast</artifactId>
                 <version>${hazelcast.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>fish.payara.transformer</groupId>
-                <artifactId>fish.payara.transformer.payara</artifactId>
-                <version>${payara.transformer.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

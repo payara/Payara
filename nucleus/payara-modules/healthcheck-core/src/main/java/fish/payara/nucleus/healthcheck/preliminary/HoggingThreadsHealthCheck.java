@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2025] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -42,11 +42,6 @@ package fish.payara.nucleus.healthcheck.preliminary;
 import fish.payara.internal.notification.EventLevel;
 import fish.payara.nucleus.healthcheck.HealthCheckHoggingThreadsExecutionOptions;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.monitoring.collect.MonitoringData;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-import fish.payara.monitoring.collect.MonitoringWatchCollector;
-import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
@@ -61,8 +56,6 @@ import java.lang.management.ThreadMXBean;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static fish.payara.internal.notification.TimeUtil.prettyPrintDuration;
 
@@ -74,9 +67,7 @@ import static fish.payara.internal.notification.TimeUtil.prettyPrintDuration;
  */
 @Service(name = "healthcheck-threads")
 @RunLevel(StartupRunLevel.VAL)
-public class HoggingThreadsHealthCheck
-        extends BaseHealthCheck<HealthCheckHoggingThreadsExecutionOptions, HoggingThreadsChecker>
-        implements MonitoringDataSource, MonitoringWatchSource {
+public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggingThreadsExecutionOptions, HoggingThreadsChecker> {
 
     @FunctionalInterface
     private interface HoggingThreadConsumer {
@@ -158,45 +149,6 @@ public class HoggingThreadsHealthCheck
                             prettyPrintDuration(totalTimeHogging) + "\n" + prettyPrintStackTrace(info.getStackTrace())))
                 );
         return result;
-    }
-
-    @Override
-    @MonitoringData(ns = "health", intervalSeconds = 4)
-    public void collect(MonitoringDataCollector collector) {
-        if (options == null || !options.isEnabled() || !supported) {
-            return;
-        }
-        AtomicInteger hoggingThreadCount = new AtomicInteger(0);
-        AtomicLong hoggingThreadMaxDuration = new AtomicLong(0L);
-        acceptHoggingThreads(colletionRecordsByThreadId,
-                (percentage, threshold, totalTimeHogging, initialMethod, info) -> {
-                    String thread = info.getThreadName();
-                    if (thread == null || thread.isEmpty()) {
-                        thread = String.valueOf(info.getThreadId());
-                    }
-                    collector.annotate("HoggingThreadDuration", totalTimeHogging, true, //
-                            "Thread", thread, //
-                            "Usage%", String.valueOf(percentage), //
-                            "Threshold%", String.valueOf(threshold), //
-                            "Method", initialMethod, //
-                            "Exited", String.valueOf(!initialMethod.equals(getMethod(info))));
-                    hoggingThreadCount.incrementAndGet();
-                    hoggingThreadMaxDuration.updateAndGet(value -> Math.max(value, totalTimeHogging));
-                });
-        collector
-                .collect("HoggingThreadCount", hoggingThreadCount)
-                .collect("HoggingThreadDuration", hoggingThreadMaxDuration);
-    }
-
-    @Override
-    public void collect(MonitoringWatchCollector collector) {
-        if (options == null || !options.isEnabled() || !supported) {
-            return;
-        }
-        collector.watch("ns:health HoggingThreadCount", "Hogging Threads", "count")
-            .green(-1, 1, false, null, null, false)
-            .amber(0, -2, false, null, null, false)
-            .red(1, -2, false, null, null, false);
     }
 
     private void acceptHoggingThreads(Map<Long, ThreadCpuTimeRecord> recordsById, HoggingThreadConsumer consumer) {

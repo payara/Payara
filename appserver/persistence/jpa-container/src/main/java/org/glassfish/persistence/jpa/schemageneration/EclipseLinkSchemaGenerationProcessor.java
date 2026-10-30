@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -154,18 +154,16 @@ public class EclipseLinkSchemaGenerationProcessor implements SchemaGenerationPro
                 || ddlGenerate.equals(DROP_AND_CREATE))
                 && !ddlMode.equals(NONE);
 
-        boolean createTables = helper.getCreateTables(userCreateTables);
-
         boolean userDropTables = ddlGenerate.equals(DROP_AND_CREATE)
                 && (ddlMode.equals(DDL_DATABASE_GENERATION)
                 || ddlMode.equals(DDL_BOTH_GENERATION));
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Processing request with create tables: " + createTables //NOI18N
+            logger.fine("Processing request with create tables: " + userCreateTables //NOI18N
                     + ", drop tables: " + userDropTables); //NOI18N
         }
 
-        if (createTables || userDropTables) {
+        if (userCreateTables || userDropTables) {
             helper.setProcessorType("JPA", pud.getName()); // NOI18N
             helper.setDropTablesValue(userDropTables, pud.getName());
             helper.setCreateTablesValue(userCreateTables && !ddlMode.equals(DDL_SQL_SCRIPT_GENERATION),

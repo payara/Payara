@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2018-2024 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.iiop.security;
@@ -68,6 +68,17 @@ import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
 import com.sun.enterprise.security.auth.realm.certificate.OID;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import java.io.ByteArrayInputStream;
+import java.net.Socket;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.security.auth.Subject;
+import javax.security.auth.x500.X500Principal;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -79,23 +90,9 @@ import org.omg.PortableInterceptor.ForwardRequest;
 import org.omg.PortableInterceptor.ServerRequestInfo;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
-import javax.security.auth.Subject;
-import javax.security.auth.x500.X500Principal;
-import java.io.ByteArrayInputStream;
-import java.net.Socket;
-import java.security.PrivilegedAction;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import static com.sun.enterprise.iiop.security.GSSUtils.GSSUP_MECH_OID;
 import static com.sun.enterprise.iiop.security.GSSUtils.verifyMechOID;
 import static com.sun.enterprise.iiop.security.SecurityContextUtil.STATUS_FAILED;
-import static java.security.AccessController.doPrivileged;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 
@@ -407,15 +404,8 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             logger.log(FINE, "Password credential = " + passwordCredential.toString());
             logger.log(FINE, "Adding PasswordCredential to subject's PrivateCredentials");
         }
-
-        doPrivileged(new PrivilegedAction<java.lang.Object>() {
-            @Override
-            public java.lang.Object run() {
-                securityContext.subject.getPrivateCredentials().add(passwordCredential);
-                return null;
-            }
-        });
-
+        
+        securityContext.subject.getPrivateCredentials().add(passwordCredential);
         securityContext.authcls = PasswordCredential.class;
     }
 

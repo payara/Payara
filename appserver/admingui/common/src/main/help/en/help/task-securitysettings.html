@@ -16,7 +16,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 
 <p><a id="task-securitysettings" name="task-securitysettings"></a><a id="GHCOM00181" name="GHCOM00181"></a></p>
 
@@ -41,10 +41,6 @@
 <p>Ensure that you have granted correct permissions for all applications. You can turn off the security manager to enhance performance. This option is disabled by default.</p>
 </li>
 <li>
-<p>Select the Audit Logging Enabled checkbox to turn on audit logging.</p>
-<p>If this option is enabled, the server will load and run all the audit modules selected in the Audit Modules list. If this option is disabled, the server will not access audit modules. This option is disabled by default.</p>
-</li>
-<li>
 <p>From the Default Realm drop-down list, select an active realm that the server will use for authentication.</p>
 <p>Applications will use this realm unless their deployment descriptor specifies a different realm. All configured realms appear in the list. The default value is <code>file</code>.</p>
 </li>
@@ -64,7 +60,6 @@
 <li>
 <p>From the JACC drop-down list, select the name of a configured JACC provider.</p>
 <p>The default choices are <code>default</code> and <code>simple</code>. The default option is <code>default</code>.</p>
-<p>By default, the server uses an audit module named <code>default</code>.</p>
 </li>
 <li>
 <p>Select the Default Principal To Role Mapping Enabled checkbox to apply a default principal-to-role mapping to applications that do not have an application-specific mapping.</p>

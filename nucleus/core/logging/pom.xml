@@ -10,12 +10,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -41,13 +41,13 @@
 
 -->
 
-<!-- Portions Copyright 2016-2025 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2016-2026 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.11-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -96,7 +96,7 @@
         <!-- Used only for LogFilterForInstance -->
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>trilead-ssh2-repackaged</artifactId>
+            <artifactId>apache-mina-repackaged</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
@@ -129,10 +129,30 @@
                                 <Export-Package>
                                     fish.payara.enterprise.server.logging
                                 </Export-Package>
+                                <_exportcontents>
+                                    com.sun.enterprise.server.logging.logviewer.backend,
+                                    com.sun.enterprise.server.logging.diagnostics,
+                                    com.sun.enterprise.server.logging
+                                </_exportcontents>
+                                <DynamicImport-Package>
+                                    org.glassfish.cluster.ssh.launcher,
+                                    org.glassfish.cluster.ssh.sftp,
+                                    org.apache.sshd.*,
+                                    com.sun.enterprise.util.cluster.windows.io,
+                                    com.sun.enterprise.util.cluster.windows.process,
+                                    org.glassfish.cluster.ssh.util
+                                </DynamicImport-Package>
                             </instructions>
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
+                </configuration>
             </plugin>
         </plugins>
     </build>

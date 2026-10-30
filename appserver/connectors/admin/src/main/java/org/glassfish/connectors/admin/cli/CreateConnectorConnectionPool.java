@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.connectors.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -147,9 +147,6 @@ public class CreateConnectorConnectionPool implements AdminCommand {
     @Param(name= PROPERTY, optional=true, separator=':')
     Properties properties;
 
-    @Param(name= TARGET, optional=true, obsolete = true)
-    String target = SystemPropertyConstants.DAS_SERVER_NAME;
-
     @Param(name=CCP_POOL_NAME, primary=true)
     String poolname;
 
@@ -201,7 +198,7 @@ public class CreateConnectorConnectionPool implements AdminCommand {
 
         try {
             ConnectorConnectionPoolManager connPoolMgr = connectorConnectionPoolManagerProvider.get();
-            rs = connPoolMgr.create(domain.getResources(), attrList, properties, target);
+            rs = connPoolMgr.create(domain.getResources(), attrList, properties, null);
         } catch(Exception e) {
             Logger.getLogger(CreateConnectorConnectionPool.class.getName()).log(Level.SEVERE,
                     "Unable to create connector connection pool " + poolname, e);

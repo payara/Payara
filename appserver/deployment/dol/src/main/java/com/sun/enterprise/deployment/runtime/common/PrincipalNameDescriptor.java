@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,11 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2024 Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.deployment.runtime.common;
 
 import java.security.Principal;
 
+import com.sun.enterprise.deployment.node.runtime.common.DescriptorPrincipalName;
 import org.glassfish.deployment.common.Descriptor;
 
 /**
@@ -52,11 +55,14 @@ import org.glassfish.deployment.common.Descriptor;
 public class PrincipalNameDescriptor extends Descriptor {
 
     private static final long serialVersionUID = 884693766288296132L;
-    private static final String DEFAULT_CLASSNAME = "org.glassfish.security.common.PrincipalImpl";
-    
+
     private String principalName;
     private String className;
     private transient ClassLoader classLoader;
+
+    public PrincipalNameDescriptor(String principalName) {
+        this.principalName = principalName;
+    }
 
     public String getName() {
         return principalName;
@@ -64,7 +70,7 @@ public class PrincipalNameDescriptor extends Descriptor {
 
     public String getClassName() {
         if (className == null) {
-            return DEFAULT_CLASSNAME;
+            return DescriptorPrincipalName.class.getName();
         }
         
         return className;

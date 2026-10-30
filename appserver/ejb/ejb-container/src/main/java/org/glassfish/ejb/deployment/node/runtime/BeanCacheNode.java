@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.node.runtime;
 
@@ -66,9 +67,6 @@ public class BeanCacheNode extends DeploymentDescriptorNode<BeanCacheDescriptor>
 
     @Override
     public void setElementValue(XMLElement element, String value) {
-	if (RuntimeTagNames.IS_CACHE_OVERFLOW_ALLOWED.equals(element.getQName())) {
-	    descriptor.setIsCacheOverflowAllowed(Boolean.valueOf(value));
-	} else 
         super.setElementValue(element, value);
     }
 
@@ -88,8 +86,7 @@ public class BeanCacheNode extends DeploymentDescriptorNode<BeanCacheDescriptor>
 	Node beanCacheNode = super.writeDescriptor(parent, nodeName, descriptor);
 	appendTextChild(beanCacheNode, RuntimeTagNames.MAX_CACHE_SIZE, descriptor.getMaxCacheSize());	
 	appendTextChild(beanCacheNode, RuntimeTagNames.RESIZE_QUANTITY, descriptor.getResizeQuantity());	
-	appendTextChild(beanCacheNode, RuntimeTagNames.IS_CACHE_OVERFLOW_ALLOWED, String.valueOf(descriptor.isIsCacheOverflowAllowed()));
-	appendTextChild(beanCacheNode, RuntimeTagNames.CACHE_IDLE_TIMEOUT_IN_SECONDS, descriptor.getCacheIdleTimeoutInSeconds());	
+	appendTextChild(beanCacheNode, RuntimeTagNames.CACHE_IDLE_TIMEOUT_IN_SECONDS, descriptor.getCacheIdleTimeoutInSeconds());
 	appendTextChild(beanCacheNode, RuntimeTagNames.REMOVAL_TIMEOUT_IN_SECONDS, descriptor.getRemovalTimeoutInSeconds());	
 	appendTextChild(beanCacheNode, RuntimeTagNames.VICTIM_SELECTION_POLICY, descriptor.getVictimSelectionPolicy());	
 	return beanCacheNode;

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.util;
 
@@ -71,15 +71,10 @@ import java.util.logging.Logger;
 import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.deployment.descriptor.DummyEjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
-import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
 import org.glassfish.ejb.deployment.descriptor.InterceptorBindingDescriptor;
-import org.glassfish.ejb.deployment.descriptor.PersistenceDescriptor;
-import org.glassfish.ejb.deployment.descriptor.RelationshipDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.AnnotationTypesProvider;
@@ -115,12 +110,6 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
 
             for (EjbDescriptor anEjb : ejbBundle.getEjbs()) {
                 anEjb.visit(getSubDescriptorVisitor(anEjb));
-            }
-            if (ejbBundle.hasRelationships()) {
-                for (Iterator itr = ejbBundle.getRelationships().iterator();itr.hasNext();) {
-                    RelationshipDescriptor rd = (RelationshipDescriptor) itr.next();
-                    accept(rd);
-                }
             }
             for (WebService aWebService : ejbBundle.getWebServices().getWebServices()) {
                 accept(aWebService);
@@ -181,10 +170,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                         "enterprise.deployment.util.componentInterfaceMissing", 
                         "{0} Component interface is missing in EJB [{1}]", "Local", ejb0.getName()));
             }
-            
-            if(!EjbEntityDescriptor.TYPE.equals(ejb0.getType())) {
-                ejb0.applyInterceptors(bindingTranslator);
-            }
+            ejb0.applyInterceptors(bindingTranslator);
         }
     }
 
@@ -462,15 +448,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
             accept((ServiceReferenceDescriptor) itr.next());
         }
 
-        if (ejb instanceof EjbCMPEntityDescriptor) {
-            EjbCMPEntityDescriptor cmp = (EjbCMPEntityDescriptor)ejb;
-            PersistenceDescriptor persistenceDesc = cmp.getPersistenceDescriptor();
-            for (Iterator e=persistenceDesc.getCMPFields().iterator();e.hasNext();) {
-                FieldDescriptor fd = (FieldDescriptor) e.next();
-                accept(fd);
-            }
-        }
-    }    
+    }
         
     public void accept(WebService webService) {
     }
@@ -599,7 +577,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                             relativeJarPath);
 
                         if( bundle == null ) {
-                            throw new IllegalStateException("Invalid @DependOn value = " + next +
+                            throw new IllegalStateException("Invalid @DependsOn value = " + next +
                                     " for Singleton " + sessionDesc.getName());
                         }
 

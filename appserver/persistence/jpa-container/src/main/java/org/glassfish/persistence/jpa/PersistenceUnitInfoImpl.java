@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,23 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 
 package org.glassfish.persistence.jpa;
 
 
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
-
-import javax.naming.NamingException;
+import jakarta.persistence.SharedCacheMode;
+import jakarta.persistence.ValidationMode;
 import jakarta.persistence.spi.ClassTransformer;
 import jakarta.persistence.spi.PersistenceUnitInfo;
 import jakarta.persistence.spi.PersistenceUnitTransactionType;
-import jakarta.persistence.SharedCacheMode;
-import jakarta.persistence.ValidationMode;
+import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -63,8 +65,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.glassfish.deployment.common.DeploymentUtils;
 
 /**
  * This class implements {@link PersistenceUnitInfo} interface.
@@ -375,4 +375,13 @@ public class PersistenceUnitInfoImpl implements PersistenceUnitInfo {
         return provider;
     }
 
+    @Override
+    public String getScopeAnnotationName() {
+        return persistenceUnitDescriptor.getScope();
+    }
+
+    @Override
+    public List<String> getQualifierAnnotationNames() {
+        return persistenceUnitDescriptor.getQualifiers();
+    }
 }

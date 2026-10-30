@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.glassfish.hk2.utilities.CleanerFactory;
+
+import java.lang.ref.Cleaner;
 import java.net.URI;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -290,16 +292,22 @@ public abstract class PayloadFilesManager {
      */
     public static class Temp extends PayloadFilesManager {
 
-//        /*
-//         * regex to match colons and backslashes on Windows and slashes on non-Windows
-//         */
-//        private static final String DIR_PATH_TO_FLAT_NAME_PATTERN = (File.separatorChar == '\\') ?
-//                "[:\\\\]" : "/";
+        private final Cleaner.Cleanable cleanable;
 
-        private boolean isCleanedUp = false;
+        static class CleanableTempPayloadFilesManagerState implements Runnable {
 
-//        /** maps payload part name paths (excluding name and type) to temp file subdirs */
-//        private Map<String,File> pathToTempSubdir = new HashMap<String,File>();
+            private final File targetDir;
+
+            CleanableTempPayloadFilesManagerState(File targetDir) {
+                this.targetDir = targetDir;
+            }
+
+            @Override
+            public void run() {
+                FileUtils.whack(this.targetDir);
+            }
+
+        }
 
         public Temp(final File parentDir, final ActionReport report,
                 final Logger logger) throws IOException {
@@ -308,7 +316,8 @@ public abstract class PayloadFilesManager {
                       logger),
                   report,
                   logger);
-            registerCleanupEvent();
+            CleanableTempPayloadFilesManagerState state = new CleanableTempPayloadFilesManagerState(super.targetDir);
+            this.cleanable = CleanerFactory.create().register(this, state);
         }
         /**
          * Creates a new PayloadFilesManager for temporary files.
@@ -333,16 +342,7 @@ public abstract class PayloadFilesManager {
          * Deletes the temporary files created by this temp PayloadFilesManager.
          */
         public void cleanup() {
-            if ( ! isCleanedUp) {
-                FileUtils.whack(super.targetDir);
-                isCleanedUp = true;
-            }
-        }
-
-        public final void registerCleanupEvent() {
-            CleanerFactory.create().register(this, () -> {
-                cleanup();
-            });
+            this.cleanable.clean();
         }
 
         @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -55,19 +55,11 @@ import org.jvnet.hk2.config.Configured;
 public interface PayaraNotifierConfiguration extends ConfigBeanProxy {
 
     String DEFAULT_ENABLED_VALUE = "false";
-    String DEFAULT_NOISY_VALUE = "true";
     String DEFAULT_EVENT_FILTER = "WARNING";
 
     @Attribute(defaultValue = DEFAULT_ENABLED_VALUE, dataType = Boolean.class)
     String getEnabled();
     void enabled(Boolean value) throws PropertyVetoException;
-
-    @Deprecated
-    @Attribute(defaultValue = DEFAULT_NOISY_VALUE, dataType = Boolean.class)
-    String getNoisy();
-
-    @Deprecated
-    void noisy(Boolean value) throws PropertyVetoException;
 
     @Attribute(defaultValue = DEFAULT_EVENT_FILTER, dataType = String.class)
     String getFilter ();

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,19 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
 
 package com.sun.ejb.containers;
 
 
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
 
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.Container;
 
 import org.glassfish.ejb.api.EjbEndpointFacade;
 
+import fish.payara.opentracing.OpenTelemetryService;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,12 +65,14 @@ public class EjbEndpointFacadeImpl implements EjbEndpointFacade {
 
     private BaseContainer container_;
     private InvocationManager invManager_;
+    private OpenTelemetryService openTelemetryService;
     private static Logger logger_ = EjbContainerUtilImpl.getLogger();
 
 
     public EjbEndpointFacadeImpl(BaseContainer container, EjbContainerUtil util) {
         container_ = container;
         invManager_ = util.getInvocationManager();
+        openTelemetryService = Globals.get(OpenTelemetryService.class);
     }
 
 
@@ -101,6 +105,11 @@ public class EjbEndpointFacadeImpl implements EjbEndpointFacade {
         // In all cases, the WebServiceInvocationHandler will do the
         // remaining preInvoke tasks : getContext, preInvokeTx, etc.
         invManager_.preInvoke(inv);
+
+        // Application invocation context is now on the stack: promote any deferred
+        // OTel context (e.g. from EjbWebServiceServlet for JAX-WS EJB endpoints)
+        // into a live SERVER span using the correct per-application tracer.
+        openTelemetryService.applyDeferredContext();
 
         return inv;
 

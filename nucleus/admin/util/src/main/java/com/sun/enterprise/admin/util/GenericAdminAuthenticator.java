@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,11 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or it's affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.admin.util;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.file.FileRealmUser;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
@@ -53,10 +58,13 @@ import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.Set;
+
 import java.util.logging.Level;
 
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.common.util.admin.AuthTokenManager;
+import org.glassfish.grizzly.config.dom.Http;
+import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.security.services.api.authentication.AuthenticationService;
@@ -105,7 +113,9 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
 
     static final Logger ADMSEC_LOGGER = Logger.getLogger(ADMSEC_LOGGER_NAME, 
             AdminLoggerInfo.SHARED_LOGMESSAGE_RESOURCE);
-    
+    public static final String DOMAIN_ADMIN_GROUP_NAME = "asadmin";
+
+
     @Inject
     ServiceLocator habitat;
     
@@ -132,12 +142,17 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     
     private SecureAdmin secureAdmin;
 
+    private volatile boolean behindProxyWarningLogged = false;
+
     @Inject
     ServerEnvironment serverEnv;
     
     @Inject
     private AuthenticationService authService;
-    
+
+    @Inject
+    private AuthenticationAttemptTracker attemptTracker;
+
     @Override
     public synchronized void postConstruct() {
         secureAdmin = domain.getSecureAdmin();
@@ -231,7 +246,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             for (Object principal : ps) {
                 if (principal instanceof Group) {
                     Group group = (Group) principal;
-                    if (group.getName().equals(AdminConstants.DOMAIN_ADMIN_GROUP_NAME))
+                    if (group.getName().equals(DOMAIN_ADMIN_GROUP_NAME))
                         return true;
                 }
             }
@@ -251,14 +266,23 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                     getDefaultAdminUser(),
                     localPassword
         );
-        Subject s;
+
+        String remoteHostForTracking = detectRemoteHostForTracking(cbh, req);
+
+        String trackingUsername = resolveTrackingUsername(cbh.pw().getUserName(), as.getAuthRealmName());
+        attemptTracker.checkBeforeAuthentication(trackingUsername, remoteHostForTracking, cbh.pw().getPassword());
+
         try {
-            s = authService.login(cbh, null);
             /*
              * Enforce remote access restrictions, if any.
              */
             rejectRemoteAdminIfDisabled(cbh);
-            consumeTokenIfPresent(req);
+
+            Subject subject = consumeTokenIfPresent(req);
+            if (subject == null) {
+                subject = authService.login(cbh, null);
+            }
+
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
                 ADMSEC_LOGGER.log(Level.FINE, "*** Login worked\n  user={0}\n  dn={1}\n  tkn={2}\n  admInd={3}\n  host={4}\n",
                         new Object[] {cbh.pw().getUserName(),  
@@ -266,7 +290,8 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                                         cbh.tkn(), cbh.adminIndicator(), cbh.remoteHost()});
             }
 
-            return s;
+            attemptTracker.recordSuccess(cbh.pw().getUserName(), remoteHostForTracking, cbh.pw().getPassword());
+            return subject;
         } catch (RemoteAdminAccessException ex) {
             /*
              * Rethrow RemoteAdminAccessException explicitly to avoid it being
@@ -288,16 +313,94 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                                     cbh.clientPrincipal() == null ? "null" : cbh.clientPrincipal().getName(), 
                                     cbh.tkn(), cbh.adminIndicator(), cbh.remoteHost(),  cmd});
             }
+            attemptTracker.recordFailureAndDelay(trackingUsername, remoteHostForTracking, cbh.pw().getPassword());
             throw lex;
         }
     }
-    
+
+    // Check for X-GlassFish-Remote-Host header (set by AdminConsoleAuthModule in the Admin Console UI).
+    // If present and request is from localhost, use the header value for tracking instead. Otherwise return remote host.
+    // Also check X-Real-IP and X-Forwarded-For headers when the serverName is configured (reverse proxy setup).
+    private String detectRemoteHostForTracking(final AdminCallbackHandler cbh, final Request req) {
+        String remoteHostForTracking = cbh.remoteHost();
+
+        if (NetUtils.isLocal(req.getRemoteAddr())) {
+            String forwardedHost = req.getHeader("X-GlassFish-Remote-Host");
+            if (forwardedHost != null && !forwardedHost.isBlank()) {
+                return forwardedHost;
+            }
+        } else if (isBehindProxyEnabled()) {
+            return NetUtils.getRemoteHost(
+                    new NetUtils.RequestInfoProvider() {
+                        @Override
+                        public String getHeader(String name) {
+                            return req.getHeader(name);
+                        }
+
+                        @Override
+                        public String getRemoteHost() {
+                            return remoteHostForTracking;
+                        }
+
+                    },
+                    true
+            );
+        }
+
+        return remoteHostForTracking;
+    }
+
+    /**
+     * Checks if behindProxy is enabled in the admin listener configuration.
+     * When enabled, the server trusts X-Real-IP and X-Forwarded-For headers.
+     */
+    private boolean isBehindProxyEnabled() {
+        Server server = domain.getServerNamed(serverEnv.getInstanceName());
+        if (server == null) {
+            if (!behindProxyWarningLogged) {
+                behindProxyWarningLogged = true;
+                ADMSEC_LOGGER.log(Level.WARNING,
+                        "Server instance {0} not found in domain configuration; behind-proxy detection disabled for admin authentication. "
+                        + "If a reverse proxy is in use, all login attempts will be tracked under the proxy's IP address rather than the real client IP, "
+                        + "reducing brute-force protection accuracy.",
+                        serverEnv.getInstanceName());
+            }
+            return false;
+        }
+        Config config = server.getConfig();
+        Protocol protocol = config.getAdminListener().findHttpProtocol();
+        Http http = protocol != null ? protocol.getHttp() : null;
+        return http != null && http.isBehindProxy();
+    }
+
+    /**
+     * Returns the username to use for tracking failed authentication attempts.
+     * If the user does not exist in the admin realm, returns {@link AuthenticationAttemptTracker#UNKNOWN_USER_KEY}
+     * so that all attempts with non-existent usernames are grouped under the same key per host,
+     * preventing username enumeration and unbounded tracker map growth.
+     */
+    private String resolveTrackingUsername(String username, String realmName) {
+        if (username == null) {
+            return username;
+        }
+        try {
+            Realm realm = Realm.getInstance(realmName);
+            realm.getUser(username);
+            return username;
+        } catch (NoSuchUserException e) {
+            return AuthenticationAttemptTracker.UNKNOWN_USER_KEY;
+        } catch (Exception e) {
+            // If we can't check, treat as unknown user to prevent unbounded growth
+            return AuthenticationAttemptTracker.UNKNOWN_USER_KEY;
+        }
+    }
+
     private void rejectRemoteAdminIfDisabled(final String host) throws RemoteAdminAccessException {
         /*
-         * Accept the request if secure admin is enabled or if the 
-         * request is local.
+         * Accept the request if secure admin is enabled or if the
+         * request is local. An unknown origin is treated as remote.
          */
-        if (SecureAdmin.Util.isEnabled(secureAdmin) || NetUtils.isThisHostLocal(host)) {
+        if (SecureAdmin.Util.isEnabled(secureAdmin) || (host != null && !host.isBlank() && NetUtils.isThisHostLocal(host))) {
             return;
         }
         throw new RemoteAdminAccessException();
@@ -372,7 +475,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 String au = (String) users.nextElement();
                 FileRealmUser fru = (FileRealmUser)fr.getUser(au);
                 for (String group : fru.getGroups()) {
-                    if (group.equals(AdminConstants.DOMAIN_ADMIN_GROUP_NAME)) {
+                    if (group.equals(DOMAIN_ADMIN_GROUP_NAME)) {
                         if (candidateDefaultAdminUser != null) {
                             ADMSEC_LOGGER.log(Level.FINE, "There are multiple admin users so we cannot use any as a default");
                             return null;
@@ -398,20 +501,28 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     private Subject authenticate(String user, final char[] password, final String realm, final String host) throws LoginException {
         if (user.isEmpty()) {
             user = getDefaultAdminUser();
+            if (user == null) {
+                // No single default admin user could be determined (e.g. not a file realm,
+                // missing key file, or zero/multiple admin-group users).
+                throw new LoginException();
+            }
         }
-        if ( ! isInAdminGroup(user, realm)) {
+        if (!isInAdminGroup(user, realm)) {
             throw new LoginException();
         }
-        
-        Subject s;
+
+        String trackingUsername = resolveTrackingUsername(user, realm);
+        attemptTracker.checkBeforeAuthentication(trackingUsername, host, password);
+
         try {
             rejectRemoteAdminIfDisabled(host);
-            s = authService.login(user, password, null);
+            Subject subject = authService.login(user, password, null);
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
             ADMSEC_LOGGER.log(Level.FINE, "*** Login worked\n  user={0}\n  host={1}\n",
                     new Object[] {user, host});
             }
-            return s;
+            attemptTracker.recordSuccess(user, host, password);
+            return subject;
         } catch (RemoteAdminAccessException ex) {
             /*
              * Rethrow RemoteAdminAccessException explicitly to avoid it being
@@ -427,6 +538,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 ADMSEC_LOGGER.log(Level.FINE, "*** LoginException during auth\n  user={0}\n  host={1}\n  realm={2}",
                     new Object[] {user, host, realm});
             }
+            attemptTracker.recordFailureAndDelay(trackingUsername, host, password);
             throw lex;
         }
     }
@@ -436,39 +548,53 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
      */
     @Override
     public Subject authenticate(Object credentials) {
+        // Credentials must be a String[] of at most 2 elements: user name, then password. Clients that are given
+        // no credentials (e.g. JConsole with blank fields) send null, which is treated as an empty user name and
+        // password; those are only accepted below for local connections. A missing or null user name/password
+        // element (a 0- or 1-element array, or a null array element) is likewise treated as empty.
         String user = "";
-        char[] password = "".toCharArray();
-        String host = null;
-        if (credentials instanceof String[]) {
-            // this is supposed to be 2-string array with user name and password
-            String[] up = (String[])credentials;
-            if (up.length == 1) {
-                user = up[0];
-            } else if (up.length >= 2) {
-                user = up[0];
-                password = up[1] != null ? up[1].toCharArray() : "".toCharArray();
+        String password = "";
+        if (credentials != null) {
+            if (!(credentials instanceof String[])) {
+                throw new SecurityException("Invalid JMX credentials");
             }
+            String[] up = (String[]) credentials;
             if (up.length > 2) {
-                host = up[2];
-            } else {
-                try {
-                    /*
-                     * This method is used for JMX over RMI authentication, so
-                     * we can find out the host from RMI.
-                     */
-                    host = RemoteServer.getClientHost();
-                } catch (ServerNotActiveException ex) {
-                    throw new RuntimeException(ex);
-                }
+                throw new SecurityException("Invalid JMX credentials");
+            }
+            if (up.length >= 1 && up[0] != null) {
+                user = up[0];
+            }
+            if (up.length == 2 && up[1] != null) {
+                password = up[1];
             }
         }
 
-        String realm = as.getSystemJmxConnector().getAuthRealmName(); //yes, for backward compatibility;
-        if (realm == null)
-            realm = as.getAuthRealmName();
+        String host;
+        try {
+            host = RemoteServer.getClientHost();
+        } catch (ServerNotActiveException ex) {
+            ADMSEC_LOGGER.log(Level.FINE, "Unable to determine JMX client host", ex);
+            throw new SecurityException("Unable to determine JMX client host");
+        }
+        if (host == null || host.isBlank()) {
+            throw new SecurityException("Unable to determine JMX client host");
+        }
+
+
+        // The empty user name is mapped to the default admin user, and an empty password is never acceptable, for
+        // connections that are not local.
+        // Use the same host-locality check as rejectRemoteAdminIfDisabled so "local" is defined consistently everywhere
+        // in this class, rather than mixing it with NetUtils.isLocal's plain string comparison.
+        // Note: NetUtils.isThisHostLocal(null) returns true, so this depends on host == null already being rejected above.
+        if ((user.isEmpty() || password.isEmpty()) && !NetUtils.isThisHostLocal(host)) {
+            throw new SecurityException("Invalid JMX credentials");
+        }
+
+        String realm = as.getAuthRealmName();
 
         try {
-            return loginAsAdmin(user, new String(password), realm, host);
+            return loginAsAdmin(user, password, realm, host);
         } catch (LoginException e) {
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
                 ADMSEC_LOGGER.log(Level.FINE, "*** LoginException during JMX auth\n  user={0}\n  host={1}\n  realm={2}",

@@ -2,7 +2,7 @@
 <!--
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-     Copyright (c) 2021-2024 Payara Foundation and/or its affiliates. All rights reserved.
+     Copyright (c) 2021-2026 Payara Foundation and/or its affiliates. All rights reserved.
 
      The contents of this file are subject to the terms of either the GNU
      General Public License Version 2 only ("GPL") or the Common Development
@@ -14,7 +14,7 @@
      language governing permissions and limitations under the License.
 
      When distributing the software, include this License Header Notice in each
-     file and include the License file at glassfish/legal/LICENSE.txt.
+     file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
      GPL Classpath Exception:
      The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-samples-profiled-tests</artifactId>
@@ -64,7 +64,7 @@
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
-        <!--module>jaxws-tracing</module-->
+        <module>jaxws-tracing</module>
         <module>legacy-mode-empty-beans-xml</module>
         <module>microprofile-config</module>
         <module>microprofile-endpoints</module>
@@ -74,8 +74,7 @@
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
-        <module>jakartaee-namespace-transformer</module>
-        <!--module>http</module-->
+        <module>http</module>
         <module>logging</module>
         <module>ejb-http-remoting</module>
         <module>remote-ejb-tracing</module>
@@ -85,24 +84,23 @@
         <!--module>client-certificate-validator</module-->
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
         <!--<module>corba-read-timeout</module>-->
-        <!--module>microprofile-rest-client</module-->
+        <module>microprofile-rest-client</module>
         <module>concurrency</module>
         <module>reproducers</module>
         <module>opentelemetry</module>
         <module>use-bundled-jsf-primefaces</module>
         <module>mvc</module>
+        <module>data</module>
+        <module>versioned-deployment</module>
+        <module>microprofile-jwt-error-cache</module>
+        <module>agentic-ai-quickstart</module>
+        <module>agentic-ai</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>fish.payara.samples</groupId>
-                <artifactId>samples-test-utils</artifactId>
-                <version>${project.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-            <groupId>fish.payara.samples</groupId>
                 <artifactId>test-domain-setup</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -45,12 +45,13 @@ import static com.sun.enterprise.v3.admin.cluster.NodeUtils.NODE_DEFAULT_REMOTE_
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.NODE_DEFAULT_SSH_PORT;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYFILE;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYPASSPHRASE;
+import static org.glassfish.api.ActionReport.ExitCode.WARNING;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
-import static org.glassfish.cluster.ssh.util.SSHUtil.getExistingKeyFile;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -66,6 +67,7 @@ import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.cluster.RemoteType;
+import com.sun.enterprise.util.net.NetUtils;
 
 /**
  * Remote AdminCommand to create and ssh node.  This command is run only on DAS.
@@ -103,7 +105,22 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     @Override
     public final void execute(AdminCommandContext context) {
         populateBaseClass();
+
+        boolean localHost = NetUtils.isThisHostLocal(nodehost);
+
         executeInternal(context);
+
+        if (localHost) {
+            context.getLogger().warning(Strings.get("create.node.ssh.local.host.warning", nodehost));
+
+            ActionReport report = context.getActionReport();
+            String warningMsg = Strings.get("create.node.ssh.local.host.warning", nodehost);
+            String existing = report.getMessage();
+            report.setMessage(StringUtils.ok(existing) ? warningMsg + NL + existing : warningMsg);
+            if (report.getActionExitCode() != ActionReport.ExitCode.FAILURE) {
+                report.setActionExitCode(WARNING);
+            }
+        }
     }
 
     @Override
@@ -134,8 +151,7 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     }
 
     /**
-     * We can't put these values into the base class simply to get the names that the user sees correct. I.e. "ssh" versus
-     * "dcom" versus future types...
+     * We can't put these values into the base class simply to get the names that the user sees correct. I.e. "ssh"
      *
      */
     @Override
@@ -153,10 +169,6 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
 
     @Override
     protected final void populateCommandArgs(List<String> args) {
-        if (sshkeyfile == null) {
-            sshkeyfile = getExistingKeyFile();
-        }
-
         if (sshkeyfile != null) {
             args.add("--sshkeyfile");
             args.add(sshkeyfile);

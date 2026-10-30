@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -74,7 +74,7 @@ public class ClusteredSingletonTest {
                         "fish.payara.samples.clustered.singleton.api",
                         "fish.payara.samples.clustered.singleton.interceptor")
                 .addAsWebInfResource(new File(WEBAPP_SRC, "WEB-INF/ejb-jar.xml"))
-                .addAsWebInfResource(new File(WEBAPP_SRC, "WEB-INF/glassfish-ejb-jar.xml"));
+                .addAsWebInfResource(new File(WEBAPP_SRC, "WEB-INF/payara-ejb-jar.xml"));
     }
 
     @Test

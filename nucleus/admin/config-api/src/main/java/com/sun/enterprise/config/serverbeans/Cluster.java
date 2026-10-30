@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -243,79 +243,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      */
     @Param(name="bindaddress", optional=true)
     void setGmsBindInterfaceAddress(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the heartbeatEnabled property.
-     *
-     * When "heartbeat-enabled" is set to "true", the GMS services will be
-     * started as a lifecycle module in each the application server in the
-     * cluster.When "heartbeat-enabled" is set to "false", GMS will not be
-     * started and its services will be unavailable. Clusters should function
-     * albeit with reduced functionality.
-     *
-     * @return true | false as a string, null means false
-     */
-    @Deprecated
-    @Attribute
-    String getHeartbeatEnabled();
-
-    /**
-     * Sets the value of the heartbeatEnabled property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Deprecated
-    void setHeartbeatEnabled(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the heartbeatPort property.
-     *
-     * This is the communication port GMS uses to listen for group  events.
-     * This should be a valid port number.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute
-    //@Min(value=2048)
-    //@Max(value=49151)
-    @Deprecated
-    String getHeartbeatPort();
-
-    /**
-     * Sets the value of the heartbeatPort property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Deprecated
-    void setHeartbeatPort(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the heartbeatAddress property.
-     *
-     * This is the address (only multicast supported) at which GMS will
-     * listen for group events.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute
-    @Deprecated
-    String getHeartbeatAddress();
-
-    /**
-     * Sets the value of the heartbeatAddress property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Deprecated
-    void setHeartbeatAddress(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the serverRef property.
@@ -558,30 +485,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
         @Param(name="config", optional=true)
         String configRef=null;
 
-        @Param(optional = true,obsolete=true)
-        String hosts=null;
-
-        @Param(optional = true,obsolete=true)
-        String haagentport;
-
-        @Param(optional = true,obsolete=true)
-        String haadminpassword=null;
-
-        @Param(optional = true,obsolete=true)
-        String haadminpasswordfile=null;
-
-        @Param(optional = true,obsolete=true)
-        String devicesize=null;
-
-        @Param(optional = true,obsolete=true)
-        String haproperty=null;
-
-        @Param(optional = true,obsolete=true)
-        String autohadb=null;
-
-        @Param(optional = true,obsolete=true)
-        String portbase=null;
-
         @Inject
         ServiceLocator habitat;
 
@@ -783,20 +686,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                     instance.getApplicationRef().add(newAppRef);
                 }
             }
-
-            if (hosts!=null ||
-                    haagentport!=null ||
-                    haadminpassword!=null ||
-                    haadminpasswordfile!=null ||
-                    devicesize!=null ||
-                    haproperty!=null ||
-                    autohadb!=null ||
-                    portbase!=null
-                    ) {
-               context.getActionReport().setActionExitCode(ActionReport.ExitCode.WARNING);
-               context.getActionReport().setMessage("Obsolete options used.");
-            }
-
         }
 
     private String generateHeartbeatPort() {
@@ -822,13 +711,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     @Service
     @PerLookup
     class DeleteDecorator implements DeletionDecorator<Clusters, Cluster> {
-
-        @Param(name="nodeagent", optional=true,obsolete=true)
-        String nodeagent;
-
-        // for backward compatibility, ignored.
-        @Param(name="autohadboverride", optional=true,obsolete=true)
-        String autohadboverride;
 
         @Inject
         private Domain domain;

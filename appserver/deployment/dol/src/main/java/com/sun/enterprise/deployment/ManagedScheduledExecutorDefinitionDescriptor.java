@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -43,7 +43,7 @@ import java.util.Properties;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.MSEDD;
 
-public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescriptor {
+public class ManagedScheduledExecutorDefinitionDescriptor extends ConcurrencyQualifiedDescriptor {
 
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
@@ -52,11 +52,17 @@ public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescri
     private String context;
     private long hungTaskThreshold = 0;
     private int maxAsync = Integer.MAX_VALUE;
+    private Boolean virtual = null;
 
     private Properties properties = new Properties();
 
     public ManagedScheduledExecutorDefinitionDescriptor() {
         super.setResourceType(MSEDD);
+    }
+
+    @Override
+    public String getConcurrencyType() {
+        return "MANAGED_SCHEDULED_EXECUTOR_SERVICE";
     }
 
     @Override
@@ -106,6 +112,14 @@ public class ManagedScheduledExecutorDefinitionDescriptor extends ResourceDescri
             thisName = JAVA_COMP_URL + thisName;
         }
         return thisName;
+    }
+
+    public Boolean getVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(Boolean virtual) {
+        this.virtual = virtual;
     }
 
     @Override

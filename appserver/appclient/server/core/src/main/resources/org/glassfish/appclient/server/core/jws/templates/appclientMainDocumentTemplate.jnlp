@@ -10,12 +10,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <jnlp
     spec="1.0+"
@@ -111,7 +112,7 @@
         <!--
             Content normally read from files during an appclient script launch.
         -->
-        <property name="glassfish-acc.xml.content" value="${request.glassfish-acc.xml.content}"/>
+        <property name="payara-acc.xml.content" value="${request.payara-acc.xml.content}"/>
         <property name="appclient.login.conf.content" value="${request.appclient.login.conf.content}"/>
         <property name="message.security.config.provider.security.config"
             value="${request.message.security.config.provider.security.config}"/>

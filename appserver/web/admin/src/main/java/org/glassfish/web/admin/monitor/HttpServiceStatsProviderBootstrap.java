@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,11 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or its affiliates
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.glassfish.web.admin.monitor;
 
 import java.util.Map;
@@ -53,10 +50,6 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
-
-import fish.payara.monitoring.collect.MonitoringDataCollection;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.external.probe.provider.PluginPoint;
@@ -77,7 +70,7 @@ import org.jvnet.hk2.config.ConfigurationException;
  */
 @Service(name = "http-service")
 @Singleton
-public class HttpServiceStatsProviderBootstrap implements PostConstruct, MonitoringDataSource {
+public class HttpServiceStatsProviderBootstrap implements PostConstruct {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
@@ -121,20 +114,4 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct, Monitor
         }
     }
 
-    static {
-        MonitoringDataCollection.register(CountStatistic.class,
-                (collector, count) -> collector.collect(count.getName(), count.getCount()));
-    }
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        if (!"true".equals(monitoringService.getMonitoringEnabled()) ||
-            !"HIGH".equals(monitoringService.getModuleMonitoringLevels().getHttpService())) {
-            return;
-        }
-        MonitoringDataCollector http = collector.in("http").prefix("Server");
-        for (HttpServiceStatsProvider provider : httpServiceStatsProviders.values()) {
-            http.collectObject(provider, MonitoringDataCollection::collectObject);
-        }
-    }
 }

@@ -1,10 +1,21 @@
 version: 2
+
+registries:
+  payara-nexus-staging:
+    type: maven-repository
+    url: https://nexus.dev.payara.fish/repository/payara-staging
+    username: ${{ secrets.PAYARA_NEXUS_USERNAME }}
+    password: ${{ secrets.PAYARA_NEXUS_PASSWORD }}
+    
 updates:
   # Configuration for Maven
   - package-ecosystem: "maven"
     directory: "/" # Location of package manifests
+    registries:
+      - payara-nexus-staging
     schedule:
       interval: "daily"
+      time: "04:00"
     open-pull-requests-limit: 5
     target-branch: "main"
     ignore:
@@ -25,11 +36,9 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.jpa"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.jpa.spql"
+      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.jpa.jpql"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.moxy"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.sdo"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.dbws"
         update-types: ["version-update:semver-major"]
@@ -43,13 +52,15 @@ updates:
         update-types: ["version-update:semver-major"]
 
       # Ignore major version updates for org.glassfish and related dependencies
-      - dependency-name: "org.glassfish:jakarta.enterprise.concurrent"
+      - dependency-name: "org.glassfish.concurro:concurro"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "org.glassfish.mq:mq"
+      - dependency-name: "org.glassfish.mq:mq-distribution"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.mq:mq-client"
+        update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.glassfish:jakarta.faces"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "org.glassfish.soteria:jakarta.security.enterprise"
+      - dependency-name: "org.glassfish.soteria:soteria"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.soteria:soteria.spi.bean.decorator.weld"
         update-types: ["version-update:semver-major"]
@@ -58,8 +69,6 @@ updates:
       - dependency-name: "org.glassfish.metro:webservices-extra-jdk-packages"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.metro:webservices-api-osgi"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "org.glassfish.web:jakarta.servlet.jsp.jstl"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.expressly:expressly"
         update-types: ["version-update:semver-major"]
@@ -79,8 +88,12 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.woodstock:woodstock-webui-jsf-suntheme"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.woodstock.external:dojo"
+        update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.glassfish.jsftemplating:jsftemplating"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.jsftemplating:jsftemplating-dt"
+        update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.glassfish.annotations:logging-annotation-processor"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.pfl:pfl-tf-tools"
@@ -91,6 +104,8 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.pfl:pfl-basic"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.pfl:pfl-tf"
+        update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.glassfish.corba:glassfish-corba-omgapi"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.corba:glassfish-corba-internal-api"
@@ -103,6 +118,8 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.ha:ha-api"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.epicyro:epicyro"
+        update-types: [ "version-update:semver-major" ]
       
       # Ignore major version updates for org.eclipse and related dependencies
       - dependency-name: "org.eclipse:yasson"
@@ -115,6 +132,10 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.eclipse.angus:angus-mail"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.krazo:krazo-jersey"
+        update-types: ["version-update:semver-major"] 
+      - dependency-name: "org.eclipse.krazo:krazo-core"
+        update-types: ["version-update:semver-major"] 
 
       # Ignore major version updates for com.ibm.jbatch and related dependencies
       - dependency-name: "com.ibm.jbatch:com.ibm.jbatch.container"
@@ -147,12 +168,3 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.jboss.weld.environment:weld-environment-common"
         update-types: ["version-update:semver-major"]
-
-  # Configuration for gitsubmodule
-  - package-ecosystem: "gitsubmodule"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    ignore:
-    - dependency-name: "*"
-    target-branch: "master"

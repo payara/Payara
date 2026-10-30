@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -138,13 +138,6 @@ public abstract class DeploymentDescriptorFile<T extends Descriptor> {
             spf.setFeature("http://apache.org/xml/features/allow-java-encodings", true);
 	    
 	        try {
-                if (!validating) {
-                    // if we are not validating, let's not load the DTD
-                    if (getDeploymentDescriptorPath().contains(DescriptorConstants.WLS)) {
-                        // and let's only turn it off for weblogic*.xml for now
-                        spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-                    }
-                }
 
                 // Validation part 2a: set the schema language if necessary
                 spf.setFeature("http://apache.org/xml/features/validation/schema", validating);

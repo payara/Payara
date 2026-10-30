@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -85,7 +85,7 @@ public class ManagedThreadFactoryApplicationIT {
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb-jar.jar")
                 .addClasses(ManagedThreadFactoryEJB.class, ManagedThreadFactoryEJBFromConfig.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsResource("ejb-jar2.xml", "META-INF/ejb-jar.xml");
+                .addAsResource("payara-ejb-jar2.xml", "META-INF/payara-ejb-jar.xml");
         System.out.println(ejbJar.toString(true));
         //Creating web module
         WebArchive webWar = ShrinkWrap.create(WebArchive.class, "test.war")

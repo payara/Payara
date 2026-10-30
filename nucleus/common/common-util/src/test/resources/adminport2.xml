@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -39,20 +39,13 @@
     holder.
 
 -->
-
-<!-- Portions Copyright [2020-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2020-2026 Payara Foundation and/or its affiliates -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications">
   <applications>
     <web-module context-root="/web1" location="${com.sun.aas.installRoot}/lib/install/applications/adminapp/adminapp_war" directory-deployed="true" name="adminapp" object-type="system-admin" />
     <web-module context-root="" location="${com.sun.aas.installRoot}/lib/install/applications/admingui/adminGUI_war" directory-deployed="true" name="admingui" object-type="system-admin" />
     <web-module context-root="/__wstx-services" location="${com.sun.aas.installRoot}/lib/install/applications/wstx-services" directory-deployed="true" name="WSTXServices" object-type="system-all" />
-    <lifecycle-module name="JBIFramework" object-type="system-all" class-name="com.sun.jbi.framework.sun.SunASJBIBootstrap" classpath="${com.sun.aas.installRoot}/jbi/lib/jbi_framework.jar">
-      <description>"JBI Framework LifecycleModule"</description>
-      <property name="com.sun.jbi.home" value="${com.sun.aas.installRoot}/jbi" />
-      <property name="com.sun.jbi.defaultLogLevel" value="INFO" />
-    </lifecycle-module>
-    <lifecycle-module name="WSTCPConnectorLCModule" object-type="system-all" class-name="com.sun.xml.ws.transport.tcp.server.glassfish.WSTCPLifeCycleModule" classpath="${com.sun.aas.installRoot}/lib/webservices-rt.jar" />
   </applications>
   <servers>
     <server name="server" config-ref="server-config">
@@ -104,10 +97,7 @@
           <property name="jaas-context" value="fileRealm" />
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
-        <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
-          <property name="auditOn" value="false" />
-        </audit-module>
+        <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
             <request-policy auth-source="content" />

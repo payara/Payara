@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2024 Payara Foundation and/or affiliates
+// Portions Copyright 2024-2026 Payara Foundation and/or affiliates
 package com.sun.enterprise.universal.process;
 
 import java.io.*;
@@ -170,16 +170,6 @@ public final class ProcessUtils {
         if (err.length() > 0 || numDead <= 0)
             return Strings.get("ProcessUtils.killjvmerror", err, numDead);
         return null;
-    }
-
-    /**
-     * The deprecated isProcessingRunning method
-     *
-     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ProcessUtils#getProcessRunningState(int)}.
-     */
-    @Deprecated(forRemoval = true, since = "6.21.0")
-    public static Boolean isProcessRunning(int aPid) {
-        return false;
     }
 
     /**

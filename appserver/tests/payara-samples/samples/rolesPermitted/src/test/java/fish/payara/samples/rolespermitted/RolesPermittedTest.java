@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -92,7 +92,7 @@ public class RolesPermittedTest {
         return ShrinkWrap.create(WebArchive.class, "rolesPermitted.war")
                 .addPackage("fish.payara.samples.rolespermitted")
                 .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/web.xml"))
-                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/glassfish-web.xml"));
+                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/payara-web.xml"));
     }
 
     @BeforeClass

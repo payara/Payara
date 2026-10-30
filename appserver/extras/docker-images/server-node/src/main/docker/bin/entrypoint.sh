@@ -14,7 +14,7 @@
 #    language governing permissions and limitations under the License.
 #
 #    When distributing the software, include this License Header Notice in each
-#    file and include the License file at glassfish/legal/LICENSE.txt.
+#    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 #
 #    GPL Classpath Exception:
 #    The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -209,7 +209,7 @@ if [ -z "${PAYARA_INSTANCE_NAME}" ]; then
     createNewInstance
 else
     # Check if instance already created before running create command
-    if [ ! -d "payara6/glassfish/nodes/${PAYARA_NODE_NAME}/${PAYARA_INSTANCE_NAME}" ]; then
+    if [ ! -d "payara7/glassfish/nodes/${PAYARA_NODE_NAME}/${PAYARA_INSTANCE_NAME}" ]; then
         echo "Instance name provided, but local file system for instance missing, checking if file system or new instance needs to be created."
 
         # Check if an instance with this name is actually registered

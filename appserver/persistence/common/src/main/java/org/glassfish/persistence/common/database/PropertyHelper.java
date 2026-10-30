@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,28 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 
 package org.glassfish.persistence.common.database;
 
-import org.glassfish.persistence.common.I18NHelper;
-
+import com.sun.logging.LogDomains;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
-import java.security.PrivilegedActionException;
-
-import com.sun.logging.LogDomains;
+import org.glassfish.persistence.common.I18NHelper;
 
 /** 
  * @author Mitesh Meswani
@@ -146,40 +139,20 @@ public class PropertyHelper {
     /**
      * Open fileName as input stream inside doPriviledged block
      */
-    private static InputStream openFileInputStream(final String fileName) throws java.io.FileNotFoundException  {
-        try {
-            return (InputStream) AccessController.doPrivileged(
-                new PrivilegedExceptionAction() {
-                    public Object run() throws FileNotFoundException {
-                            return new FileInputStream(fileName);
-                    }
-                }
-           );
-        } catch (PrivilegedActionException e) {
-            // e.getException() should be an instance of FileNotFoundException,
-            // as only "checked" exceptions will be "wrapped" in a
-            // PrivilegedActionException.
-            throw (FileNotFoundException) e.getException();
-        }
-    
+    private static InputStream openFileInputStream(final String fileName) throws java.io.FileNotFoundException {
+        return new FileInputStream(fileName);
     }
 
     /**
      * Open resourcenName as input stream inside doPriviledged block
      */
-    private static InputStream openResourceInputStream(final String resourceName, final ClassLoader classLoader) 
-                                                                        throws java.io.FileNotFoundException  {
-        return (InputStream) AccessController.doPrivileged(
-            new PrivilegedAction() {
-                public Object run() {
-                    if (classLoader != null) {
-                        return classLoader.getResourceAsStream(resourceName);
-                    } else {
-                        return ClassLoader.getSystemResourceAsStream(resourceName);
-                    }
-                }
-            }
-        );
+    private static InputStream openResourceInputStream(final String resourceName, final ClassLoader classLoader)
+            throws FileNotFoundException {
+        if (classLoader != null) {
+            return classLoader.getResourceAsStream(resourceName);
+        }
+
+        return ClassLoader.getSystemResourceAsStream(resourceName);
     }
 
 }

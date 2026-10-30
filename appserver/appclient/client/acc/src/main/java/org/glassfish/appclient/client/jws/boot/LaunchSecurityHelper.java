@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client.jws.boot;
 
@@ -46,7 +47,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.security.Policy;
+import jakarta.security.jacc.Policy;
+import jakarta.security.jacc.PolicyFactory;
 import org.glassfish.appclient.client.acc.AppClientContainer;
 import org.glassfish.appclient.client.acc.Util;
 
@@ -142,7 +144,7 @@ public class LaunchSecurityHelper {
         int idx = firstFreePolicyIndex();
         URI policyFileURI = policyFile.toURI();
         java.security.Security.setProperty("policy.url." + idx, policyFileURI.toASCIIString());
-        Policy p = Policy.getPolicy();
+        Policy p = PolicyFactory.getPolicyFactory().getPolicy();
         p.refresh();
     }
 }

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web;
 
@@ -46,18 +46,24 @@ import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.web.accesslog.AccessLogFormatter;
 import com.sun.enterprise.web.accesslog.CombinedAccessLogFormatterImpl;
 import com.sun.enterprise.web.accesslog.CommonAccessLogFormatterImpl;
+import com.sun.enterprise.web.accesslog.CustomAccessLogFormatter;
 import com.sun.enterprise.web.accesslog.DefaultAccessLogFormatterImpl;
+import com.sun.enterprise.web.accesslog.JsonAccessLogFormatter;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.util.io.FileUtils;
+import fish.payara.web.accesslog.AccessLogHandler;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.catalina.*;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.web.LogFacade;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -69,7 +75,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.internal.api.LogManager;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 
 /**
  * <p>Implementation of the <b>Valve</b> interface that generates a web server
@@ -92,11 +100,13 @@ public final class PEAccessLogValve
     private static final Logger _logger = LogFacade.getLogger();
 
     private static final ResourceBundle _resourceBundle = _logger.getResourceBundle();
-    private final LogManager logManager = org.glassfish.internal.api.Globals.get(LogManager.class);
 
     // Predefined patterns
-    private static final String COMMON_PATTERN = "common";
-    private static final String COMBINED_PATTERN = "combined";
+    private static final String DEFAULT_HANDLER = "default";
+    private static final String COMMON_HANDLER = "common";
+    private static final String COMBINED_HANDLER = "combined";
+    private static final String JSON_HANDLER = "json";
+    private static final String CUSTOM_HANDLER = "custom";
 
     /**
      * Name of the system property whose value specifies the max number of
@@ -143,6 +153,8 @@ public final class PEAccessLogValve
      * The prefix that is added to log file filenames.
      */
     private String prefix = "";
+
+    private Pattern filter = null;
 
     /**
      * Should we rotate our log file?
@@ -289,6 +301,11 @@ public final class PEAccessLogValve
     private AccessLogFormatter formatter;
 
     /**
+     * Classloader for domain-dir/lib
+     */
+    private ClassLoader commonClassLoader;
+
+    /**
      * Simple lock
      */
     private Object lock = new Object();
@@ -389,16 +406,42 @@ public final class PEAccessLogValve
     /**
      * Set the format pattern, first translating any recognized alias.
      *
-     * @param p The new pattern
+     * @param pattern The new pattern
      */
-    public void setPattern(String p) {
-        if (COMMON_PATTERN.equalsIgnoreCase(p)) {
-            formatter = new CommonAccessLogFormatterImpl();
-        } else if (COMBINED_PATTERN.equalsIgnoreCase(p)) {
-            formatter = new CombinedAccessLogFormatterImpl();
+    public void setPattern(String pattern, String handler) {
+        if (handler != null && !handler.isEmpty()) {
+            if (DEFAULT_HANDLER.equalsIgnoreCase(handler)) {
+                formatter = new DefaultAccessLogFormatterImpl(pattern, getContainer());
+            } else if (COMMON_HANDLER.equalsIgnoreCase(handler)) {
+                formatter = new CommonAccessLogFormatterImpl();
+            } else if (COMBINED_HANDLER.equalsIgnoreCase(handler)) {
+                formatter = new CombinedAccessLogFormatterImpl();
+            } else if (JSON_HANDLER.equalsIgnoreCase(handler)) {
+                formatter = new JsonAccessLogFormatter(pattern, getContainer());
+            } else {
+                try {
+                    Class<? extends AccessLogHandler> handlerClass =
+                            Class.forName(handler, true, getClassLoader()).asSubclass(AccessLogHandler.class);
+                    formatter = new CustomAccessLogFormatter(handlerClass.getConstructor().newInstance());
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    _logger.log(Level.SEVERE, "Access Log handler class (" + handler + ") was not found.", e);
+                } catch (ClassCastException e) {
+                    _logger.log(Level.SEVERE, "Access Log handler class (" + handler + ") is not derived from AccessLogFormatter.", e);
+                } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
+                    _logger.log(Level.SEVERE, "Failed to create access log handler:", e);
+                }
+            }
         } else {
-            formatter = new DefaultAccessLogFormatterImpl(p, getContainer());
+            formatter = new DefaultAccessLogFormatterImpl(pattern, getContainer());
         }
+    }
+
+    private ClassLoader getClassLoader() {
+        if (commonClassLoader != null) {
+            return commonClassLoader;
+        }
+
+        return getClass().getClassLoader();
     }
 
     /**
@@ -425,6 +468,19 @@ public final class PEAccessLogValve
             dotLessSuffix = suffix.substring(1);
         } else {
             removeLeadingDotFromSuffix = false;
+        }
+    }
+
+    public void setFilter(String regex) {
+        if (regex == null || regex.trim().isEmpty()) {
+            filter = null;
+        } else {
+            try {
+                filter = Pattern.compile(regex);
+            } catch (PatternSyntaxException e) {
+                _logger.log(Level.WARNING, "Couldn't create access log filter due to RegEx syntax error: " + e.getMessage(), e);
+                filter = null;
+            }
         }
     }
 
@@ -571,6 +627,10 @@ public final class PEAccessLogValve
             return;
         }
 
+        if (filter != null && request instanceof HttpServletRequest hreq && filter.matcher(hreq.getRequestURI()).matches()) {
+            return;
+        }
+
         synchronized (lock){
             // Reset properly the buffer in case of an unexpected
             // exception.
@@ -625,8 +685,12 @@ public final class PEAccessLogValve
             try{
                 charBuffer.flip();
                 String bufString = charBuffer.toString();
-                if (accessLogToConsole && !bufString.isEmpty()) {
-                    logManager.getOutStream().print(bufString.replaceAll("(?m)^", "AccessLog: "));
+                if (accessLogToConsole && !bufString.isEmpty() && _logger.isLoggable(Level.INFO)) {
+                    for (String line : bufString.split("\n")) {
+                        if (!line.isEmpty()) {
+                            _logger.info("AccessLog: " + line);
+                        }
+                    }
                 }
                 ByteBuffer byteBuffer =
                     ByteBuffer.wrap(bufString.getBytes(Charset.defaultCharset()));
@@ -666,7 +730,13 @@ public final class PEAccessLogValve
             String globalAccessLogWriteInterval, String globalAccessLogPrefix) {
             
         setPrefix(vsId + fac.getDefaultAccessLogPrefix());
-        
+        setFilter(httpService.getAccessLog().getFilter());
+
+        ServerContext serverContext = habitat.getService(ServerContext.class);
+        if (serverContext != null) {
+            commonClassLoader = serverContext.getCommonClassLoader();
+        }
+
         boolean start = updateVirtualServerProperties(
                 vsId, vsBean, domain, habitat, globalAccessLogBufferSize,
                 globalAccessLogWriteInterval, globalAccessLogPrefix);
@@ -789,12 +859,17 @@ public final class PEAccessLogValve
 
         // access-log format
         String format = null;
+        String handler = null;
         if (accessLogConfig != null) {
             format = accessLogConfig.getFormat();
+            handler = accessLogConfig.getLogHandler();
+            if (CUSTOM_HANDLER.equalsIgnoreCase(handler)) {
+                handler = accessLogConfig.getCustomLogHandler();
+            }
         } else {
             format = ConfigBeansUtilities.getDefaultFormat();
         }
-        setPattern(format);
+        setPattern(format, handler);
 
         // write-interval-seconds
         int interval = 0;
@@ -894,6 +969,8 @@ public final class PEAccessLogValve
 
         // log to console
         accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());
+
+        setFilter(httpService.getAccessLog().getFilter());
     }
 
     // -------------------------------------------------------- Private Methods

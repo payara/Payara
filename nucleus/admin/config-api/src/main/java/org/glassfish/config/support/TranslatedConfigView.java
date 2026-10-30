@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package org.glassfish.config.support;
 
@@ -129,8 +130,10 @@ public class TranslatedConfigView implements ConfigView {
                 return value;
             }
 
-            if (domainPasswordAliasStore() != null) {
-                if (getAlias(stringValue) != null) {
+            if (getAlias(stringValue) != null) {
+                // First search for alias in value, it's faster than loading alias store. If no alias in value, store doesn't need to load. Speeds up startup.
+                DomainScopedPasswordAliasStore dasPasswordAliasStore = domainPasswordAliasStore();
+                if (dasPasswordAliasStore != null) {
                     try {
                         return getRealPasswordFromAlias(stringValue);
                     } catch (Exception e) {

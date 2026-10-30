@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.resources.util;
 
@@ -53,14 +53,14 @@ import java.util.Enumeration;
  * @author Jagadish Ramu
  */
 public class ResourceUtil {
-
+    @Deprecated
     private static final String RESOURCES_XML_META_INF = "META-INF/glassfish-resources.xml";
+    @Deprecated
     private static final String RESOURCES_XML_WEB_INF = "WEB-INF/glassfish-resources.xml";
     private static final String PAYARA_RESOURCES_XML_META_INF = "META-INF/payara-resources.xml";
     private static final String PAYARA_RESOURCES_XML_WEB_INF = "WEB-INF/payara-resources.xml";
-
-
-
+    
+    @Deprecated
     public static boolean hasGlassfishResourcesXML(ReadableArchive archive, ServiceLocator locator){
         boolean hasResourcesXML = false;
         if (archive != null) {
@@ -83,21 +83,23 @@ public class ResourceUtil {
                                 subArchive.close();
                             }
                             if (answer) {
-                                return true;
+                                hasResourcesXML = true;
+                                break;
                             }
                        }
                     }
                 }else{
                     if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.warType(), locator)){
-                        return archive.exists(RESOURCES_XML_WEB_INF);
+                        hasResourcesXML = archive.exists(RESOURCES_XML_WEB_INF);
                     }else {
-                        return archive.exists(RESOURCES_XML_META_INF);
+                        hasResourcesXML = archive.exists(RESOURCES_XML_META_INF);
                     }
                 }
             }catch(IOException ioe){
                 //ignore
             }
         }
+        
         return hasResourcesXML;
     }
 

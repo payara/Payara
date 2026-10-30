@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.jvnet.hk2.config;
 
@@ -58,13 +59,6 @@ import java.util.Locale;
 public class UnsatisfiedDependencyException extends ConfigurationException {
 
     final AnnotatedElement member;
-
-    /**
-     * @deprecated
-     */
-    public UnsatisfiedDependencyException(AnnotatedElement target) {
-        this(target, null, null);
-    }
     
     public UnsatisfiedDependencyException(AnnotatedElement target, Annotation inject) {
       this(target, inject, null);

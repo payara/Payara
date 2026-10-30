@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -167,9 +168,7 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
         EjbDescriptor ejbDesc = ejbContext.getDescriptor();
         Annotation authAnnotation = ainfo.getAnnotation();
 
-        if (!ejbContext.isInherited() &&
-                (ejbDesc.getMethodPermissionsFromDD() == null ||
-                ejbDesc.getMethodPermissionsFromDD().size() == 0)) {
+        if (!ejbContext.isInherited() && ejbDesc.getMethodPermissionsFromDD().size() == 0) {
             for (MethodDescriptor md : getMethodAllDescriptors(ejbDesc)) {
                 processEjbMethodSecurity(authAnnotation, md, ejbDesc);
             }
@@ -256,18 +255,15 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
     private boolean hasMethodPermissionsFromDD(MethodDescriptor methodDesc,
             EjbDescriptor ejbDesc) {
         Map methodPermissionsFromDD = ejbDesc.getMethodPermissionsFromDD();
-        if (methodPermissionsFromDD != null) {
-            Set allMethods = ejbDesc.getMethodDescriptors();
-            for (Object mdObjsObj : methodPermissionsFromDD.values()) {
-                List mdObjs = (List)mdObjsObj;
-                for (Object mdObj : mdObjs) {
-                    MethodDescriptor md = (MethodDescriptor)mdObj;
-                    for (Object style3MdObj :
-                            md.doStyleConversion(ejbDesc, allMethods)) {
-                        MethodDescriptor style3Md = (MethodDescriptor)style3MdObj;
-                        if (methodDesc.equals(style3Md)) {
-                            return true;
-                        }
+        Set allMethods = ejbDesc.getMethodDescriptors();
+        for (Object mdObjsObj : methodPermissionsFromDD.values()) {
+            List mdObjs = (List) mdObjsObj;
+            for (Object mdObj : mdObjs) {
+                MethodDescriptor md = (MethodDescriptor) mdObj;
+                for (Object style3MdObj : md.doStyleConversion(ejbDesc, allMethods)) {
+                    MethodDescriptor style3Md = (MethodDescriptor) style3MdObj;
+                    if (methodDesc.equals(style3Md)) {
+                        return true;
                     }
                 }
             }

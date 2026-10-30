@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -708,7 +708,14 @@ public abstract class ManagerBase implements Manager {
      */
     @Override
     public void add(Session session) {
-        sessions.put(session.getIdInternal(), session);
+        sessions.compute(session.getIdInternal(), (id, existingSession) -> {
+            if (isSessionVersioningSupported()
+                    && existingSession != null
+                    && existingSession.getVersion() > session.getVersion()) {
+                    return existingSession;
+                }
+            return session;
+        });
         int size = sessions.size();
         if (size > maxActive) {
             synchronized(maxActiveUpdateLock) {

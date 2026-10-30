@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2020-2026] [Payara Foundation and/or its affiliates]
 -->
 
 <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save} "
@@ -99,18 +99,6 @@
                 gf.restRequest( endpoint="#{sessionScope.REST_URL}/nodes/setup-ssh" attrs="#{pageSession.sMap}" method="POST" )
             }
         }
-        if ("#{pageSession.valueMap['type']}=DCOM"){
-            setAttribute(key="endpoint" value="nodes/node/#{pageSession.nodeName}/update-node-dcom");
-            gfr.fixWinPswd();
-            if (!#{pageSession.valueMap['winForce']}){
-                mapPut(map="#{pageSession.valueMap}"  key="winForce" value="false");
-            }
-            // filters valueMap to attrsMap
-            setAttribute(key="attrsList" value={"nodehost", "nodedir", "installdir", "windowsdomain", "windowsuser", "windowspassword"});
-            gfr.prepareNodeCmd();
-            mapPut(map="#{pageSession.attrsMap}"  key="force" value="#{pageSession.valueMap['winForce']}");
-
-        }
         if ("#{pageSession.valueMap['type']}=DOCKER"){
             setAttribute(key="endpoint" value="nodes/node/#{pageSession.nodeName}/update-node-docker");
             setAttribute(key="attrsList" value={"nodehost", "nodedir", "dockerimage", "dockerport", "dockerpasswordfile", "usetls"});
@@ -168,28 +156,6 @@
             }
             gf.restRequest( endpoint="#{sessionScope.REST_URL}/nodes/setup-ssh" attrs="#{pageSession.sMap}" method="POST" )
         }
-    }
-    if ("#{pageSession.valueMap['type']}=DCOM"){
-        gfr.fixWinPswd();
-        //call validate-dcom first
-        if ("#{pageSession.valueMap['validateDcom']}"){
-            createMap(result="#{pageSession.dMap}");
-            mapPut(map="#{pageSession.dMap}", key="host" value="#{pageSession.valueMap['nodehost']}");
-            foreach(var="dattr" list={"windowsuser", "windowsdomain", "windowspassword" "remotetestdir" } ){
-                mapGet(Map="#{pageSession.valueMap}" Key="#{requestScope.dattr}" Value="#{requestScope.dval}");
-                if ("#{requestScope.dval}"){
-                    mapPut(map="#{pageSession.dMap}", key="#{requestScope.dattr}" value="#{requestScope.dval}");
-                }
-            }
-            gf.restRequest( endpoint="#{sessionScope.REST_URL}/nodes/validate-dcom" attrs="#{pageSession.dMap}" method="GET" )
-        }
-        setAttribute(key="attrsList" value={"id", "nodehost", "nodedir", "installdir", "windowsuser", "windowsdomain", "windowspassword", "install" });
-        setAttribute(key="endpoint" value="nodes/create-node-dcom");
-        if (!#{pageSession.valueMap['winForce']}){
-            mapPut(map="#{pageSession.valueMap}"  key="winForce" value="false");
-        }
-        gfr.prepareNodeCmd();
-        mapPut(map="#{pageSession.attrsMap}"  key="force" value="#{pageSession.valueMap['winForce']}");
     }
     if ("#{pageSession.valueMap['type']}=DOCKER"){
         setAttribute(key="attrsList" value={"id", "nodehost", "nodedir", "dockerimage", "dockerport", "dockerpasswordfile", "usetls"});

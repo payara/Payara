@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -51,8 +51,18 @@
             getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
             gf.saveInstanceWeight(rows="#{requestScope.selectedRows}" );
             setAttribute(key="selectedRows" value="${selectedRows}");
-            gf.isClusterName(clusterName="#{pageSession.clusterName}" );
-            
+            // This button is shared by the cluster, deployment-group and standalone instance
+            // pages. Confirm the instances' parent still exists before reporting success, but
+            // only for the parent this page actually has: a deployment-group or standalone page
+            // carries no clusterName, and calling gf.isClusterName with an empty name raises a
+            // misleading "Cannot find specified Cluster Resource" error.
+            if ("!(#{pageSession.clusterName} = #{null})") {
+                gf.isClusterName(clusterName="#{pageSession.clusterName}" );
+            }
+            if ("!(#{pageSession.dgName} = #{null})") {
+                gf.isDGName(dgName="#{pageSession.dgName}" );
+            }
+
             prepareSuccessfulMsg();
             gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
 

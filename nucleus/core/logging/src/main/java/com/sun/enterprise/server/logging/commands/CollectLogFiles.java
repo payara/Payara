@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging.commands;
 
@@ -50,6 +50,7 @@ import com.sun.enterprise.server.logging.LogFacade;
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilterForInstance;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -146,11 +147,13 @@ public class CollectLogFiles implements AdminCommand {
             try {
 
                 String sourceDir = "";
-                if (logFileDetails.contains("${com.sun.aas.instanceRoot}/logs")) {
-                    sourceDir = env.getInstanceRoot() + File.separator + "logs";
-                } else {
-                    sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
+
+                String instanceRoot = env.getInstanceRoot().toString();
+                if (logFileDetails.contains("${com.sun.aas.instanceRoot}")) {
+                    logFileDetails = logFileDetails.replace("${com.sun.aas.instanceRoot}", instanceRoot);
                 }
+
+                sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
 
                 copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report, targetServer.getName());
             } catch (Exception ex) {
@@ -292,11 +295,12 @@ public class CollectLogFiles implements AdminCommand {
 
             try {
                 String sourceDir = "";
-                if (logFileDetails.contains("${com.sun.aas.instanceRoot}/logs")) {
-                    sourceDir = env.getInstanceRoot() + File.separator + "logs";
-                } else {
-                    sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
+                String instanceRoot = env.getInstanceRoot().toString();
+                if (logFileDetails.contains("${com.sun.aas.instanceRoot}")) {
+                    logFileDetails = logFileDetails.replace("${com.sun.aas.instanceRoot}", instanceRoot);
                 }
+
+                sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
 
                 copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report,
                         SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME);
@@ -311,9 +315,18 @@ public class CollectLogFiles implements AdminCommand {
             /******************************************************/
 
 
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
+            Cluster cluster = domain.getClusterNamed(target);
+            List<Server> instances = List.of();
 
-            List<Server> instances = cluster.getInstances();
+            // Check for a cluster first, before checking for a deployment group
+            if (cluster != null) {
+                instances = cluster.getInstances();
+            } else {
+                DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(target);
+                if (deploymentGroup != null) {
+                    instances = deploymentGroup.getInstances();
+                }
+            }
 
             int instanceCount = 0;
             int errorCount = 0;

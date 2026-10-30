@@ -6,7 +6,7 @@ import urllib.request
 import testpayaralib
 
 # Setup
-testpayaralib.PAYARA_PATH_BIN = os.path.abspath(os.environ["PAYARA_HOME"] if "PAYARA_HOME" in os.environ else "../../../../appserver/distributions/payara/target/stage/payara6")
+testpayaralib.PAYARA_PATH_BIN = os.path.abspath(os.environ["PAYARA_HOME"] if "PAYARA_HOME" in os.environ else "../../../../appserver/distributions/payara/target/stage/payara7")
 testpayaralib.ATTEMPTS = 30
 
 errors = 0

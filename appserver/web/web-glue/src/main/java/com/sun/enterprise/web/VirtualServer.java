@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -580,10 +580,27 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 String contextRoot = null;
                 String location = null;
 
-                ConfigBeansUtilities configBeansUtilities = getConfigBeansUtilities();
-                if (configBeansUtilities != null) {
-                    contextRoot = configBeansUtilities.getContextRoot(defaultWebModuleId);
-                    location = configBeansUtilities.getLocation(defaultWebModuleId);
+                // First try to get the location from ApplicationRegistry (works for all scenarios including deployment groups)
+                ApplicationInfo appInfo = appRegistry.get(defaultWebModuleId);
+                if (appInfo != null && appInfo.getSource() != null) {
+                    location = appInfo.getSource().getURI().getPath();
+                    // Get context root from the application metadata
+                    Application app = appInfo.getMetaData(Application.class);
+                    if (app != null && app.isVirtual()) {
+                        com.sun.enterprise.deployment.BundleDescriptor bd = app.getStandaloneBundleDescriptor();
+                        if (bd instanceof com.sun.enterprise.deployment.WebBundleDescriptor) {
+                            contextRoot = ((com.sun.enterprise.deployment.WebBundleDescriptor) bd).getContextRoot();
+                        }
+                    }
+                }
+
+                // Fallback to ConfigBeansUtilities if ApplicationRegistry doesn't have the info
+                if (location == null) {
+                    ConfigBeansUtilities configBeansUtilities = getConfigBeansUtilities();
+                    if (configBeansUtilities != null) {
+                        contextRoot = configBeansUtilities.getContextRoot(defaultWebModuleId);
+                        location = configBeansUtilities.getLocation(defaultWebModuleId);
+                    }
                 }
 
                 if (contextRoot != null && location != null) {
@@ -869,7 +886,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     /**
-     * Configures the valve_ and listener_ properties of this VirtualServer.
+     * Configures the listener_ properties of this VirtualServer.
      */
     protected void configureCatalinaProperties() {
 
@@ -887,9 +904,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             }
 
             if (propName != null) {
-                if (propName.startsWith("valve_")) {
-                    addValve(propValue);
-                } else if (propName.startsWith("listener_")) {
+                if (propName.startsWith("listener_")) {
                     addListener(propValue);
                 } else if (propName.equals("securePagesWithPragma")) {
                     setSecurePagesWithPragma(Boolean.valueOf(propValue));

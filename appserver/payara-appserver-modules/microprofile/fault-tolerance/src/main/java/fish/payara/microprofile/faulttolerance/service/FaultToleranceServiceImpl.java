@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -39,29 +39,23 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
-import fish.payara.microprofile.faulttolerance.*;
+import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
+import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.FaultToleranceServiceConfiguration;
+import fish.payara.microprofile.faulttolerance.otel.OtelMetricsContext;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
-import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.microprofile.metrics.MetricsService;
-import fish.payara.monitoring.collect.MonitoringData;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-
+import fish.payara.opentracing.OpenTelemetryService;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.concurrent.ManagedExecutorService;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 import jakarta.enterprise.context.control.RequestContextController;
 import jakarta.inject.Inject;
 import jakarta.interceptor.InvocationContext;
-
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
@@ -77,10 +71,13 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 
 /**
  * Base Service for MicroProfile Fault Tolerance.
@@ -92,7 +89,7 @@ import java.util.logging.Logger;
 @Service(name = "microprofile-fault-tolerance-service")
 @RunLevel(StartupRunLevel.VAL)
 public class FaultToleranceServiceImpl
-        implements EventListener, FaultToleranceService, MonitoringDataSource, FaultToleranceRequestTracing {
+        implements EventListener, FaultToleranceService, FaultToleranceRequestTracing {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceServiceImpl.class.getName());
 
@@ -111,8 +108,12 @@ public class FaultToleranceServiceImpl
     @Inject
     private MetricsService metricsService;
 
+    @Inject
+    OpenTelemetryService openTelemetryService;
+
     private final ConcurrentMap<MethodKey, FaultToleranceMethodContextImpl> contextByMethod = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, BindableFaultToleranceConfig> configByAppName = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, OtelMetricsContext> metricBridgeByName = new ConcurrentHashMap<>();
     private ExecutorService asyncExecutorService;
     private ScheduledExecutorService delayExecutorService;
 
@@ -127,7 +128,9 @@ public class FaultToleranceServiceImpl
             asyncExecutorService = (ManagedExecutorService) context.lookup(config.getManagedExecutorService());
             delayExecutorService = (ManagedScheduledExecutorService) context.lookup(config.getManagedScheduledExecutorService());
         } catch (NamingException namingException) {
-            throw new RuntimeException("Error initialising Fault Tolerance Service: could not perform lookup for configured managed-executor-service or managed-scheduled-executor-service.", namingException);
+            throw new RuntimeException(
+                    "Error initialising Fault Tolerance Service: could not perform lookup for configured managed-executor-service or managed-scheduled-executor-service.",
+                    namingException);
         }
     }
 
@@ -141,51 +144,22 @@ public class FaultToleranceServiceImpl
     }
 
     @Override
-    @MonitoringData(ns = "ft")
-    public void collect(MonitoringDataCollector collector) {
-        for (Entry<MethodKey, FaultToleranceMethodContextImpl> methodEntry : contextByMethod.entrySet()) {
-            MonitoringDataCollector methodCollector = collector.group(methodEntry.getKey().getMethodId())
-                    .tag("app", methodEntry.getValue().getAppName());
-            FaultToleranceMethodContext context = methodEntry.getValue();
-            BlockingQueue<Thread> concurrentExecutions = context.getConcurrentExecutions();
-            if (concurrentExecutions != null) {
-                collectBulkheadSemaphores(methodCollector, concurrentExecutions);
-                collectBulkheadSemaphores(methodCollector, concurrentExecutions, context.getQueuingOrRunningPopulation());
-            }
-            collectCircuitBreakerState(methodCollector, context.getState());
-        }
-    }
-
-    private static void collectBulkheadSemaphores(MonitoringDataCollector collector,
-            BlockingQueue<Thread> concurrentExecutions) {
-        collector
-                .collect("RemainingConcurrentExecutionsCapacity", concurrentExecutions.remainingCapacity())
-                .collect("ConcurrentExecutions", concurrentExecutions.size());
-    }
-
-    private static void collectBulkheadSemaphores(MonitoringDataCollector collector,
-            BlockingQueue<Thread> concurrentExecutions, AtomicInteger queuingOrRunningPopulation) {
-        collector
-                .collect("WaitingQueuePopulation", queuingOrRunningPopulation.get() - concurrentExecutions.size());
-    }
-
-    private static void collectCircuitBreakerState(MonitoringDataCollector collector, CircuitBreakerState state) {
-        if (state == null) {
-            return;
-        }
-        collector
-                .collect("circuitBreakerHalfOpenSuccessful", state.getHalfOpenSuccessfulResultCounter())
-                .collect("circuitBreakerState", state.getCircuitState().name().charAt(0));
-    }
-
-    @Override
     public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
         return configByAppName.computeIfAbsent(getAppName(context),
                 key -> new BindableFaultToleranceConfig(stereotypes)).bindTo(context);
     }
 
+    private String currentApplicationName() {
+        return invocationManager.getCurrentInvocation().getAppName();
+    }
+
     private MetricsService.MetricsContext getMetricsContext() {
         try {
+            if (openTelemetryService.isEnabled()) {
+                var appName = currentApplicationName();
+                return metricBridgeByName.computeIfAbsent(appName,
+                        name -> new OtelMetricsContext("OTEL Bridge " + name, openTelemetryService.getCurrentMeter()));
+            }
             return metricsService.getContext(true);
         } catch (Exception e) {
             return null;
@@ -201,6 +175,10 @@ public class FaultToleranceServiceImpl
         configByAppName.remove(appInfo.getName());
         contextByMethod.keySet().removeIf(methodKey ->
                 methodKey.targetClass.getClassLoader().equals(appInfo.getAppClassLoader()));
+        var bridge = metricBridgeByName.remove(appInfo.getName());
+        if (bridge != null) {
+            bridge.close();
+        }
     }
 
     /**
@@ -232,7 +210,7 @@ public class FaultToleranceServiceImpl
     }
 
     private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span,
-            InvocationContext context) {
+                                                               InvocationContext context) {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         span.addSpanTag("App Name", currentInvocation.getAppName());
         span.addSpanTag("Component ID", currentInvocation.getComponentId());
@@ -243,13 +221,13 @@ public class FaultToleranceServiceImpl
 
     @Override
     public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
-            RequestContextController requestContextController) {
+                                                        RequestContextController requestContextController) {
         return contextByMethod.computeIfAbsent(new MethodKey(context),
                 methodKey -> createMethodContext(methodKey, context, requestContextController)).boundTo(context, policy);
     }
 
     private FaultToleranceMethodContextImpl createMethodContext(MethodKey methodKey, InvocationContext context,
-            RequestContextController requestContextController) {
+                                                                RequestContextController requestContextController) {
         MetricsService.MetricsContext metricsContext = getMetricsContext();
         MetricRegistry metricRegistry = metricsContext != null ? metricsContext.getBaseRegistry() : null;
         String appName = metricsContext != null ? metricsContext.getName() : "";

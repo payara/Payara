@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2023] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2023-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  *     language governing permissions and limitations under the License.
  *
  *     When distributing the software, include this License Header Notice in each
- *     file and include the License file at glassfish/legal/LICENSE.txt.
+ *     file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -52,11 +52,13 @@ public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverab
     @Override
     public void configure(FeatureContext context) {
         // Only register for application deployments (not the admin console)
-        final Deployment deployment = new PayaraTracingServices().getDeployment();
+        PayaraTracingServices tracingServices = new PayaraTracingServices();
+        final Deployment deployment = tracingServices.getDeployment();
         if (deployment == null || deployment.getCurrentDeploymentContext() == null) {
             return;
         }
-        if (!context.getConfiguration().isRegistered(OpenTelemetryApplicationEventListener.class)) {
+        if (tracingServices.isTracingAvailable() &&
+                !context.getConfiguration().isRegistered(OpenTelemetryApplicationEventListener.class)) {
             context.register(OpenTelemetryApplicationEventListener.class);
         }
     }

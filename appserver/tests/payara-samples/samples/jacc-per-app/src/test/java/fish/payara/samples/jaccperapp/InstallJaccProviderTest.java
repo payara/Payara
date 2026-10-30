@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -81,21 +81,15 @@ public class InstallJaccProviderTest {
         String pomPath = System.getProperty("pomPath");
         System.out.println(pomPath);
         assertNotNull("System property pomPath", pomPath);
-        MavenResolvedArtifact jaccLibrary = Maven.resolver()
-             .loadPomFromFile(pomPath)
-             .resolve("fish.payara.server.internal.tests:jacc-provider-repackaged:jar:jakartaee9:" + System.getProperty("payara.version"))
-             .withTransitivity()
-             .asSingleResolvedArtifact();
         WebArchive archive =
-            create(WebArchive.class)
-                .addClasses(
-                    JaccInstaller.class,
-                    LoggingTestPolicy.class,
-                    ProtectedServlet.class,
-                    TestAuthenticationMechanism.class,
-                    TestIdentityStore.class
-                ).addAsLibraries(jaccLibrary.asFile())
-                ;
+                create(WebArchive.class)
+                        .addClasses(
+                                PolicyRegistrationInstaller.class,
+                                LoggingTestPolicy.class,
+                                ProtectedServlet.class,
+                                TestAuthenticationMechanism.class,
+                                TestIdentityStore.class
+                        );
 
         System.out.println("************************************************************");
         System.out.println(archive.toString(true));

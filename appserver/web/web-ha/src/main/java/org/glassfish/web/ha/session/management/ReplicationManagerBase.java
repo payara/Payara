@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.ha.session.management;
 
@@ -108,6 +108,12 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("in findSession: version=" + version);
         }
+
+        if (isRelaxCacheVersionSemantics() && version == null) {
+            _logger.fine("Relaxed cache version semantics enabled and version is null, treating as version -1");
+            version = "-1";
+        }
+
         if(!this.isSessionIdValid(id) || version == null) {
             return null;
         }

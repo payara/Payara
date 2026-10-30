@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -38,7 +38,7 @@
  * holder.
  * 
  */
-// Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2017-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.utils;
 
@@ -149,24 +149,6 @@ public class JsonUtil {
         }
 
         return result;
-    }
-
-    /**
-     * Converts an object to a JsonValue
-     * <p>
-     * The object must be one of {@link JsonValue}, {@link Collection}, {@link Map}, {@link ResponseBody}, {@link String},
-     * {@link Integer}, {@link Long}, {@link Double}, {@link Boolean}, {@link BigInteger}, {@link BigDecimal},
-     * a class that has a REST model or an array of one of the above.
-     * @param object The object to convert
-     * @param hideConfidentialProperties
-     * @return
-     * @throws JsonException If the object cannot be converted to a JsonValue
-     * @deprecated As of 5.0, replaced by {@link #getJsonValue(Object)} as a more accurately named method
-     * with the removal of Jettison the return value is no longer JSONObject but JsonValue.
-     */
-    @Deprecated
-    public static JsonValue getJsonObject(Object object, boolean hideConfidentialProperties) throws JsonException {
-        return getJsonValue(object, hideConfidentialProperties);
     }
 
     public static JsonObject getJsonForRestModel(RestModel model, boolean hideConfidentialProperties) {

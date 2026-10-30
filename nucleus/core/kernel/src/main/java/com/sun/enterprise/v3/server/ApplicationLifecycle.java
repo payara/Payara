@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,12 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates.
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates.
 
 package com.sun.enterprise.v3.server;
 
-import fish.payara.deployment.transformer.api.JakartaNamespaceDeploymentTransformer;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
@@ -393,8 +391,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             span.finish();
 
-            transformApplication(context, tracing, span);
-
             // containers that are started are not stopped even if
             // the deployment fail, the main reason
             // is that some container do not support to be restarted.
@@ -656,55 +652,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @SuppressWarnings("squid:S2095")
     public Types getDeployableTypes(DeploymentContext context) throws IOException {
         throw new IllegalStateException("This method is not supported anymore");
-    }
-
-    private void transformApplication(ExtendedDeploymentContext context,
-            StructuredDeploymentTracing tracing, SpanSequence span) throws IOException {
-        String transformNS = System.getProperty("fish.payara.deployment.transform.namespace");
-
-        if (Boolean.parseBoolean(transformNS) || transformNS == null) {
-            span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
-
-            Optional<JakartaNamespaceDeploymentTransformer> jakartaNamespaceDeploymentTransformerOptional;
-            try {
-                jakartaNamespaceDeploymentTransformerOptional = ServiceLoader.load(
-                        JakartaNamespaceDeploymentTransformer.class).findFirst();
-            } catch (NoClassDefFoundError exception) {
-                // ClassNotFoundException gets thrown if we've found a service but couldn't instantiate it
-                logger.log(Level.WARNING,
-                        "Caught exception trying to instantiate a deployment transformer, skipping...",
-                        exception);
-                span.finish();
-                return;
-            }
-
-            if (!jakartaNamespaceDeploymentTransformerOptional.isPresent()) {
-                logger.log(Level.INFO, "No deployment transformer implementation found.");
-                span.finish();
-                return;
-            }
-
-            JakartaNamespaceDeploymentTransformer jakartaNamespaceDeploymentTransformerService =
-                    jakartaNamespaceDeploymentTransformerOptional.get();
-
-            jandexIndexer.index(context);
-
-            if (!jandexIndexer.isJakartaEEApplication(context)) {
-                context.getSource().close();
-
-                // DeploymentException will be thrown here if this fails
-                File output = jakartaNamespaceDeploymentTransformerService.transformApplication(context);
-
-                context.getAppProps().setProperty(ServerTags.EMPTY_BEANS_XML_MODE_ALL_PROP, Boolean.TRUE.toString());
-                context.setSource((FileArchive) archiveFactory.createArchive(output));
-
-                context.resetModuleMetaData();
-                tracing.register(context);
-
-                jandexIndexer.reindex(context);
-            }
-            span.finish();
-        }
     }
 
     private void notifyLifecycleInterceptorsBefore(final ExtendedDeploymentContext.Phase phase,
@@ -2312,13 +2259,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public void validateUndeploymentTarget(String target, String name) {
         List<String> referencedTargets = domain.getAllReferencedTargetsForApplication(name);
         if (referencedTargets.size() > 1) {
-            Application app = applications.getApplication(name);
             if (!DeploymentUtils.isDomainTarget(target) && domain.getDeploymentGroupNamed(target) == null) {
-                if (app.isLifecycleModule()) {
-                    throw new IllegalArgumentException(localStrings.getLocalString("delete_lifecycle_on_multiple_targets", "Lifecycle module {0} is referenced by more than one targets. Please remove other references before attempting delete operation.", name));
-                } else {
-                    throw new IllegalArgumentException(localStrings.getLocalString("undeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting undeploy operation.", name));
-                }
+                throw new IllegalArgumentException(localStrings.getLocalString("undeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting undeploy operation.", name));
             }
         }
     }

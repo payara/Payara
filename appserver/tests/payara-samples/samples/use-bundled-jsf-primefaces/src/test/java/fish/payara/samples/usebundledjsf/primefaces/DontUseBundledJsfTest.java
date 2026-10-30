@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -78,7 +78,7 @@ public class DontUseBundledJsfTest {
                 // Don't add payara-web.xml so that useBundledJsf and class loader delegation are not configured
                 // .addAsWebInfResource(new File("src/main/webapp/WEB-INF", "payara-web.xml"))
                 .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.glassfish:jakarta.faces:" + JSF_VERSION))
-                .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.primefaces:primefaces:jar:jakarta:13.0.1"));
+                .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.primefaces:primefaces:jar:jakarta:" + System.getProperty("primefaces.version")));
     }
 
     @Test

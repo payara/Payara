@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
-import com.sun.enterprise.security.SecurityManager;
 import jakarta.inject.Singleton;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
@@ -57,9 +57,7 @@ public class StatelessContainerFactory extends BaseContainerFactory implements
                                      ClassLoader loader,
                                      DeploymentContext deployContext)
             throws Exception {
-        SecurityManager sm = getSecurityManager(ejbDescriptor);
-        StatelessSessionContainer slsbContainer = new StatelessSessionContainer(ejbDescriptor,
-                loader, sm);
+        StatelessSessionContainer slsbContainer = new StatelessSessionContainer(ejbDescriptor, loader, getSecurityManager(ejbDescriptor));
         slsbContainer.initializeHome();
         return slsbContainer;
     }

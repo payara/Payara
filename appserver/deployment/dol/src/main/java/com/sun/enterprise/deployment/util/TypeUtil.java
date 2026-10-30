@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.deployment.util;
 
@@ -295,68 +296,6 @@ public class TypeUtil {
 	return Float.toString(f);
     }
 
-
-    /**
-     * Add commas to a number for "123,456.7" style formatting.
-     * @deprecated Use standard java.* APIs which create the correct
-     *	localized number format.
-     */
-    public static String addCommas(float f) {
-	String floatStr = truncateFloat(f, 0);
-	return addCommas(floatStr);
-    }
-
-
-    /**
-     * Add commas to a number for "123,456.7" style formatting.
-     * @deprecated Use standard java.* APIs which create the correct
-     *	localized number format.
-     */
-    public static String addCommas(String numStr) {
-	int dotIndex = numStr.lastIndexOf('.');
-	String n;
-
-	String fraction = "";
-	if (dotIndex >= 0) {
-	    fraction = numStr.substring(dotIndex);
-	    n = numStr.substring(0, dotIndex);
-	} else {
-	    n = numStr;
-	}
-
-	String val = "";
-	int lastIndex = 0;
-	for (int i = n.length(); i > 0; i -= 3) {
-	    String comma;
-	    if (i > 3) {
-		comma = ",";
-	    } else {
-		comma = "";
-	    }
-	    int start = Math.max(i - 3, 0);
-	    val = comma + n.substring(start, i) + val;
-	    lastIndex = start;
-	}
-	val = n.substring(0, lastIndex) + val + fraction;
-	return val;
-    }
-
-
-    /**
-     * Test if a class is a subclass of another.
-     * @deprecated Use <em>sup.isAssignableFrom(sub)</em>
-     */
-    public static boolean isSubclassOf(Class sub, Class sup) {
-	if (sub == sup) {
-	    return true;
-	}
-	Class superclass = sub.getSuperclass();
-	while (superclass != null && superclass != sup) {
-	    superclass = superclass.getSuperclass();
-	}
-	return (superclass != null);
-    }
-
     /**
      * Get all super-interfaces of a class, excluding the
      * given base interface.
@@ -489,6 +428,10 @@ public class TypeUtil {
      */
     private static boolean sameReturnTypes(Method m1, Method m2) {
         if(m1.getReturnType().equals(m2.getReturnType())) {
+            return true;
+        }
+
+        if (m1.getReturnType().isAssignableFrom(m2.getReturnType())) {
             return true;
         }
 

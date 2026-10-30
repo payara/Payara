@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -53,7 +54,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import jakarta.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -121,11 +122,8 @@ public abstract class CopyConfig implements AdminCommand {
             }
         }
         try {
-            if (!(new File(configConfigDir, "docroot").mkdirs() &&
-                  new File(configConfigDir, "lib/ext").mkdirs())) {
-                throw new IOException(LOCAL_STRINGSs.getLocalString("config.mkdirs",
-                        "error creating config specific directories"));
-            }
+            Files.createDirectories(new File(configConfigDir, "docroot").toPath());
+            Files.createDirectories(new File(configConfigDir, "lib/ext").toPath());
 
             String srcConfigLoggingFile = env.getInstanceRoot().getAbsolutePath() + File.separator + "config" + File.separator
                     + srcConfig + File.separator + ServerEnvironmentImpl.kLoggingPropertiesFileName;

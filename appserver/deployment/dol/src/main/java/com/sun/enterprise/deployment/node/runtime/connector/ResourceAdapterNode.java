@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.node.runtime.connector;
 
@@ -112,10 +113,6 @@ public class ResourceAdapterNode extends RuntimeDescriptorNode {
 	    descriptor.setAttributeValue(ResourceAdapter.STEADY_POOL_SIZE, value);
 	    return true;
 	}
-	if (attributeName.getQName().equals(RuntimeTagNames.MAX_WAIT_TIME_IN_MILLIS)) {
-	    descriptor.setAttributeValue(ResourceAdapter.MAX_WAIT_TIME_IN_MILLIS, value);
-	    return true;
-	}
 	if (attributeName.getQName().equals(RuntimeTagNames.IDLE_TIMEOUT_IN_SECONDS)) {
 	    descriptor.setAttributeValue(ResourceAdapter.IDLE_TIMEOUT_IN_SECONDS, value);
 	    return true;
@@ -137,7 +134,6 @@ public class ResourceAdapterNode extends RuntimeDescriptorNode {
 	setAttribute(raNode, RuntimeTagNames.JNDI_NAME, (String) descriptor.getValue(ResourceAdapter.JNDI_NAME));
 	setAttribute(raNode, RuntimeTagNames.MAX_POOL_SIZE, (String) descriptor.getValue(ResourceAdapter.MAX_POOL_SIZE));
 	setAttribute(raNode, RuntimeTagNames.STEADY_POOL_SIZE, (String) descriptor.getValue(ResourceAdapter.STEADY_POOL_SIZE));
-	setAttribute(raNode, RuntimeTagNames.MAX_WAIT_TIME_IN_MILLIS, (String) descriptor.getValue(ResourceAdapter.MAX_WAIT_TIME_IN_MILLIS));
 	setAttribute(raNode, RuntimeTagNames.IDLE_TIMEOUT_IN_SECONDS, (String) descriptor.getValue(ResourceAdapter.IDLE_TIMEOUT_IN_SECONDS));
 
 	// properties...

@@ -9,11 +9,11 @@
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
  * https://glassfish.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.jms;
 
@@ -235,4 +237,12 @@ public class JMSLoggerInfo {
             action = "unknown"
     )
     public static final String JMSRA_UPGRADE_CHECK_FAILED = LOGMSG_PREFIX + "-00027";
+    
+    @LogMessageInfo(message = "The default broker instance for OpenMQ is using the default admin password, " +
+            "so OpenMQ is running insecurely. It is recommended that you change it using the imqusermgr tool from OpenMQ, " +
+            "and update the JMS Host configuration accordingly to maintain connectivity. " +
+            "To change the JMS Host please refer to the section Administering the Java Message Service from the Payara Documentation. " +
+            "Alternatively if you are not utilizing Java Message Service, you can disable it. " +
+            "This will prevent the embedded OpenMQ server from starting altogether.")
+    public static final String JMSRA_USING_DEFAULT_BROKER_PASSWORD = LOGMSG_PREFIX + "-00028";
 }

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package org.glassfish.admin.rest.adapter;
 
+import com.sun.enterprise.admin.util.AuthenticationAttemptTracker;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.IOException;
@@ -212,11 +214,14 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     localStrings.getLocalString("rest.adapter.auth.forbidden",
                     "Remote access not allowed. If you desire remote access, please turn on secure admin"));
         } catch (LoginException e) {
-            int status = HttpURLConnection.HTTP_UNAUTHORIZED;
-            String msg = localStrings.getLocalString("rest.adapter.auth.userpassword",
-                                                     "Invalid user name or password");
-            res.setHeader(HEADER_AUTHENTICATE, "BASIC");
-            reportError(req, res, status, msg);
+            if (e instanceof AuthenticationAttemptTracker.TooManyRequestsException) {
+                reportError(req, res, 429, e.getMessage()); // HTTP_TOO_MANY_REQUESTS
+            } else {
+                res.setHeader(HEADER_AUTHENTICATE, "BASIC");
+                reportError(req, res, HttpURLConnection.HTTP_UNAUTHORIZED,
+                        localStrings.getLocalString("rest.adapter.auth.userpassword",
+                        "Invalid user name or password"));
+            }
         } catch (Exception e) {
             // TODO: This string is duplicated.  Can we pull this text out of the logging bundle?
             String msg = localStrings.getLocalString("rest.adapter.server.exception",

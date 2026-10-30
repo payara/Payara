@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.io;
 
@@ -52,17 +52,11 @@ import java.io.File;
 public interface DescriptorConstants {
     
     /** Prefix used for S1AS xmls */
+    @Deprecated
     String S1AS_PREFIX = "sun-";
 
-    /** Prefix used for S1AS Cmp xmls */
-    String S1AS_CMP_PREFIX = "sun-cmp-";
-
-    String WLS = "weblogic";
-
-    /** Prefix used for WebLogic xmls */
-    String WLS_PREFIX = "weblogic-";
-
     /** Prefix used for GF xmls */
+    @Deprecated
     String GF_PREFIX = "glassfish-";
     
     String PAYARA_PREFIX = "payara-";
@@ -90,12 +84,15 @@ public interface DescriptorConstants {
     String EJB_IN_WAR_ENTRY = "WEB-INF/ejb-jar.xml";
 
     /** The name of the Sun deployment descriptor entry in ejb module jar. */
+    @Deprecated
     String S1AS_EJB_DD_ENTRY="META-INF"+File.separator+S1AS_PREFIX+"ejb-jar.xml";
 
     /** The Sun ejb deployment descriptor entry inside an ejb jar. */
+    @Deprecated
     String S1AS_EJB_JAR_ENTRY = "META-INF/" + S1AS_PREFIX + "ejb-jar.xml";
 
     /** The Sun ejb deployment descriptor entry inside a war. */
+    @Deprecated
     String S1AS_EJB_IN_WAR_ENTRY = "WEB-INF/" + S1AS_PREFIX + "ejb-jar.xml";
 
     /** The name of the deployment descriptor entry in the web module. */
@@ -108,9 +105,11 @@ public interface DescriptorConstants {
     String WEB_FRAGMENT_JAR_ENTRY = "META-INF/web-fragment.xml";
 
     /** The name of the S1AS deployment descriptor entry in web module. */
+    @Deprecated
     String S1AS_WEB_DD_ENTRY = "WEB-INF" + File.separator + S1AS_PREFIX+"web.xml";
 
     /** The name of the S1AS deployment descriptor entry in web jar. */
+    @Deprecated
     String S1AS_WEB_JAR_ENTRY = "WEB-INF/" + S1AS_PREFIX + "web.xml";
 
     /** The name of the deployment descriptor entry in the rar module. */
@@ -120,41 +119,32 @@ public interface DescriptorConstants {
     String RAR_JAR_ENTRY = "META-INF/ra.xml";
 
     /** The name of the deployment descriptor entry in the rar module */
+    @Deprecated
     String S1AS_RAR_DD_ENTRY = "META-INF"+File.separator+S1AS_PREFIX+"ra.xml";
 
     /** The name of the deployment descriptor entry in the rar jar */
+    @Deprecated
     String S1AS_RAR_JAR_ENTRY = "META-INF/" + S1AS_PREFIX + "ra.xml";
 
-    /** The name of the deployment descriptor entry inside the ear. */
-    String WLS_APPLICATION_JAR_ENTRY = "META-INF/" + WLS_PREFIX + 
-        "application.xml";
-
-    /** The name of the WebLogic deployment descriptor entry in web jar. */
-    String WLS_WEB_JAR_ENTRY = "WEB-INF/" + "weblogic.xml";
-
-    /** The name of the WebLogic deployment descriptor entry in the ejb jar. */
-    String WLS_EJB_JAR_ENTRY = "META-INF/" + WLS_PREFIX + "ejb-jar.xml";
-
-    /** The name of the WebLogic deployment descriptor entry in the rar */
-    String WLS_RAR_JAR_ENTRY = "META-INF/"+ WLS_PREFIX + "ra.xml";
-
-    /** The name of the weblogic deployment descriptor entry in the client jar. */
-    String WLS_APP_CLIENT_JAR_ENTRY = "META-INF/"+ WLS_PREFIX + "application-client.xml";
-
     /** The name of the glassfish deployment descriptor entry inside the ear. */
+    @Deprecated
     String GF_APPLICATION_JAR_ENTRY = "META-INF/" + GF_PREFIX +
         "application.xml";
 
     /** The name of the glassfish deployment descriptor entry in web jar. */
+    @Deprecated
     String GF_WEB_JAR_ENTRY = "WEB-INF/" + GF_PREFIX + "web.xml";
 
     /** The name of the glassfish deployment descriptor entry in the ejb jar. */
+    @Deprecated
     String GF_EJB_JAR_ENTRY = "META-INF/" + GF_PREFIX + "ejb-jar.xml";
 
     /** The name of the glassfish deployment descriptor entry in the war. */
+    @Deprecated
     String GF_EJB_IN_WAR_ENTRY = "WEB-INF/" + GF_PREFIX + "ejb-jar.xml";
 
     /** The name of the glassfish deployment descriptor entry in the client jar. */
+    @Deprecated
     String GF_APP_CLIENT_JAR_ENTRY = "META-INF/"+ GF_PREFIX + "application-client.xml";
     
     /** The name of the Payara deployment descriptor entry in web jar. */
@@ -169,20 +159,8 @@ public interface DescriptorConstants {
     /** The name of the Payara deployment descriptor entry in the client jar. */
     String PAYARA_APP_CLIENT_JAR_ENTRY = "META-INF/"+ PAYARA_PREFIX + "application-client.xml";
 
-    /** The name of the weblogic deployment descriptor entry in the war. */
-    String WLS_EJB_IN_WAR_ENTRY = "WEB-INF/" + WLS_PREFIX + "ejb-jar.xml";
-
-    /** The name of the WEB-INF entry in a war. */
-    String WEB_INF = "WEB-INF";
-
-    // no need for File.separator
-    String WEB_INF_CLASSES_DIR = WEB_INF + "/CLASSES";
-
-    // no need for File.separator
-    String WEB_INF_LIB_DIR = WEB_INF + "/LIB";
-
-    /** The file extension for jsp tag library. */
-    String TAG_LIB_EXT = ".tld";
+    /** The name of the Payara deployment descriptor entry inside the ear. */
+    String PAYARA_APPLICATION_JAR_ENTRY = "META-INF/"+ PAYARA_PREFIX + "application.xml";
 
     /** The name of the deployment descriptor entry in the client jar. */
     String APP_CLIENT_DD_ENTRY = "META-INF" 
@@ -193,35 +171,12 @@ public interface DescriptorConstants {
     String APP_CLIENT_JAR_ENTRY = "META-INF/application-client.xml";
 
     /** The name of the deployment descriptor entry in the client jar. */
-    String S1AS_APP_CLIENT_DD_ENTRY = "META-INF" 
-                                   + File.separator
-                                   + S1AS_PREFIX+"application-client.xml";
+    @Deprecated
+    String S1AS_APP_CLIENT_DD_ENTRY = "META-INF" + File.separator + S1AS_PREFIX + "application-client.xml";
 
     /** The Sun application client entry inside a jar file. */
-    String S1AS_APP_CLIENT_JAR_ENTRY = "META-INF/"
-                                    + S1AS_PREFIX + "application-client.xml";
-
-    /** The manifest file name from an archive. */
-    String MANIFEST_ENTRY = "META-INF" + File.separator + "MANIFEST.MF";
-
-    /** The manifest file name from an archive; without File.separator */
-    String JAR_MANIFEST_ENTRY = "META-INF/MANIFEST.MF";
-
-    /** prefix used for application role mapper key */
-    String APP_ROLEMAPPER_PREFIX = "app_";
-
-    /** prefix used for module role mapper key */
-    String MODULE_ROLEMAPPER_PREFIX = "module_";
-
-    /** The Sun cmp-mapping  descriptor entry in exploded file system. */
-    String S1AS_CMP_MAPPING_DD_ENTRY = "META-INF" 
-                                    + File.separator
-                                    + S1AS_PREFIX 
-                                    + "cmp-mappings.xml";
-
-    /** The Sun cmp-mapping  descriptor entry inside an ejb jar. */
-    String S1AS_CMP_MAPPING_JAR_ENTRY = "META-INF/" 
-                                     + S1AS_PREFIX + "cmp-mappings.xml";
+    @Deprecated
+    String S1AS_APP_CLIENT_JAR_ENTRY = "META-INF/" + S1AS_PREFIX + "application-client.xml";
     
     /** JaxRPC deployment descriptor file */
     String JAXRPC_JAR_ENTRY = "WEB-INF/jaxrpc-ri.xml";
@@ -234,14 +189,4 @@ public interface DescriptorConstants {
 
     /** Persistence Unit Deployment Descriptor entry */
     String PERSISTENCE_DD_ENTRY = "META-INF/persistence.xml";
-
-    /** Object to Relational mapping DD entry */
-    String ORM_DD_ENTRY = "META-INF/orm.xml";
-
-    /** Schema Namespaces for WLS */
-    String WLS_SCHEMA_NAMESPACE_BEA = "http://www.bea.com/ns/weblogic/";
-    String WLS_SCHEMA_NAMESPACE_ORACLE = "http://xmlns.oracle.com/weblogic/";
-
-    /** DTD System IDs for WLS */
-    String WLS_DTD_SYSTEM_ID_BEA = "http://www.beasys.com/servers";
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -39,8 +39,6 @@
  */
 package fish.payara.nucleus.eventbus;
 
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.util.Map;
@@ -54,10 +52,6 @@ import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import com.hazelcast.core.DistributedObject;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.topic.LocalTopicStats;
-import com.hazelcast.topic.impl.TopicService;
 import java.util.UUID;
 
 /**
@@ -67,7 +61,7 @@ import java.util.UUID;
  */
 @Service(name = "payara-event-bus")
 @RunLevel(StartupRunLevel.VAL)
-public class EventBus implements EventListener, MonitoringDataSource {
+public class EventBus implements EventListener {
     
     private static final Logger logger = Logger.getLogger(EventBus.class.getCanonicalName());
     
@@ -83,22 +77,6 @@ public class EventBus implements EventListener, MonitoringDataSource {
     public void postConstruct() {
         events.register(this);
         messageReceivers = new ConcurrentHashMap<>(2);
-    }
-
-    @Override
-    public void collect(MonitoringDataCollector rootCollector) {
-        MonitoringDataCollector eventCollector = rootCollector.in("topic");
-        if (hzCore.isEnabled()) {
-            HazelcastInstance hz = hzCore.getInstance();
-            for (DistributedObject obj : hz.getDistributedObjects()) {
-                if (TopicService.SERVICE_NAME.equals(obj.getServiceName())) {
-                    LocalTopicStats stats = hz.getTopic(obj.getName()).getLocalTopicStats();
-                    eventCollector.group(obj.getName())
-                        .collect("PublishedCount", stats.getPublishOperationCount())
-                        .collect("ReceiveedCount", stats.getReceiveOperationCount());
-                }
-            }
-        }
     }
 
     /**

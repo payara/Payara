@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -69,7 +69,10 @@
         setPageSessionAttribute(key="showCancelButton" value="#{false}" );
         setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
         setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
-        setPageSessionAttribute(key="has2Objects" value="#{false}" );
+        setPageSessionAttribute(key="has2Objects" value="#{true}" );
+        setPageSessionAttribute(key="selfUrl2" value="#{pageSession.parentUrl}");
+        setPageSessionAttribute(key="valueMap2" value="#{pageSession.adminServiceMap}");
+        setPageSessionAttribute(key="onlyUseAttrs2" value={"authRealmName"});
 
     />
     </event>
@@ -108,7 +111,7 @@
                 <sun:textField id="Port" styleClass="required port" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.edJmxConnector.port']}" text="#{pageSession.valueMap['port']}" required="#{true}" />
             </sun:property>
             <sun:property id="RealmNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.edJmxConnector.realmNameLabel}" helpText="$resource{i18n.edJmxConnector.realmNameHelp}" >
-                <sun:textField id="RealmName" styleClass="required" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.edJmxConnector.realmName']}" text="#{pageSession.valueMap['authRealmName']}" required="#{true}" />
+                <sun:textField id="RealmName" styleClass="required" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.edJmxConnector.realmName']}" text="#{pageSession.adminServiceMap['authRealmName']}" required="#{true}" />
             </sun:property>
 
 

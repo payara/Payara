@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,10 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-/*Portions Copyright 2016-2023 Payara Foundation and/or its affiliates
+/*Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 /*
  * Common utility
  */
+
+/* Load dependencies eagerly to prevent issues with loading them asynchrnously later.
+ */
+require(['webui/suntheme/field']);
+require(['webui/suntheme/dropDown']);
+require(['webui/suntheme/upload']);
+require(['webui/suntheme/jumpDropDown']);
+require(['webui/suntheme/hyperlink']);
+require(['webui/suntheme/props']);
+
 
 /* To work around a timing issue where for Firefox 2.0.0.3 on Mac OS X
  * We need to put in a little delay before returning the var
@@ -115,24 +125,23 @@ function getField(theForm, fieldName) {
     return null;
 }
 
-// in case modules are not loaded, return temporary object with empty, but existing data
-function createFakeText(id) {
-    return {
-        id,
-        value: "FAKE"
-    };
-}
-
 // FIXME: suntheme should not be used -- prevents theme from changing
 function getTextElement(componentName) {
+
+    var el;
+
     require(['webui/suntheme/field'], function (field) {
-        var el = field.getInputElement(componentName);
-        if (el === null) {
-            el = document.getElementById(componentName); // This may get too deep inside WS, but it should work as a fall back
+        if(field === "undefined"){
+            return  document.getElementById(componentName);
         }
-        return el;
+
+        var el = field.getInputElement(componentName);
     });
-    return createFakeText(componentName);
+
+    if (el == null) {
+        el = document.getElementById(componentName); // This may get too deep inside WS, but it should work as a fall back
+    }
+    return el;
 }
 
 function getSelectElement(componentName) {
@@ -590,7 +599,7 @@ admingui.nav = {
     requestTreeUpdate: function(source, event, nodeId, params, previousState) {
         // Ping header to make sure header stays "fresh"
         admingui.ajax.pingHeader();
-        jsf.ajax.request(source, event, {
+        faces.ajax.request(source, event, {
             execute: "treeForm treeForm:update",
             render: nodeId + " " + nodeId + "_children",
             onevent: function(data) {
@@ -1102,7 +1111,7 @@ admingui.help = {
 
         // launch the request
         // Note: in help window, don't ping -- only 1 JSF page
-        jsf.ajax.request(tabElement, null, props);
+        faces.ajax.request(tabElement, null, props);
 
         //
         // Use DOM to show/hide the proper tree
@@ -1201,7 +1210,7 @@ function checkPSW(ps1Id, ps2Id, notMatchMsg, emptyMsg) {
 
 
 
-function guiValidate(reqMsg, reqInt, reqPort) {
+function guiValidate(reqMsg, reqInt, reqPort, reqRegex) {
     var inputs = document.getElementsByTagName("input");
     var styleClass = null;
     var component = null;
@@ -1262,6 +1271,14 @@ function guiValidate(reqMsg, reqInt, reqPort) {
                 component.select();
                 component.focus();
                 return showAlert(reqPort + ' ' + getLabel( component ));
+            }
+        }
+
+        if (styleClass.match("regex") && reqRegex !== undefined) {
+            if (!checkForValidRegex(component.value)) {
+                component.select();
+                component.focus();
+                return showAlert(reqRegex + ' ' + getLabel( component ));
             }
         }
     }
@@ -1364,6 +1381,16 @@ function checkForPort(value) {
     if (value.indexOf('${') == 0) return true;
     if (checkForIntValue(value) == false) return false;
     return checkNumbericRange(value, 1, 65535);
+}
+
+function checkForValidRegex(value) {
+    if (value === '') return true;
+    try {
+        new RegExp(value);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 function checkNumbericRange(value, min, max) {
@@ -1999,7 +2026,7 @@ admingui.deploy = {
             var component = obj.document.getElementById(contextRootId);
             if (component != null) {
                 // context root can handle null as default
-                component.placeholder = appName + ' (or as per glassfish-web.xml)';
+                component.placeholder = appName + ' (or as per payara-web.xml)';
             }
         }
     },
@@ -2335,7 +2362,7 @@ admingui.ajax = {
         }
         // Ping header to make sure header stays "fresh"
         admingui.ajax.pingHeader();
-        jsf.ajax.request(component, null, params);
+        faces.ajax.request(component, null, params);
     },
 
     defaultGetCallback: function(xmlReq, target, url) {
@@ -2413,7 +2440,7 @@ admingui.ajax = {
                             result = node.textContent;
                         }
                         if (node.getAttribute('id') === 'jakarta.faces.ViewState') {
-                            // NOTE: see jsf.ajax.doUpdate for more info....
+                            // NOTE: see faces.ajax.doUpdate for more info....
                             viewState = node.firstChild;
                         }
                     }
@@ -2623,7 +2650,7 @@ admingui.ajax = {
         if (typeof(async) === 'undefined') {
             async = true;
         }
-        if (!(typeof(jsf) === 'undefined') && !(typeof(jsf.ajax) === 'undefined')) {
+        if (!(typeof(faces) === 'undefined') && !(typeof(faces.ajax) === 'undefined')) {
             // Warp user's function to make easier to use
             var func = function(data) {
                 if (data.status === 'success') {
@@ -2648,7 +2675,10 @@ admingui.ajax = {
                 }
             } else {
                 // Don't ping b/c this is from the header and therefor is a ping
-                jsf.ajax.request(src, null,
+                faces.ajax.request(src,
+                {
+                    type: 'click',
+                },
                 {
                     execute: 'execButton',
                     render: 'execResp',
@@ -2688,7 +2718,7 @@ admingui.ajax = {
                 execute: '@none',
                 render: '@none'
             };
-            jsf.ajax.request(src, null, options);
+            faces.ajax.request(src, null, options);
         }
     }
 }

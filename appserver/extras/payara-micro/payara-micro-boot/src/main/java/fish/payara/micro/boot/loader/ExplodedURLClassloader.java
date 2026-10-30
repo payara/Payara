@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -64,8 +64,10 @@ import java.util.logging.Logger;
 public class ExplodedURLClassloader extends OpenURLClassLoader {
 
     private final File explodedDir;
-    private static final String JAR_DOMAIN_DIR = "MICRO-INF/runtime/";
-    private static final String LIB_DOMAIN_DIR = "MICRO-INF/lib/";
+    public static final String RUNTIME_DIR_NAME = "runtime";
+    public static final String LIB_DIR_NAME = "lib";
+    private static final String JAR_DOMAIN_DIR = "MICRO-INF/" + RUNTIME_DIR_NAME + "/";
+    private static final String LIB_DOMAIN_DIR = "MICRO-INF/" + LIB_DIR_NAME + "/";
 
     private List<File> filesForDeletion;
 
@@ -110,12 +112,12 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
     private void explodeJars() throws IOException {
 
         // create a runtime jar directory
-        File runtimeDir = new File(explodedDir, "runtime");
+        File runtimeDir = new File(explodedDir, RUNTIME_DIR_NAME);
         runtimeDir.mkdirs();
         registerForDeletion(runtimeDir);
 
         // create a lib directory
-        File libDir = new File(explodedDir,"lib");
+        File libDir = new File(explodedDir, LIB_DIR_NAME);
         libDir.mkdirs();
         registerForDeletion(libDir);
 

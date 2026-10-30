@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2023] [Payara Foundation]
+// Portions Copyright 2016-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.launcher;
 
@@ -141,14 +141,6 @@ public class GFLauncherInfo {
         debug = b;
     }
 
-     /**
-     * Starts the server in upgrade mode
-     * @param b
-     */
-    public void setUpgrade(boolean b) {
-        upgrade = b;
-    }
-
     /**
      * Starts the server and after bootstrapping immediately stop
      * @param b
@@ -201,14 +193,6 @@ public class GFLauncherInfo {
      */
     public boolean isDebug() {
         return debug;
-    }
-
-    /**
-     *
-     * @return true if upgrade mode is on.
-     */
-    public boolean isUpgrade() {
-        return upgrade;
     }
 
     /**
@@ -350,7 +334,6 @@ public class GFLauncherInfo {
         map.put("-verbose", Boolean.toString(verbose));
         map.put("-debug", Boolean.toString(debug));
         map.put("-instancename", instanceName);
-        map.put("-upgrade", Boolean.toString(upgrade));
         map.put("-warmup", Boolean.toString(warmup));
         map.put("-read-stdin", "true"); //always make the server read the stdin for master password, at least.
         
@@ -467,12 +450,6 @@ public class GFLauncherInfo {
             watchdog = true;
         else if(tsb.isFalse())
             watchdog = false;
-
-        tsb = getBoolean("upgrade");
-        if(tsb.isTrue())
-            upgrade = true;
-        else if(tsb.isFalse())
-            upgrade = false;
 
         tsb = getBoolean("warmup");
         if (tsb.isTrue()) {
@@ -628,7 +605,6 @@ public class GFLauncherInfo {
     private boolean verbose = false;
     private boolean watchdog = false;
     private boolean debug = false;
-    private boolean upgrade = false;
     private boolean warmup = false;
     File installDir;
     private File domainParentDir;
@@ -652,6 +628,25 @@ public class GFLauncherInfo {
     private static final String CONFIG_FILENAME = "domain.xml";
     //password tokens -- could be multiple -- launcher should *just* write them onto stdin of server
     final List<String> securityTokens = new ArrayList<String>(); // note: it's package private
+    // Windows-only: password for schtasks /rp when launching under SSH
+    private String windowsPassword;
+    private boolean sshNode;
+
+    public void setWindowsPassword(String password) {
+        windowsPassword = password;
+    }
+
+    public String getWindowsPassword() {
+        return windowsPassword;
+    }
+
+    public void setSshNode(boolean sshNode) {
+        this.sshNode = sshNode;
+    }
+
+    public boolean isSshNode() {
+        return sshNode;
+    }
 
     boolean isVerboseOrWatchdog() {
         return verbose || watchdog;

@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -39,14 +39,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or affiliates -->
 
 <sc:subMenu value="Deploy" id="deployMenu">
 <sc:menuItem value="Web Application" url="#{request.contextPath}/web/webApp/upload.jsf?appType=webApp" />
 <sc:menuItem value="Enterprise Application" url="#{request.contextPath}/layouttest.jsf?page=Enterprise+Application" />
 <sc:menuItem value="EJB Module" url="#{request.contextPath}/layouttest.jsf?page=EJB+Module" />
 <sc:menuItem value="Connector Module" url="#{request.contextPath}/layouttest.jsf?page=Connector+Module" />
-<sc:menuItem value="Lifecycle Module" url="#{request.contextPath}/layouttest.jsf?page=Lifecycle+Module" />
 <sc:menuItem value="App Client Module" url="#{request.contextPath}/layouttest.jsf?page=App+Client+Module" />
 <sc:menuItem value="Custom MBean" url="#{request.contextPath}/layouttest.jsf?page=Custom+MBean" />
 <!--
@@ -63,7 +62,6 @@
     <sc:menuItem value="Web Applications" url="#{request.contextPath}/common/applications/applications.jsf" />
 	<sc:menuItem value="Enterprise Applications" url="#{request.contextPath}/layouttest.jsf?page=Enterprise+Applications" />
 	<sc:menuItem value="EJB Modules" url="#{request.contextPath}/layouttest.jsf?page=EJB+Modules" />
-	<sc:menuItem value="Lifecycle Modules" url="#{request.contextPath}/layouttest.jsf?page=Lifecycle+Modules" />
 	<sc:menuItem value="Application Client Modules" url="#{request.contextPath}/layouttest.jsf?page=Application+Client+Modules" />
     </sc:subMenu>
     <sc:subMenu value="Application Server">
@@ -79,7 +77,6 @@
 	    <sc:menuItem value="Security Settings" url="#{request.contextPath}/common/security/security.jsf" />
 	    <sc:menuItem value="Realms" url="#{request.contextPath}/common/security/realms/realms.jsf" />
             <sc:menuItem value="Admin Audit" url="#{request.contextPath}/common/security/adminAudit/adminAudit.jsf" />
-	    <sc:menuItem value="Audit Modules" url="#{request.contextPath}/common/security/auditModules/auditModules.jsf" />
 	    <sc:menuItem value="JACC Providers" url="#{request.contextPath}/layouttest.jsf?page=JACC+Providers" />
 	    <sc:menuItem value="Thread Pools" url="#{request.contextPath}/layouttest.jsf?page=Thread+Pools" />
 	</sc:subMenu>

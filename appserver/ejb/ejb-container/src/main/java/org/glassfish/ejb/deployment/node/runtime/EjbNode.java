@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.node.runtime;
 
@@ -64,7 +64,6 @@ import java.util.logging.Level;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
-import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.BeanCacheDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.CheckpointAtEndOfMethodDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.FlushAtEndOfMethodDescriptor;
@@ -96,8 +95,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
                                MessageDestinationRefNode.class);
         registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF),
                                ServiceRefNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.CMP), 
-                               CmpNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.MDB_CONNECTION_FACTORY), 
 				MDBConnectionFactoryNode.class);         
         registerElementHandler(new XMLElement(RuntimeTagNames.IOR_CONFIG), 
@@ -175,8 +172,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
             descriptor.getIASEjbExtraDescriptors().setCmtTimeoutInSeconds(Integer.parseInt(value));
         } else if (RuntimeTagNames.USE_THREAD_POOL_ID.equals(qName)) {
             descriptor.getIASEjbExtraDescriptors().setUseThreadPoolId(value);
-        } else if (RuntimeTagNames.CHECKPOINTED_METHODS.equals(qName)) {
-            descriptor.getIASEjbExtraDescriptors().setCheckpointedMethods(value);
         } else if(RuntimeTagNames.PER_REQUEST_LOAD_BALANCING.equals(qName)) {
             descriptor.getIASEjbExtraDescriptors().setPerRequestLoadBalancing(Boolean.valueOf(value));
         } else if(RuntimeTagNames.PAYARA_CLUSTERED_BEAN.equals(qName)) {
@@ -231,9 +226,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
 
     @Override
     public boolean endElement(XMLElement element) {
-        if(RuntimeTagNames.EJB.equals(element.getQName())) {
-            descriptor.getIASEjbExtraDescriptors().parseCheckpointedMethods(descriptor);
-        }
         return super.endElement(element);
     }
     
@@ -283,11 +275,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
 
 	appendTextChild(ejbNode, RuntimeTagNames.PASS_BY_REFERENCE, 
 		String.valueOf(ejbDescriptor.getIASEjbExtraDescriptors().getPassByReference()));
-
-	if (ejbDescriptor instanceof IASEjbCMPEntityDescriptor) {
-	    CmpNode cmpNode = new CmpNode();
-	    cmpNode.writeDescriptor(ejbNode, RuntimeTagNames.CMP, (IASEjbCMPEntityDescriptor) ejbDescriptor);
-	}
 	
         // principal
         if ( Boolean.FALSE.equals(ejbDescriptor.getUsesCallerIdentity()) ) {
@@ -371,7 +358,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
 	    flushNode.writeDescriptor(ejbNode, RuntimeTagNames.FLUSH_AT_END_OF_METHOD, flushMethodDesc);
 	}
 
-        // checkpointed-methods
         // checkpoint-at-end-of-method
         CheckpointAtEndOfMethodDescriptor checkpointMethodDesc = ejbDescriptor.getIASEjbExtraDescriptors().getCheckpointAtEndOfMethodDescriptor();
         if (checkpointMethodDesc!=null) {

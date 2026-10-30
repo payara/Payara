@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.glassfish;
 
-import com.sun.enterprise.util.net.NetUtils;
 import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import com.sun.enterprise.universal.io.SmartFile;
 import java.io.*;
@@ -131,46 +130,6 @@ public class GFLauncherUtils {
         osname = osname.toLowerCase(Locale.ENGLISH);
 
         return osname.contains("windows");
-    }
-
-    /**
-     * This method returns the fully qualified name of the host.  If
-     * the name can't be resolved (on windows if there isn't a domain specified), just 
-     * host name is returned
-     *
-     * @deprecated
-     * @return 
-     * @throws UnknownHostException so it can be handled on a case by case basis
-     * @see NetUtils#getCanonicalHostName
-     */
-    @Deprecated
-    public static String getCanonicalHostName() throws UnknownHostException {
-        return NetUtils.getCanonicalHostName();
-    }
-
-    /**
-     * @deprecated Now part of {@link String} since JDK 1.5
-     * @see String#replace(CharSequence, CharSequence)
-     * @see String#replaceFirst(String, String)
-     */
-    @Deprecated
-    public static String replace(String s, String token, String replace) {
-        if (s == null || s.length() <= 0 || token == null || token.length() <= 0) {
-            return s;
-        }
-
-        int index = s.indexOf(token);
-
-        if (index < 0) {
-            return s;
-        }
-
-        int tokenLength = token.length();
-        String ret = s.substring(0, index);
-        ret += replace;
-        ret += s.substring(index + tokenLength);
-
-        return ret;
     }
 
     /**

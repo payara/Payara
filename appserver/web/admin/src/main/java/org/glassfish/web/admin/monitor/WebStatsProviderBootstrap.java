@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,30 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright 2019-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.admin.monitor;
 
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.external.statistics.CountStatistic;
-import org.glassfish.external.statistics.RangeStatistic;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.config.serverbeans.MonitoringService;
-
-import fish.payara.monitoring.collect.MonitoringDataCollection;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 
 import org.glassfish.hk2.api.PostConstruct;
 
@@ -73,7 +62,7 @@ import jakarta.inject.Singleton;
  */
 @Service(name = "web")
 @Singleton
-public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataSource {
+public class WebStatsProviderBootstrap implements PostConstruct {
 
     private static final String WEB_CONTAINER = "web-container";
 
@@ -196,32 +185,4 @@ public class WebStatsProviderBootstrap implements PostConstruct, MonitoringDataS
         return sb.toString();
     }
 
-    static {
-        MonitoringDataCollection.register(CountStatistic.class,
-                (collector, count) -> collector.collect(count.getName(), count.getCount()));
-        MonitoringDataCollection.register(RangeStatistic.class,
-                (collector, count) -> collector.collect(count.getName(), count.getCurrent()));
-    }
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        MonitoringDataCollector web = collector.in("web");
-        if (!"true".equals(monitoringService.getMonitoringEnabled()) ||
-            !"HIGH".equals(monitoringService.getModuleMonitoringLevels().getWebContainer())) {
-            return;
-        }
-        for (Object provider : webContainerStatsProviderQueue) {
-            web.collectObject(provider, MonitoringDataCollection::collectObject);
-        }
-        for (ConcurrentMap<String, Queue<Object>> entry : vsNameToStatsProviderMap.values()) {
-            for (Entry<String, Queue<Object>> serverEntry : entry.entrySet()) {
-                String monitoringName = serverEntry.getKey();
-                for (Object provider : serverEntry.getValue()) {
-                    if (provider instanceof RequestStatsProvider) {
-                        web.group(monitoringName).collectObject(provider, MonitoringDataCollection::collectObject);
-                    }
-                }
-            }
-        }
-    }
 }

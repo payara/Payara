@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -505,15 +505,8 @@ public final class GlassFishORBManager {
             String initialPort = checkORBInitialPort(orbInitProperties);
 
             String orbInitialHost = checkORBInitialHost(orbInitProperties);
-            String[] orbInitRefArgs;
-            if (System.getProperty(IIOP_ENDPOINTS_PROPERTY) != null &&
-                    !System.getProperty(IIOP_ENDPOINTS_PROPERTY).isEmpty()) {
-                orbInitRefArgs = getORBInitRef(
-                        System.getProperty(IIOP_ENDPOINTS_PROPERTY));
-            } else {
-                // Add -ORBInitRef for INS to work
-                orbInitRefArgs = getORBInitRef(orbInitialHost, initialPort);
-            }
+            // Add -ORBInitRef for INS to work
+            String[] orbInitRefArgs = getORBInitRef(orbInitialHost, initialPort);
 
             // In a server, don't configure any default acceptors so that lazy init
             // can be used.  Actual lazy init setup takes place in PEORBConfigurator
@@ -942,11 +935,6 @@ public final class GlassFishORBManager {
 
         return newArgs;
     }
-
-    // TODO : Move this to naming  NOT needed for V3 FCS
-
-    public static final String IIOP_ENDPOINTS_PROPERTY =
-            "com.sun.appserv.iiop.endpoints";
 
     private static final String IIOP_URL = "iiop:1.2@";
 

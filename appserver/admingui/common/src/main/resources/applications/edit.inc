@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates] -->
 
 
 <sun:propertySheet id="propertySheet">
@@ -93,10 +93,6 @@
             <sun:checkbox id="implicitCdi" disabled="true" label="$resource{i18n.common.Enabled}" selected="#{pageSession.implicitCdiEnabled}" selectedValue="true" />
         </sun:property>
 
-        <sun:property id="cdiDevModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.cdiDevMode}" helpText="$resource{i18n.deploy.cdiDevModeHelp}">
-            <sun:checkbox id="cdiDevMode" label="$resource{i18n.common.Enabled}" selected="#{pageSession.cdiDevModeEnabled}" selectedValue="true" />
-        </sun:property>
-
         <sun:property id="availability" rendered="#{pageSession.finalShowAvail}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
             <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['availabilityEnabled']}" selectedValue="true" />
         </sun:property>
@@ -138,16 +134,12 @@
         <!beforeCreate
             setPageSessionAttribute(key="javaWebStartEnabled" value="true");
             setPageSessionAttribute(key="implicitCdiEnabled" value="true");
-            setPageSessionAttribute(key="cdiDevModeEnabled" value="false");
             foreach (var="oneProp" list="#{pageSession.tableList}") {
                 if (#{requestScope.oneProp.name}=$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}){
                     setPageSessionAttribute(key="javaWebStartEnabled" value="#{requestScope.oneProp.value}");
                 }
                 if (#{requestScope.oneProp.name}=implicitCdiEnabled){
                     setPageSessionAttribute(key="implicitCdiEnabled" value="#{requestScope.oneProp.value}");
-                }
-                if (#{requestScope.oneProp.name}=cdiDevModeEnabled){
-                    setPageSessionAttribute(key="cdiDevModeEnabled" value="#{requestScope.oneProp.value}");
                 }
             }
         />

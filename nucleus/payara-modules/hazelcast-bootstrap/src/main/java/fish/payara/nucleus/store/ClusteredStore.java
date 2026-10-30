@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -12,7 +12,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -38,14 +38,7 @@
  */
 package fish.payara.nucleus.store;
 
-import com.hazelcast.config.MapConfig;
-import com.hazelcast.core.DistributedObject;
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
-import com.hazelcast.map.LocalMapStats;
-import com.hazelcast.map.impl.MapService;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.encryption.PayaraHazelcastEncryptedValueHolder;
@@ -73,7 +66,7 @@ import org.glassfish.internal.api.JavaEEContextUtil.Context;
  */
 @Service(name = "payara-cluster-store")
 @RunLevel(StartupRunLevel.VAL)
-public class ClusteredStore implements EventListener, MonitoringDataSource {
+public class ClusteredStore implements EventListener {
     private static final Logger logger = Logger.getLogger(ClusteredStore.class.getCanonicalName());
 
     @Inject
@@ -88,30 +81,6 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
     @PostConstruct
     public void postConstruct() {
         events.register(this);
-    }
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        if (hzCore.isEnabled()) {
-            try (Context ctx = ctxUtil.empty().pushContext()) {
-                HazelcastInstance hz = hzCore.getInstance();
-                for (DistributedObject obj : hz.getDistributedObjects()) {
-                    if (MapService.SERVICE_NAME.equals(obj.getServiceName())) {
-                        MapConfig config = hz.getConfig().getMapConfig(obj.getName());
-                        if (config.isStatisticsEnabled()) {
-                            IMap<Object, Object> map = hz.getMap(obj.getName());
-                            if (map != null) {
-                                LocalMapStats stats = map.getLocalMapStats();
-                                collector.in("map").group(map.getName())
-                                        .collect("GetCount", stats.getGetOperationCount())
-                                        .collect("PutCount", stats.getPutOperationCount())
-                                        .collect("EntryCount", stats.getOwnedEntryCount());
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     public UUID getInstanceId() {

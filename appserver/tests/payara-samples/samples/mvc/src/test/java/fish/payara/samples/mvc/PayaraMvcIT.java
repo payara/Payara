@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -71,9 +71,8 @@ public class PayaraMvcIT {
                 .addPackage(PayaraMvcIT.class.getPackage())
                 .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/web.xml")), "web.xml")
                 .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/beans.xml")), "beans.xml")
-                .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/faces-config.xml")), "faces-config.xml")
-                .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/views/greet.xhtml")), "views/greet.xhtml")
-                .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/views/salute.xhtml")), "views/salute.xhtml");
+                .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/views/greet.jsp")), "views/greet.jsp")
+                .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/views/salute.jsp")), "views/salute.jsp");
 
         System.out.println(webapp.toString(true));
 

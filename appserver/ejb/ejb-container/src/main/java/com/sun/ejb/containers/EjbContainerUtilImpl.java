@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -56,7 +56,6 @@ import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
-import org.glassfish.ejb.spi.CMPDeployer;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -177,9 +176,6 @@ public class EjbContainerUtilImpl
 
     @Inject
     Provider<Deployment> deploymentProvider;
-
-    @Inject
-    private Provider<CMPDeployer> cmpDeployerProvider;
 
     private  static EjbContainerUtil _me;
 
@@ -460,7 +456,7 @@ public class EjbContainerUtilImpl
 
     @Override
     public boolean isEJBLite() {
-        return (!env.isMicro() && cmpDeployerProvider.get() == null);
+        return env.isMicro();
     }
 
     @Override

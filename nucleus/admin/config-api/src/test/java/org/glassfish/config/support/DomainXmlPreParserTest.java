@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -69,6 +69,7 @@ public class DomainXmlPreParserTest {
         c1i1 = loadURL("parser/c1i1.xml");
         c1i1c1i2 = loadURL("parser/c1i1c1i2.xml");
         noconfigfori1 = loadURL("parser/noconfigfori1.xml");
+        dgi1i2 = loadURL("parser/dgi1i2.xml");
         System.setProperty("AS_DEBUG", "true");
     }
 
@@ -182,7 +183,38 @@ public class DomainXmlPreParserTest {
         }
     }
 
-    private static URL stock, i1, i1i2, c1i1, c1i1c1i2, noconfigfori1;
+
+    @Test
+    public void instanceInSeveralDeploymentGroups() throws DomainXmlPreParserException {
+        System.out.println("instanceInSeveralDeploymentGroups");
+        // dgi1i2.xml: dgA contains i1, dgB contains i1 and i2
+        DomainXmlPreParser pp = new DomainXmlPreParser(dgi1i2, xif, "i1");
+
+        assertEquals(Arrays.asList("dgA", "dgB"), pp.getDGNames());
+        // the union of the members of every group i1 belongs to
+        assertTrue(pp.getDGServerNames().containsAll(Arrays.asList("i1", "i2")));
+    }
+
+    @Test
+    public void instanceInOneDeploymentGroupOnly() throws DomainXmlPreParserException {
+        System.out.println("instanceInOneDeploymentGroupOnly");
+        // i2 is only in dgB, so it must not be told about dgA
+        DomainXmlPreParser pp = new DomainXmlPreParser(dgi1i2, xif, "i2");
+
+        assertEquals(Arrays.asList("dgB"), pp.getDGNames());
+        assertFalse(pp.getDGNames().contains("dgA"));
+    }
+
+    @Test
+    public void instanceInNoDeploymentGroup() throws DomainXmlPreParserException {
+        System.out.println("instanceInNoDeploymentGroup");
+        // i1i2.xml declares no deployment groups at all
+        DomainXmlPreParser pp = new DomainXmlPreParser(i1i2, xif, "i1");
+
+        assertTrue(pp.getDGNames().isEmpty());
+    }
+
+    private static URL stock, i1, i1i2, c1i1, c1i1c1i2, noconfigfori1, dgi1i2;
     private static ClassLoader classLoader = DomainXmlPreParserTest.class.getClassLoader();
     private static XMLInputFactory xif = XMLInputFactory.newInstance();
 }

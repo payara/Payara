@@ -1,19 +1,19 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2024 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -144,7 +144,6 @@ public class ServerTags  {
     public static final String ROOT = "root";
     public static final String SERVER = "server";
     public static final String EJB_CONTAINER = "ejb-container";
-    public static final String CMP_CONTAINER = "cmp-container";
     public static final String MDB_CONTAINER = "mdb-container";
     public static final String WEB_CONTAINER = "web-container";
     public static final String CLASSLOADER = "classloader";
@@ -164,7 +163,6 @@ public class ServerTags  {
     public static final String JMS = "jms";
     public static final String CONNECTOR = "connector";
     public static final String JDO = "jdo";
-    public static final String CMP = "cmp";
     public static final String UTIL = "util";
     public static final String RESOURCE_ADAPTER = "resource-adapter";
     public static final String SYNCHRONIZATION = "synchronization";
@@ -195,7 +193,6 @@ public class ServerTags  {
     public static final String APPLICATION_REF = "application-ref";
     //public static final String ENABLED = "enabled";
     public static final String VIRTUAL_SERVERS = "virtual-servers";
-    public static final String CDI_DEV_MODE_ENABLED_PROP = "cdiDevModeEnabled";
     public static final String EMPTY_BEANS_XML_MODE_ALL_PROP = "emptyBeansXmlModeALL";
     
     //public static final String LB_ENABLED = "lb-enabled";
@@ -264,9 +261,7 @@ public class ServerTags  {
     public static final String DEFAULT_PRINCIPAL = "default-principal";
     public static final String DEFAULT_PRINCIPAL_PASSWORD = "default-principal-password";
     public static final String ANONYMOUS_ROLE = "anonymous-role";
-    public static final String AUDIT_ENABLED = "audit-enabled";
     public static final String JACC = "jacc";
-    public static final String AUDIT_MODULES = "audit-modules";
     public static final String ACTIVATE_DEFAULT_PRINCIPAL_TO_ROLE_MAPPING = "activate-default-principal-to-role-mapping";
     public static final String MAPPED_PRINCIPAL_CLASS = "mapped-principal-class";
     /** Tags for Element transaction-service */
@@ -383,8 +378,6 @@ public class ServerTags  {
     public static final String JMS_AVAILABILITY = "jms-availability";
     //public static final String AVAILABILITY_ENABLED = "availability-enabled";
     public static final String MQ_STORE_POOL_NAME = "mq-store-pool-name";
-    /** Tags for Element profiler */
-    public static final String PROFILER = "profiler";
     //public static final String JVM_OPTIONS = "jvm-options";
     //public static final String NAME = "name";
     public static final String CLASSPATH = "classpath";
@@ -408,10 +401,6 @@ public class ServerTags  {
     //public static final String NAME = "name";
     public static final String POLICY_PROVIDER = "policy-provider";
     public static final String POLICY_CONFIGURATION_FACTORY_PROVIDER = "policy-configuration-factory-provider";
-    /** Tags for Element audit-module */
-    public static final String AUDIT_MODULE = "audit-module";
-    //public static final String NAME = "name";
-    //public static final String CLASSNAME = "classname";
     /** Tags for Element message-security-config */
     public static final String MESSAGE_SECURITY_CONFIG = "message-security-config";
     public static final String AUTH_LAYER = "auth-layer";
@@ -505,7 +494,6 @@ public class ServerTags  {
     public static final String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     public static final String SERVER_NAME = "server-name";
     public static final String REDIRECT_PORT = "redirect-port";
-    public static final String XPOWERED_BY = "xpowered-by";
     //public static final String ENABLED = "enabled";
     /** Tags for Element virtual-server */
     public static final String VIRTUAL_SERVER = "virtual-server";
@@ -538,7 +526,6 @@ public class ServerTags  {
     public static final String HTTP_PROTOCOL = "http-protocol";
     public static final String VERSION = "version";
     public static final String DNS_LOOKUP_ENABLED = "dns-lookup-enabled";
-    public static final String FORCED_RESPONSE_TYPE = "forced-response-type";
     public static final String DEFAULT_RESPONSE_TYPE = "default-response-type";
     public static final String SSL_ENABLED = "ssl-enabled";
     /** Tags for Element http-file-cache */
@@ -685,26 +672,6 @@ public class ServerTags  {
     public static final String MANAGED_THREAD_FACTORY = "managed-thread-factory";
     public static final String MANAGED_EXECUTOR_SERVICE = "managed-executor-service";
     public static final String MANAGED_SCHEDULED_EXECUTOR_SERVICE = "managed-scheduled-executor-service";
-    /** Tags for Element security-map */
-    public static final String SECURITY_MAP = "security-map";
-    public static final String PRINCIPAL = "principal";
-    public static final String USER_GROUP = "user-group";
-    //public static final String NAME = "name"; */
-    /** Tags for Element backend-principal
-    public static final String BACKEND_PRINCIPAL = "backend-principal";
-    public static final String USER_NAME = "user-name";
-    public static final String PASSWORD = "password";
-    /** Tags for Element lifecycle-module */
-    public static final String LIFECYCLE_MODULE = "lifecycle-module";
-    //public static final String DESCRIPTION = "description";
-    //public static final String NAME = "name";
-    //public static final String CLASS_NAME = "class-name";
-    //public static final String CLASSPATH = "classpath";
-    public static final String LOAD_ORDER = "load-order";
-    public static final String IS_FAILURE_FATAL = "is-failure-fatal";
-    //public static final String OBJECT_TYPE = "object-type";
-    //public static final String ENABLED = "enabled";
-    public static final String IS_LIFECYCLE = "isLifecycle";
     public static final String LOAD_SYSTEM_APP_ON_STARTUP = 
         "load-system-app-on-startup";
     /** Tags for Element j2ee-application */

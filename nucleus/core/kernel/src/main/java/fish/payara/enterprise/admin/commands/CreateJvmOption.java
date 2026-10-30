@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -83,9 +83,6 @@ public final class CreateJvmOption implements AdminCommand, AdminCommandSecurity
     @Param(name="target", optional=true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
 
-    @Param(name="profiler", optional=true)
-    Boolean addToProfiler=false;
-
     @Param(name="assignment", primary=true)
     String jvmAssignment;
 
@@ -117,18 +114,8 @@ public final class CreateJvmOption implements AdminCommand, AdminCommandSecurity
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         try {
-            JvmOptionBag bag;
-            if (addToProfiler) { //make sure profiler element exists before creating a JVM option for profiler
-                if (javaConfig.getProfiler() == null) {
-                    report.setMessage(lsm.getString("create.profiler.first"));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-                bag = javaConfig.getProfiler();
-            }
-            else {
-                bag = javaConfig;
-            }
+            JvmOptionBag bag = javaConfig;
+
 
             ActionReport.MessagePart part = report.getTopMessagePart().addChild();
             String validOption = (new MiniXmlParser.JvmOption(jvmAssignment)).option;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -48,6 +48,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.jwt.config.Names;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Arrays;
@@ -109,8 +110,8 @@ public class SignedJWTIdentityStore implements IdentityStore {
         Optional<String> publicKeyLocation = readConfigOptional(Names.VERIFIER_PUBLIC_KEY_LOCATION, properties, config); //mp.jwt.verifyAndParseEncryptedJWT.publickey.location
         Optional<String> publicKey = readConfigOptional(Names.VERIFIER_PUBLIC_KEY, properties, config); //mp.jwt.verifyAndParseEncryptedJWT.publickey
         Optional<String> decryptKeyLocation = readConfigOptional(Names.DECRYPTOR_KEY_LOCATION, properties, config); //mp.jwt.decrypt.key.location
-        publicKeyStore = new JwtPublicKeyStore(readPublicKeyCacheTTL(properties), publicKeyLocation);
-        privateKeyStore = new JwtPrivateKeyStore(readPublicKeyCacheTTL(properties), decryptKeyLocation);
+        publicKeyStore = new JwtPublicKeyStore(readPublicKeyCacheTTL(properties), readKeyCacheRetainOnErrorDuration(properties), publicKeyLocation);
+        privateKeyStore = new JwtPrivateKeyStore(readPublicKeyCacheTTL(properties), readKeyCacheRetainOnErrorDuration(properties), decryptKeyLocation);
 
         // Signing is required by default, it doesn't parse if not signed
         isEncryptionRequired = decryptKeyLocation.isPresent();
@@ -149,12 +150,12 @@ public class SignedJWTIdentityStore implements IdentityStore {
     }
 
     public static Optional<Properties> readVendorProperties() {
-        URL mpJwtResource = currentThread().getContextClassLoader().getResource("/payara-mp-jwt.properties");
+        URL mpJwtResource = currentThread().getContextClassLoader().getResource("payara-mp-jwt.properties");
         Properties properties = null;
         if (mpJwtResource != null) {
-            try {
-                properties = new Properties();
-                properties.load(mpJwtResource.openStream());
+            properties = new Properties();
+            try (InputStream is = mpJwtResource.openStream()) {
+                properties.load(is);
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to load Vendor properties from resource file", e);
             }
@@ -184,6 +185,14 @@ public class SignedJWTIdentityStore implements IdentityStore {
         		.map(Long::valueOf)
         		.map(Duration::ofMillis)
         		.orElseGet( () -> Duration.ofMinutes(5));
+    }
+
+    private Duration readKeyCacheRetainOnErrorDuration(Optional<Properties> properties) {
+        return properties
+                .map(props -> props.getProperty("publicKey.cache.retain-on-error-duration"))
+                .map(Long::valueOf)
+                .map(Duration::ofMillis)
+                .orElse(Duration.ZERO);
     }
     
     private Optional<String> readAudience(Optional<Properties> properties) {

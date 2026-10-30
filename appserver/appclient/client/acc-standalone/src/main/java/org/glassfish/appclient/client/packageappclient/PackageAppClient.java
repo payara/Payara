@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.client.packageappclient;
 
@@ -101,8 +101,10 @@ public class PackageAppClient {
 
     private final static String INDENT = "  ";
 
-    private final static String ACC_CONFIG_FILE_DEFAULT = "/glassfish-acc.xml";
-    private final static String ACC_CONFIG_FILE_DEFAULT_OLD = "/sun-acc.xml";
+    private final static String ACC_CONFIG_FILE_DEFAULT = "/payara-acc.xml";
+
+    private final static String ACC_CONFIG_FILE_DEFAULT_OLD_GLASSFISH = "/glassfish-acc.xml";
+    private final static String ACC_CONFIG_FILE_DEFAULT_OLD_SUN = "/sun-acc.xml";
 
 
     /* DIRS_TO_COPY entries are all relative to the installation directory */
@@ -115,11 +117,13 @@ public class PackageAppClient {
     /* default sun-acc.xml is relative to the installation directory */
     private final static String DEFAULT_ACC_XML =
             DOMAIN_1_CONFIG + ACC_CONFIG_FILE_DEFAULT;
-    private final static String OLD_ACC_XML =
-            DOMAIN_1_CONFIG + ACC_CONFIG_FILE_DEFAULT_OLD;
+    private final static String OLD_ACC_XML_GLASSFISH =
+            DOMAIN_1_CONFIG + ACC_CONFIG_FILE_DEFAULT_OLD_GLASSFISH;
+    private final static String OLD_ACC_XML_SUN =
+            DOMAIN_1_CONFIG + ACC_CONFIG_FILE_DEFAULT_OLD_SUN;
 
     private final static String[] DEFAULT_ACC_CONFIG_FILES = {
-        DEFAULT_ACC_XML, OLD_ACC_XML
+        DEFAULT_ACC_XML, OLD_ACC_XML_GLASSFISH, OLD_ACC_XML_SUN
         };
 
     private final static String IMQJMSRA_APP =

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -76,25 +76,6 @@ public class SetPropertyRule extends Rule {
 
     // ----------------------------------------------------------- Constructors
 
-
-    /**
-     * Construct a "set property" rule with the specified name and value
-     * attributes.
-     *
-     * @param digester The digester with which this rule is associated
-     * @param name Name of the attribute that will contain the name of the
-     *  property to be set
-     * @param value Name of the attribute that will contain the value to which
-     *  the property should be set
-     *
-     * @deprecated The digester instance is now set in the {@link Digester#addRule} method. 
-     * Use {@link #SetPropertyRule(String name, String value)} instead.
-     */
-    public SetPropertyRule(Digester digester, String name, String value) {
-
-        this(name, value);
-
-    }
 
     /**
      * Construct a "set property" rule with the specified name and value

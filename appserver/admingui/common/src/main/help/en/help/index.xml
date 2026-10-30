@@ -15,6 +15,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <index version="2.0">
   <indexitem text="admin realm">
@@ -66,18 +67,6 @@
     <indexitem text="viewing targets (reference)" target="ref-apptargets"></indexitem>
     <indexitem text="viewing web service endpoint information (reference)" target="ref-endpoint"></indexitem>
     <indexitem text="viewing web service endpoint information (task)" target="task-endpoint"></indexitem>
-  </indexitem>
-  <indexitem text="audit modules">
-    <indexitem text="creating (reference)" target="ref-auditmodulenew"></indexitem>
-    <indexitem text="creating (task)" target="task-auditmodulenew"></indexitem>
-    <indexitem text="deleting" target="task-auditmoduledelete"></indexitem>
-    <indexitem text="editing (reference)" target="ref-auditmoduleedit"></indexitem>
-    <indexitem text="editing (task)" target="task-auditmoduleedit"></indexitem>
-    <indexitem text="enabling and disabling" target="task-enabledisableauditmod"></indexitem>
-    <indexitem text="properties" target="ref-auditmoduleprop"></indexitem>
-    <indexitem text="setting active" target="task-setactiveauditmod"></indexitem>
-    <indexitem text="using the default" target="task-usedefaultauditmod"></indexitem>
-    <indexitem text="viewing and configuring" target="ref-auditmodules"></indexitem>
   </indexitem>
   <indexitem text="autodeploy settings for applications (reference)" target="ref-serverinstappsconfig"></indexitem>
   <indexitem text="autodeploy settings for applications (task)" target="task-setadvanceappconfig"></indexitem>
@@ -207,23 +196,11 @@
     <indexitem text="configuring (reference)" target="ref-serverinstjvmpathsettings"></indexitem>
     <indexitem text="configuring (task)" target="task-jvmpathsettings"></indexitem>
   </indexitem>
-  <indexitem text="JVM profiler settings">
-    <indexitem text="configuring (reference)" target="ref-serverinstjvmprofiler"></indexitem>
-    <indexitem text="configuring (task)" target="task-jvmprofilersettings"></indexitem>
-  </indexitem>
   <indexitem text="launching application clients" target="task-appclientlaunch"></indexitem>
   <indexitem text="launching applications (reference)" target="ref-appclientlaunch"></indexitem>
   <indexitem text="launching applications (task)" target="task-applaunch"></indexitem>
   <indexitem text="LDAP realm">
     <indexitem text="properties" target="ref-ldaprealmprop"></indexitem>
-  </indexitem>
-  <indexitem text="lifecycle modules">
-    <indexitem text="creating (reference)" target="ref-lifecyclemodulenew"></indexitem>
-    <indexitem text="creating (task)" target="task-lifecyclemodulenew"></indexitem>
-    <indexitem text="deleting" target="task-lifecyclemoduledelete"></indexitem>
-    <indexitem text="editing (reference)" target="ref-lifecyclemoduleedit"></indexitem>
-    <indexitem text="editing (task)" target="task-lifecyclemoduleedit"></indexitem>
-    <indexitem text="viewing and configuring" target="ref-lifecyclemodules"></indexitem>
   </indexitem>
   <indexitem text="log levels">
     <indexitem text="configuring (reference)" target="ref-eelogginglevels"></indexitem>
@@ -290,7 +267,6 @@
     <indexitem text="listing (reference)" target="ref-pswdaliases"></indexitem>
   </indexitem>
   <indexitem text="properties">
-    <indexitem text="audit modules" target="ref-auditmoduleprop"></indexitem>
     <indexitem text="certificate realm" target="ref-editcertrealm"></indexitem>
     <indexitem text="file realm" target="ref-editfile-adminrealm"></indexitem>
     <indexitem text="JACC providers" target="ref-jaccproviderprop"></indexitem>

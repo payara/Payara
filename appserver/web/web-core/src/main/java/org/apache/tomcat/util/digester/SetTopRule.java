@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -79,45 +79,6 @@ public class SetTopRule extends Rule {
 
 
     // ----------------------------------------------------------- Constructors
-
-
-    /**
-     * Construct a "set parent" rule with the specified method name.  The
-     * "set parent" method's argument type is assumed to be the class of the
-     * parent object.
-     *
-     * @param digester The associated Digester
-     * @param methodName Method name of the "set parent" method to call
-     *
-     * @deprecated The digester instance is now set in the {@link Digester#addRule} method. 
-     * Use {@link #SetTopRule(String methodName)} instead.
-     */
-    public SetTopRule(Digester digester, String methodName) {
-
-        this(methodName);
-
-    }
-
-
-    /**
-     * Construct a "set parent" rule with the specified method name.
-     *
-     * @param digester The associated Digester
-     * @param methodName Method name of the "set parent" method to call
-     * @param paramType Java class of the "set parent" method's argument
-     *  (if you wish to use a primitive type, specify the corresonding
-     *  Java wrapper class instead, such as <code>java.lang.Boolean</code>
-     *  for a <code>boolean</code> parameter)
-     *
-     * @deprecated The digester instance is now set in the {@link Digester#addRule} method. 
-     * Use {@link #SetTopRule(String methodName, String paramType)} instead.
-     */
-    public SetTopRule(Digester digester, String methodName,
-                      String paramType) {
-
-        this(methodName, paramType);
-
-    }
 
     /**
      * Construct a "set parent" rule with the specified method name.  The

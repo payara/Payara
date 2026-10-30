@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,33 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl.util;
-
-import static java.util.logging.Level.FINE;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import jakarta.annotation.ManagedBean;
-import jakarta.inject.Inject;
-import javax.naming.NamingException;
-
-import org.glassfish.api.admin.ProcessEnvironment;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.container.common.spi.ManagedBeanManager;
@@ -75,6 +51,26 @@ import com.sun.enterprise.deployment.InjectionInfo;
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import jakarta.inject.Inject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.NamingException;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
+
+import static java.util.logging.Level.FINE;
 
 /**
  * Implementation of InjectionManager.
@@ -263,38 +259,28 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
         try {
 
-            ManagedBean managedBeanAnn = clazz.getAnnotation(ManagedBean.class);
-
             ManagedBeanManager managedBeanMgr = serviceLocator.getService(ManagedBeanManager.class);
 
-            if (managedBeanAnn != null) {
 
-                // EE style @ManagedBean
+            JCDIService cdiService = serviceLocator.getService(JCDIService.class);
+
+            if (cdiService != null && cdiService.isCurrentModuleJCDIEnabled()) {
 
                 // Create , inject, and call PostConstruct via managed bean manager
                 managedObject = managedBeanMgr.createManagedBean(clazz);
 
             } else {
 
-                JCDIService cdiService = serviceLocator.getService(JCDIService.class);
+                // Not in a 299-enabled module and not annoated with @ManagedBean, so
+                // just instantiate using new and perform injection
+                Constructor<T> noArgCtor = clazz.getConstructor();
 
-                if (cdiService != null && cdiService.isCurrentModuleJCDIEnabled()) {
+                managedObject = noArgCtor.newInstance();
 
-                    // Create , inject, and call PostConstruct via managed bean manager
-                    managedObject = managedBeanMgr.createManagedBean(clazz);
-
-                } else {
-
-                    // Not in a 299-enabled module and not annoated with @ManagedBean, so
-                    // just instantiate using new and perform injection
-                    Constructor<T> noArgCtor = clazz.getConstructor();
-
-                    managedObject = noArgCtor.newInstance();
-
-                    // Inject and call PostConstruct
-                    injectInstance(managedObject);
-                }
+                // Inject and call PostConstruct
+                injectInstance(managedObject);
             }
+
         } catch (Exception e) {
             throw new InjectionException(localStrings.getLocalString("injection-manager.error-creating-managed-object",
                     "Error creating managed object for class: {0}", clazz), e);
@@ -325,38 +311,27 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
         try {
 
-            ManagedBean managedBeanAnn = clazz.getAnnotation(ManagedBean.class);
-
             ManagedBeanManager managedBeanMgr = serviceLocator.getService(ManagedBeanManager.class);
 
-            if (managedBeanAnn != null) {
+            JCDIService jcdiService = serviceLocator.getService(JCDIService.class);
 
-                // EE style @ManagedBean
+            if ((jcdiService != null) && jcdiService.isCurrentModuleJCDIEnabled()) {
 
                 // Create , inject, and call PostConstruct (if necessary) via managed bean manager
                 managedObject = managedBeanMgr.createManagedBean(clazz, invokePostConstruct);
 
             } else {
+                // Not in a 299-enabled module and not annoated with @ManagedBean, so
+                // just instantiate using new and perform injection
+                Constructor<T> noArgCtor = clazz.getConstructor();
 
-                JCDIService jcdiService = serviceLocator.getService(JCDIService.class);
+                managedObject = noArgCtor.newInstance();
 
-                if ((jcdiService != null) && jcdiService.isCurrentModuleJCDIEnabled()) {
+                // Inject and call PostConstruct if necessary
+                injectInstance(managedObject, invokePostConstruct);
 
-                    // Create , inject, and call PostConstruct (if necessary) via managed bean manager
-                    managedObject = managedBeanMgr.createManagedBean(clazz, invokePostConstruct);
-
-                } else {
-                    // Not in a 299-enabled module and not annoated with @ManagedBean, so
-                    // just instantiate using new and perform injection
-                    Constructor<T> noArgCtor = clazz.getConstructor();
-
-                    managedObject = noArgCtor.newInstance();
-
-                    // Inject and call PostConstruct if necessary
-                    injectInstance(managedObject, invokePostConstruct);
-
-                }
             }
+
 
         } catch (Exception e) {
             throw new InjectionException(localStrings.getLocalString("injection-manager.error-creating-managed-object",
@@ -388,8 +363,6 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
         Class managedObjectClass = managedObject.getClass();
 
-        ManagedBean managedBeanAnn = (ManagedBean) managedObjectClass.getAnnotation(ManagedBean.class);
-
         ManagedBeanManager managedBeanMgr = serviceLocator.getService(ManagedBeanManager.class);
 
         JCDIService jcdiService = serviceLocator.getService(JCDIService.class);
@@ -400,19 +373,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
             managedBeanMgr.destroyManagedBean(managedObject, validate);
 
         } else {
-
-            // If the object's class has @ManagedBean it's a managed bean. Otherwise, ask
-            // managed bean manager.
-            boolean isManagedBean = (managedBeanAnn != null) || managedBeanMgr.isManagedBean(managedObject);
-
-            if (isManagedBean) {
-
-                managedBeanMgr.destroyManagedBean(managedObject, validate);
-
-            } else {
-
-                this.invokeInstancePreDestroy(managedObject, validate);
-            }
+            this.invokeInstancePreDestroy(managedObject, validate);
         }
 
     }
@@ -579,20 +540,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                                     "Injecting dependency with logical name: {0} into field: {1} on class: {2}", next.getComponentEnvName(),
                                     f, clazz));
                         }
-
-                        final Object value = injectedValue;
-                        // Wrap actual value insertion in doPrivileged to
-                        // allow for private/protected field access.
-                        if (System.getSecurityManager() != null) {
-                            java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
-                                public java.lang.Object run() throws Exception {
-                                    f.set(instance, value);
-                                    return null;
-                                }
-                            });
-                        } else {
-                            f.set(instance, value);
-                        }
+                        f.set(instance, injectedValue);
                     } else if (target.isMethodInjectable()) {
 
                         final Method m = getMethod(next, target, clazz);
@@ -615,18 +563,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                         }
 
                         final Object value = injectedValue;
-                        if (System.getSecurityManager() != null) {
-                            // Wrap actual value insertion in doPrivileged to
-                            // allow for private/protected field access.
-                            java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
-                                public java.lang.Object run() throws Exception {
-                                    m.invoke(instance, new Object[] { value });
-                                    return null;
-                                }
-                            });
-                        } else {
-                            m.invoke(instance, new Object[] { value });
-                        }
+                        m.invoke(instance, new Object[] { value });
 
                     }
                 }
@@ -649,17 +586,10 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                         "Calling lifecycle method: {0} on class: {1}", lifecycleMethod, lifecycleMethod.getDeclaringClass()));
             }
 
-            // Wrap actual value insertion in doPrivileged to
-            // allow for private/protected field access.
-            java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
-                public java.lang.Object run() throws Exception {
-                    if (!lifecycleMethod.isAccessible()) {
-                        lifecycleMethod.setAccessible(true);
-                    }
-                    lifecycleMethod.invoke(instance);
-                    return null;
-                }
-            });
+            if (!lifecycleMethod.isAccessible()) {
+                lifecycleMethod.setAccessible(true);
+            }
+            lifecycleMethod.invoke(instance);
         } catch (Throwable t) {
             String msg = localStrings.getLocalString("injection-manager.exception-invoke-lifecycle-method",
                     "Exception attempting invoke lifecycle method: {0}", lifecycleMethod);
@@ -675,9 +605,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
     }
 
     private Field getField(InjectionTarget target, Class resourceClass) throws Exception {
-
         Field f = target.getField();
-
         if (f == null) {
             try {
                 // Check for the given field within the resourceClass only.
@@ -685,14 +613,9 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                 f = resourceClass.getDeclaredField(target.getFieldName());
 
                 final Field finalF = f;
-                java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
-                    public java.lang.Object run() throws Exception {
-                        if (!finalF.isAccessible()) {
-                            finalF.setAccessible(true);
-                        }
-                        return null;
-                    }
-                });
+                if (!finalF.isAccessible()) {
+                    finalF.setAccessible(true);
+                }
 
             } catch (java.lang.NoSuchFieldException nsfe) {
             }
@@ -725,14 +648,9 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                     target.setMethod(m);
 
                     final Method finalM = m;
-                    java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
-                        public java.lang.Object run() throws Exception {
-                            if (!finalM.isAccessible()) {
-                                finalM.setAccessible(true);
-                            }
-                            return null;
-                        }
-                    });
+                    if (!finalM.isAccessible()) {
+                        finalM.setAccessible(true);
+                    }
 
                     break;
                 }

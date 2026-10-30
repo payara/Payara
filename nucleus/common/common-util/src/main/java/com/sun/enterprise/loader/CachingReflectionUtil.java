@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2024-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -56,18 +56,20 @@ public class CachingReflectionUtil {
     private static final Map<String, Field> fieldCache = new ConcurrentHashMap<>();
 
     public static Class<?> getClassFromCache(String className, ClassLoader classLoader) {
-        var cls = classCache.computeIfAbsent(className, k -> {
-            try {
-                return classLoader.loadClass(className);
-            } catch (ClassNotFoundException e) {
-                logger.log(Level.FINE, "Class not found: " + className, e);
-                return null;
-            }
-        });
+        var cls = classCache.computeIfAbsent(className, k -> getClass(className, classLoader));
         if (cls != null && cls.getClassLoader() == classLoader) {
             classCache.remove(cls.getName());
         }
         return cls;
+    }
+
+    public static Class<?> getClass(String className, ClassLoader classLoader) {
+        try {
+            return classLoader.loadClass(className);
+        } catch (ClassNotFoundException e) {
+            logger.log(Level.FINE, "Class not found: " + className, e);
+            return null;
+        }
     }
 
     public static Method getMethodFromCache(Class<?> cls, String methodName, boolean isPrivate, Class<?>... parameterTypes) {
@@ -88,19 +90,21 @@ public class CachingReflectionUtil {
     }
 
     public static Field getFieldFromCache(Class<?> cls, String fieldName, boolean isPrivate) {
-        return fieldCache.computeIfAbsent(fieldName, k -> {
-            try {
-                if (isPrivate) {
-                    Field field = cls.getDeclaredField(fieldName);
-                    field.setAccessible(true);
-                    return field;
-                } else {
-                    return cls.getField(fieldName);
-                }
-            } catch (NoSuchFieldException e) {
-                logger.log(Level.FINE, "Field not found: " + fieldName, e);
-                return null;
+        return fieldCache.computeIfAbsent(fieldName, k -> getField(cls, fieldName, isPrivate));
+    }
+
+    public static Field getField(Class<?> cls, String fieldName, boolean isPrivate) {
+        try {
+            if (isPrivate) {
+                Field field = cls.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return field;
+            } else {
+                return cls.getField(fieldName);
             }
-        });
+        } catch (NoSuchFieldException e) {
+            logger.log(Level.FINE, "Field not found: " + fieldName, e);
+            return null;
+        }
     }
 }

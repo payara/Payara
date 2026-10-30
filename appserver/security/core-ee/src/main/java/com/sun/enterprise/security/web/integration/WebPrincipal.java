@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.web.integration;
 
 import java.security.Principal;
@@ -46,14 +46,14 @@ import java.util.Arrays;
 
 import com.sun.enterprise.security.auth.realm.certificate.OID;
 
-import org.glassfish.security.common.PrincipalImpl;
+import org.glassfish.security.common.UserNameAndPassword;
 
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityContextProxy;
 
 import javax.security.auth.x500.X500Principal;
 
-public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy {
+public class WebPrincipal extends UserNameAndPassword implements SecurityContextProxy {
 
     private static final long serialVersionUID = 1L;
 
@@ -63,11 +63,16 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
     private final SecurityContext securityContext;
     private Principal customPrincipal;
 
+    public WebPrincipal(UserNameAndPassword principal, SecurityContext context) {
+        super(principal.getName(), principal.getPassword());
+        this.useCertificate = false;
+        this.securityContext = context;
+    }
+
+
     public WebPrincipal(Principal principal, SecurityContext context) {
         super(principal.getName());
-        if (!(principal instanceof PrincipalImpl)) {
-            customPrincipal = principal;
-        }
+        this.customPrincipal = principal;
         this.useCertificate = false;
         this.securityContext = context;
     }
@@ -98,11 +103,6 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         this.securityContext = context;
     }
 
-    public char[] getPassword() {
-        // Copy the password to another reference and return the reference
-        return password == null ? null : Arrays.copyOf(password, password.length);
-    }
-
     public X509Certificate[] getCertificates() {
         return certificates;
     }
@@ -116,14 +116,6 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         return securityContext;
     }
 
-    @Override
-    public String getName() {
-        if (customPrincipal == null) {
-            return super.getName();
-        }
-
-        return customPrincipal.getName();
-    }
 
     @Override
     public boolean equals(Object another) {
@@ -161,13 +153,13 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
             // Use the principal name from the security context, ensuring the context caller principal and
             // the web principal have the same name.
             //
-            // This will typically be an org.glassfish.security.common.PrincipalImpl which as its name has
+            // This will typically be an org.glassfish.security.common.UserPrincipal which as its name has
             // the name obtained from javax.security.auth.x500.X500Principal, which is obtained from
             // certificates[0].getSubjectX500Principal().
             //
             // I.e. the internal principal in the security context is effectively created via:
             //
-            // new PrincipalImpl(certificates[0].getSubjectX500Principal());
+            // new UserNameAndPassword(certificates[0].getSubjectX500Principal());
             //
             // The format of the X.500 distinguished name (DN) returned here will then be RFC 2253, e.g.
             // C=UK,ST=lak,L=zak,O=kaz,OU=bar,CN=lfoo

@@ -11,12 +11,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -41,7 +41,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 
 <!-- Generated from default-domain.xml.template -->
 <!-- Avoid manual edits of this file. Run "asadmin verify-domain-xml" otherwise.-->
@@ -57,11 +57,6 @@
       <!-- System Web Module - DO NOT DELETE! -->
     </web-module>
     <web-module availability-enabled="false" context-root="/__wstx-services" directory-deployed="true" enabled="true" location="${com.sun.aas.installRoot}/lib/install/applications/wstx-services" name="WSTXServices" object-type="system-all"/>
-    <lifecycle-module class-name="com.sun.jbi.framework.sun.SunASJBIBootstrap" classpath="${com.sun.aas.installRoot}/jbi/lib/jbi_framework.jar" enabled="true" is-failure-fatal="false" name="JBIFramework" object-type="system-all">
-      <description>"JBI Framework LifecycleModule"</description>
-      <property name="com.sun.jbi.home" value="${com.sun.aas.installRoot}/jbi"/>
-    </lifecycle-module>
-    <lifecycle-module class-name="com.sun.xml.ws.transport.tcp.server.glassfish.WSTCPLifeCycleModule" classpath="${com.sun.aas.installRoot}/lib/webservices-rt.jar" enabled="true" is-failure-fatal="false" name="WSTCPConnectorLCModule" object-type="system-all"/>
   </applications>
   <resources>
       <jdbc-resource enabled="true" jndi-name="jdbc/__TimerPool" object-type="system-admin" pool-name="__TimerPool"/>
@@ -101,13 +96,13 @@
     <config dynamic-reconfiguration-enabled="true" name="server-config">
       <http-service>
         <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%" rotation-enabled="true" rotation-interval-in-minutes="15" rotation-policy="time" rotation-suffix="yyyy-MM-dd"/>
-        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="server" enabled="true" family="inet" id="http-listener-1" port="8080" security-enabled="false" server-name="" xpowered-by="true">
+        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="server" enabled="true" family="inet" id="http-listener-1" port="8080" security-enabled="false" server-name="">
           <property name="proxiedProtocols" value="ws/tcp"/>
         </http-listener>
-        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="server" enabled="true" family="inet" id="http-listener-2" port="8181" security-enabled="true" server-name="" xpowered-by="true">
+        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="server" enabled="true" family="inet" id="http-listener-2" port="8181" security-enabled="true" server-name="">
           <ssl cert-nickname="s1as" client-auth-enabled="false" tls-enabled="true" tls-rollback-enabled="true"/>
         </http-listener>
-        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="__asadmin" enabled="true" family="inet" id="admin-listener" port="4848" security-enabled="false" server-name="" xpowered-by="true"/>
+        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="__asadmin" enabled="true" family="inet" id="admin-listener" port="4848" security-enabled="false" server-name=""/>
         <virtual-server hosts="${com.sun.aas.hostName}" http-listeners="http-listener-1,http-listener-2" id="server" log-file="${com.sun.aas.instanceRoot}/logs/server.log" state="on">
           <property name="docroot" value="${com.sun.aas.instanceRoot}/docroot"/>
           <property name="accesslog" value="${com.sun.aas.instanceRoot}/logs/access"/>
@@ -157,9 +152,9 @@
       </ejb-container>
       <mdb-container idle-timeout-in-seconds="600" max-pool-size="32" pool-resize-quantity="8" steady-pool-size="0"/>
       <log-service alarms="false" file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000" log-rotation-timelimit-in-minutes="0" log-to-console="false" retain-error-statistics-for-hours="5" use-system-logging="false">
-        <module-log-levels admin="INFO" classloader="INFO" cmp="INFO" cmp-container="INFO" configuration="INFO" connector="INFO" corba="INFO" deployment="INFO" ejb-container="INFO" group-management-service="INFO" javamail="INFO" jaxr="INFO" jaxrpc="INFO" jdo="INFO" jms="INFO" jta="INFO" jts="INFO" management-event="INFO" mdb-container="INFO" naming="INFO" node-agent="INFO" resource-adapter="INFO" root="INFO" saaj="INFO" security="INFO" self-management="INFO" server="INFO" synchronization="INFO" util="INFO" verifier="INFO" web-container="INFO"/>
+        <module-log-levels admin="INFO" classloader="INFO" configuration="INFO" connector="INFO" corba="INFO" deployment="INFO" ejb-container="INFO" group-management-service="INFO" javamail="INFO" jaxr="INFO" jaxrpc="INFO" jdo="INFO" jms="INFO" jta="INFO" jts="INFO" management-event="INFO" mdb-container="INFO" naming="INFO" node-agent="INFO" resource-adapter="INFO" root="INFO" saaj="INFO" security="INFO" self-management="INFO" server="INFO" synchronization="INFO" util="INFO" verifier="INFO" web-container="INFO"/>
       </log-service>
-      <security-service activate-default-principal-to-role-mapping="false" anonymous-role="AttributeDeprecated" audit-enabled="false" audit-modules="default" default-realm="file" jacc="default">
+      <security-service activate-default-principal-to-role-mapping="false" anonymous-role="AttributeDeprecated" default-realm="file" jacc="default">
         <!-- All administrative users use this realm by default. -->
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
           <property name="file" value="${com.sun.aas.instanceRoot}/config/admin-keyfile"/>
@@ -172,10 +167,7 @@
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
     </auth-realm>
-        <jacc-provider name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl"></jacc-provider>
-        <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
-          <property name="auditOn" value="false"/>
-        </audit-module>
+        <jacc-provider name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory" policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy"></jacc-provider>
         <message-security-config auth-layer="SOAP">
           <!-- turned off by default -->
           <provider-config class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-id="XWS_ClientProvider" provider-type="client">

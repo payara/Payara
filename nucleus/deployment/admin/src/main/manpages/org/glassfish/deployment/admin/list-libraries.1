@@ -4,7 +4,7 @@ NAME
        list-libraries - lists library JAR files on GlassFish Server
 
 SYNOPSIS
-           list-libraries [--help] [--type={common|ext|app}]
+           list-libraries [--help] [--type={common|ext|app|war}]
 
 DESCRIPTION
        The list-libraries subcommand lists library archive files on GlassFish
@@ -34,6 +34,10 @@ OPTIONS
            app
                Lists the library files for the application-specific class
                loader directory, domain-dir/lib/applibs.
+
+           war
+               Lists the library files for the war-packaged class loader
+               directory, domain-dir/lib/warlibs
 
            For more information about these directories, see "Class Loaders"
            in Oracle GlassFish Server Application Development Guide.

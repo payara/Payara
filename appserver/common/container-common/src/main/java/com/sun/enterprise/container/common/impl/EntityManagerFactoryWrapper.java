@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,39 +37,49 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 package com.sun.enterprise.container.common.impl;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.logging.LogDomains;
+import jakarta.persistence.Cache;
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnitTransactionType;
+import jakarta.persistence.PersistenceUnitUtil;
+import jakarta.persistence.Query;
+import jakarta.persistence.SchemaManager;
+import jakarta.persistence.SynchronizationType;
+import jakarta.persistence.TypedQueryReference;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.metamodel.Metamodel;
 import org.glassfish.api.invocation.ComponentInvocation;
-import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
-import jakarta.persistence.EntityGraph;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Cache;
-import jakarta.persistence.PersistenceUnitUtil;
-import jakarta.persistence.Query;
-import jakarta.persistence.SynchronizationType;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.metamodel.Metamodel;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Logger;
+
+import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
 
 /**
  * Wrapper for application references to entity manager factories.
  * A new instance of this class will be created for each injected
  * EntityManagerFactory reference or each lookup of an EntityManagerFactory
- * reference within the component jndi environment.    
+ * reference within the component jndi environment.
  *
  * @author Kenneth Saks
  */
@@ -98,7 +108,7 @@ public class EntityManagerFactoryWrapper
 
         if( entityManagerFactory == null ) {
             entityManagerFactory = lookupEntityManagerFactory(invMgr, compEnvMgr, unitName);
-            
+
             if( entityManagerFactory == null ) {
                 throw new IllegalStateException
                     ("Unable to retrieve EntityManagerFactory for unitName "
@@ -183,7 +193,7 @@ public class EntityManagerFactoryWrapper
     /**
      * Lookup physical EntityManagerFactory based on current component
      * invocation.
-     * @param invMgr invocationmanager 
+     * @param invMgr invocationmanager
      * @param emfUnitName unit name of entity manager factory or null if not
      *                    specified.
      * @return EntityManagerFactory or null if no matching factory could be
@@ -204,10 +214,10 @@ public class EntityManagerFactoryWrapper
                     emfUnitName, desc);
             }
         }
-        
+
         return emf;
     }
-    
+
     public static EntityManagerFactory lookupEntityManagerFactory(ComponentInvocationType invType,
             String emfUnitName, Object descriptor) {
 
@@ -289,4 +299,38 @@ public class EntityManagerFactoryWrapper
         compEnvMgr    = defaultServiceLocator.getService(ComponentEnvManager.class);
     }
 
+    @Override
+    public String getName() {
+        return getDelegate().getName();
+    }
+
+    @Override
+    public PersistenceUnitTransactionType getTransactionType() {
+        return getDelegate().getTransactionType();
+    }
+
+    @Override
+    public SchemaManager getSchemaManager() {
+        return getDelegate().getSchemaManager();
+    }
+
+    @Override
+    public <R> Map<String, TypedQueryReference<R>> getNamedQueries(Class<R> aClass) {
+        return getDelegate().getNamedQueries(aClass);
+    }
+
+    @Override
+    public <E> Map<String, EntityGraph<? extends E>> getNamedEntityGraphs(Class<E> aClass) {
+        return getDelegate().getNamedEntityGraphs(aClass);
+    }
+
+    @Override
+    public void runInTransaction(Consumer<EntityManager> consumer) {
+        getDelegate().runInTransaction(consumer);
+    }
+
+    @Override
+    public <R> R callInTransaction(Function<EntityManager, R> function) {
+        return getDelegate().callInTransaction(function);
+    }
 }

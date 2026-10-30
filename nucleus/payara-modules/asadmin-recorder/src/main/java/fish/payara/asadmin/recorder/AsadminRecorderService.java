@@ -12,7 +12,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -123,7 +123,8 @@ public class AsadminRecorderService implements EventListener {
                     // This can have sub-parameters, so loop through and add spaces
                     // between the sub-parameters.
                     for (int i = 0; i < parameter.getValue().size(); i++) {
-                        mandatoryOption.append(parameter.getValue().get(i));
+                        String operand = parameter.getValue().get(i);
+                        mandatoryOption.append(formatDefaultOperand(commandName, operand));
                         if (i != (parameter.getValue().size() - 1)) {
                             mandatoryOption.append(" ");
                         }
@@ -138,6 +139,17 @@ public class AsadminRecorderService implements EventListener {
         asadminCommand.append("\n");
 
         return asadminCommand.toString();
+    }
+
+    private String formatDefaultOperand(String commandName, String operand) {
+        // Keep output unchanged except where replay fails for set escaped-dot property keys or values with spaces.
+        if (!"set".equals(commandName) || operand == null || !operand.contains("=")) {
+            return operand;
+        }
+        if ((operand.contains("\\.") || operand.contains(" ")) && !(operand.startsWith("\"") && operand.endsWith("\""))) {
+            return "\"" + operand + "\"";
+        }
+        return operand;
     }
 
     /**

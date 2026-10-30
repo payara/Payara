@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 package org.glassfish.flashlight.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -51,14 +52,21 @@ import org.glassfish.api.Param;
 import org.glassfish.config.support.*;
 import org.glassfish.flashlight.impl.client.AgentAttacher;
 import org.glassfish.internal.api.*;
+import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.Collections;
+
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 
 import jakarta.inject.Inject;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  * @author Sreenivas Munnangi (3.0)
@@ -80,6 +88,9 @@ public class EnableMonitoring implements AdminCommand, AdminCommandSecurity.Prea
     private MonitoringService ms;
     @Inject
     private Target targetService;
+    @Inject
+    private UnprocessedConfigListener unprocessedConfigListener;
+
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
     @Param(optional = true)
@@ -92,6 +103,9 @@ public class EnableMonitoring implements AdminCommand, AdminCommandSecurity.Prea
     private Boolean mbean;
     @Param(optional = true)
     private Boolean dtrace;
+    @Param(optional = true)
+    private Boolean otel;
+
     final private LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EnableMonitoring.class);
 
@@ -184,6 +198,17 @@ public class EnableMonitoring implements AdminCommand, AdminCommandSecurity.Prea
         // dtrace-enabled
         if (dtrace != null) {
             MonitoringConfig.setDTraceEnabled(ms, dtrace.toString(), report);
+        }
+
+        if (otel != null) {
+            boolean changed = MonitoringConfig.setOpenTelemetryEnabled(ms, otel.toString(), report);
+            if (changed) {
+                UnprocessedChangeEvent event = new UnprocessedChangeEvent(
+                        new PropertyChangeEvent(ms, "otelEnabled", !otel, otel),
+                        "Restart required due toggle of OpenTelemetry setting");
+                UnprocessedChangeEvents events = new UnprocessedChangeEvents(event);
+                unprocessedConfigListener.unprocessedTransactedEvents(Collections.singletonList(events));
+            }
         }
 
         // check and set monitoring-enabled to true

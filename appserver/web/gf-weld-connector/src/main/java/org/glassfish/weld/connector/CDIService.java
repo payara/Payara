@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -66,23 +66,6 @@ public interface CDIService extends ConfigExtension {
      * @param value allowed object is {@link String }
      */
     void setEnableImplicitCdi(String value);
-    
-    /**
-     * Gets the value of the cdidevmode property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getEnableCdiDevMode();
-
-    /**
-     * Sets the value of the cdidevmode property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setEnableCdiDevMode(String value) throws PropertyVetoException;
     
     /**
      * Gets the value of the enableConcurrentDeployment property.

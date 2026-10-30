@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2024 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.descriptor;
 
@@ -108,7 +108,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     protected boolean usesDefaultTransaction;
     private Hashtable<MethodDescriptor, ContainerTransaction> methodContainerTransactions;
     private Hashtable<MethodPermission, Set<MethodDescriptor>> permissionedMethodsByPermission;
-    private Map<MethodPermission, List<MethodDescriptor>> methodPermissionsFromDD;
+    private Map<MethodPermission, List<MethodDescriptor>> methodPermissionsFromDD = new HashMap<>();
     private Set<EnvironmentProperty> environmentProperties = new HashSet<>();
     private Set<EjbReference> ejbReferences = new HashSet<>();
     private Set<ResourceEnvReferenceDescriptor> resourceEnvReferences = new HashSet<>();
@@ -1423,17 +1423,11 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
      * Keep a record of all the Method Permissions exactly as they were in the DD
      */
     private void saveMethodPermissionFromDD(MethodPermission methodPermission, MethodDescriptor methodDescriptor) {
-        if (methodPermissionsFromDD == null) {
-            methodPermissionsFromDD = new HashMap<>();
-        }
-
         // We organize by permission, makes it easier...
         // Use Array List as opposed to HashMap or Table because MethodDescriptor
         // Equality once did not take into account differences in
         // method interface, and will process sequentially.
-
-        methodPermissionsFromDD.computeIfAbsent(methodPermission, e -> new ArrayList<>())
-        .add(methodDescriptor);
+        methodPermissionsFromDD.computeIfAbsent(methodPermission, e -> new ArrayList<>()).add(methodDescriptor);
     }
 
     /**
@@ -2669,64 +2663,6 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
         }
     }
 
-    /**
-     * Return a Vector of the Field objects of this ejb.
-     *
-     * @return
-     */
-    public Vector<Field> getFields() {
-        Vector<Field> fieldsVector = new Vector<>();
-        Class<?> ejb = null;
-        try {
-            ClassLoader cl = getEjbBundleDescriptor().getClassLoader();
-            ejb = cl.loadClass(this.getEjbClassName());
-        } catch (Throwable t) {
-            _logger.log(Level.SEVERE, "enterprise.deployment.backend.methodClassLoadFailure", new Object[] { this.getEjbClassName() });
-
-            return fieldsVector;
-        }
-        Field[] fields = ejb.getFields();
-        for (int i = 0; i < fields.length; i++) {
-            fieldsVector.addElement(fields[i]);
-        }
-        return fieldsVector;
-
-    }
-
-    /**
-     *
-     * @return
-     */
-    public Vector<FieldDescriptor> getFieldDescriptors() {
-        Vector<Field> fields = this.getFields();
-        Vector<FieldDescriptor> fieldDescriptors = new Vector<>();
-        for (int fieldIndex = 0; fieldIndex < fields.size(); fieldIndex++) {
-            Field field = fields.elementAt(fieldIndex);
-            fieldDescriptors.insertElementAt(new FieldDescriptor(field), fieldIndex);
-        }
-        return fieldDescriptors;
-    }
-
-    void doMethodDescriptorConversions() throws Exception {
-        // container transactions first
-        Hashtable<MethodDescriptor, ContainerTransaction> transactions = getMethodContainerTransactions();
-        // _logger.log(Level.FINE,"Pre conversion = " + transactions);
-        Hashtable<MethodDescriptor, ContainerTransaction> convertedTransactions = new Hashtable<>();
-        Collection<MethodDescriptor> transactionMethods = getTransactionMethodDescriptors();
-        for (Enumeration<MethodDescriptor> e = transactions.keys(); e.hasMoreElements();) {
-            MethodDescriptor md = e.nextElement();
-            ContainerTransaction ct = transactions.get(md);
-            for (Enumeration<MethodDescriptor> mds = md.doStyleConversion(this, transactionMethods).elements(); mds.hasMoreElements();) {
-                MethodDescriptor next = mds.nextElement();
-                convertedTransactions.put(next, new ContainerTransaction(ct));
-            }
-        }
-        // _logger.log(Level.FINE,"Post conversion = " + convertedTransactions);
-        setMethodContainerTransactions(convertedTransactions);
-
-        convertMethodPermissions();
-    }
-
     @Override
     public void removeEjbReferencer(EjbReferenceDescriptor ref) {
         ejbReferencersPointingToMe.remove(ref);
@@ -2736,11 +2672,6 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     @Override
     public void addEjbReferencer(EjbReferenceDescriptor ref) {
         ejbReferencersPointingToMe.add(ref);
-    }
-
-    // called from EjbEntityDescriptor.replaceEntityDescriptor etc
-    public Set<EjbReferenceDescriptor> getAllEjbReferencers() {
-        return ejbReferencersPointingToMe;
     }
 
     // Called from EjbBundleDescriptor only

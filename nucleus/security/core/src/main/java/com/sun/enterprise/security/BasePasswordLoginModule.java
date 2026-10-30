@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.noPwdCredentialProvidedError;
@@ -59,9 +59,11 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
+import org.glassfish.security.common.UserNameAndPassword;
+import org.glassfish.security.common.UserPrincipal;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+
 
 import com.sun.enterprise.security.auth.login.LoginCallbackHandler;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
@@ -98,7 +100,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     // the authentication status
     protected boolean _succeeded;
     protected boolean _commitSucceeded;
-    protected PrincipalImpl _userPrincipal;
+    protected UserPrincipal _userPrincipal;
     protected String[] _groupsList;
 
     /**
@@ -163,13 +165,13 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         }
 
         // Add a Principal (authenticated identity) to the Subject
-        // Assume the user we authenticated is the PrincipalImpl [RI]
+        // Assume the user we authenticated is the UserPrincipal [RI]
         String realmName = _currentRealm.getName();
         PrincipalGroupFactory factory = Globals.getDefaultHabitat().getService(PrincipalGroupFactory.class);
         if (factory != null) {
             _userPrincipal = factory.getPrincipalInstance(getUsername(), realmName);
         } else {
-            _userPrincipal = new PrincipalImpl(getUsername());
+            _userPrincipal = new UserNameAndPassword(getUsername());
         }
 
         Set<Principal> principals = _subject.getPrincipals();
@@ -200,7 +202,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         // In any case, clean out state.
         _groupsList = null;
         setUsername(null);
-        setPassword(null);
         setPasswordChar(null);
         _commitSucceeded = true;
         
@@ -225,7 +226,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
             // login succeeded but overall authentication failed
             _succeeded = false;
             setUsername(null);
-            setPassword(null);
             setPasswordChar(null);
             _userPrincipal = null;
             for (int i = 0; i < _groupsList.length; i++) {
@@ -258,7 +258,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         _succeeded = false;
         _commitSucceeded = false;
         setUsername(null);
-        setPassword(null);
         _userPrincipal = null;
         
         if (_groupsList != null) {
@@ -351,7 +350,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
 
         setUsername(passwordCredential.getUser());
         setPasswordChar(passwordCredential.getPassword());
-        setPassword(new String(passwordCredential.getPassword()));
     }
 
     /**
@@ -384,20 +382,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      */
     private void setUsername(String username) {
         this._username = username;
-    }
-
-    /**
-     * Deprecated - password is preferred to be a char[]
-     */
-    public String getPassword() {
-        return _password;
-    }
-
-    /**
-     * Deprecated - password is preferred to be a char[]
-     */
-    private void setPassword(String password) {
-        this._password = password;
     }
 
     /**
@@ -444,7 +428,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     /**
      * @return the UserPrincipal - for backward compatibility
      */
-    public PrincipalImpl getUserPrincipal() {
+    public UserPrincipal getUserPrincipal() {
         return _userPrincipal;
     }
 

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,26 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.List;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.monitoring.collect.MonitoringDataCollection;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-
 import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.*;
@@ -67,7 +61,7 @@ import org.glassfish.internal.api.*;
  */
 @Service
 @RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
-public class JVMStatsProviderBootstrap implements PostConstruct, MonitoringDataSource {
+public class JVMStatsProviderBootstrap implements PostConstruct {
 
     private final ServerRuntimeStatsProvider sRuntimeStatsProvider = new ServerRuntimeStatsProvider();
     private final JVMClassLoadingStatsProvider clStatsProvider = new JVMClassLoadingStatsProvider();
@@ -96,32 +90,12 @@ public class JVMStatsProviderBootstrap implements PostConstruct, MonitoringDataS
         StatsProviderManager.register("jvm", PluginPoint.SERVER, "jvm/operating-system", osStatsProvider, ContainerMonitoring.LEVEL_LOW);
         StatsProviderManager.register("jvm", PluginPoint.SERVER, "jvm/runtime", runtimeStatsProvider, ContainerMonitoring.LEVEL_LOW);
         StatsProviderManager.register("jvm", PluginPoint.SERVER, "jvm/thread-system", threadSysStatsProvider, ContainerMonitoring.LEVEL_LOW);
-        for (ThreadInfo t : threadBean.getThreadInfo(threadBean.getAllThreadIds(), 5)) {
-            if (t == null) continue; // See issue #12636
-            JVMThreadInfoStatsProvider threadInfoStatsProvider = new JVMThreadInfoStatsProvider(t);
+        for (long threadId : threadBean.getAllThreadIds()) {
+            if (threadBean.getThreadInfo(threadId) == null) continue; // See issue #12636
+            JVMThreadInfoStatsProvider threadInfoStatsProvider = new JVMThreadInfoStatsProvider(threadBean, threadId);
             StatsProviderManager.register("jvm", PluginPoint.SERVER, 
-                    "jvm/thread-system/thread-"+t.getThreadId(), threadInfoStatsProvider, ContainerMonitoring.LEVEL_HIGH);
+                    "jvm/thread-system/thread-"+ threadId, threadInfoStatsProvider, ContainerMonitoring.LEVEL_HIGH);
         }
     }
 
-    static {
-        MonitoringDataCollection.register(CountStatistic.class,
-                (collector, count) -> collector.collect(count.getName(), count.getCount()));
-    }
-
-    @Override
-    public void collect(MonitoringDataCollector collector) {
-        MonitoringDataCollector jvm = collector.in("jvm");
-        jvm
-            .collectObject(sRuntimeStatsProvider, MonitoringDataCollection::collectObject)
-            .collectObject(clStatsProvider, MonitoringDataCollection::collectObject)
-            .collectObject(compileStatsProvider, MonitoringDataCollection::collectObject)
-            .collectObject(memoryStatsProvider, MonitoringDataCollection::collectObject)
-            .collectObject(osStatsProvider, MonitoringDataCollection::collectObject)
-            .collectObject(runtimeStatsProvider, MonitoringDataCollection::collectObject)
-            .collectObject(threadSysStatsProvider, MonitoringDataCollection::collectObject);
-        for (JVMGCStatsProvider gc : jvmStatsProviderList) {
-            jvm.group(gc.getGcName()).collectObject(gc, MonitoringDataCollection::collectObject);
-        }
-    }
 }

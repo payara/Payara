@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -53,7 +53,6 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.ClientArtifactsManager;
-import org.glassfish.ejb.spi.CMPDeployer;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.ByteArrayOutputStream;
@@ -181,7 +180,7 @@ public class StaticRmiStubGenerator {
         long startTime = now();
 
         // class path to be used for this application during javac & rmic
-        String classPath =  deploymentCtx.getTransientAppMetaData(CMPDeployer.MODULE_CLASSPATH, String.class);
+        String classPath =  deploymentCtx.getTransientAppMetaData("org.glassfish.ejb.spi.module.classpath", String.class);
 
         // Warning: A class loader is passed in while constructing the
         //          application object

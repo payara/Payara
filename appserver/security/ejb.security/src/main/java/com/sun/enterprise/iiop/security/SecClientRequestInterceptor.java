@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2018-2024 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.iiop.security;
 
@@ -60,6 +60,12 @@ import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.logging.Level;
+import javax.security.auth.x500.X500Principal;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
@@ -73,15 +79,6 @@ import org.omg.PortableInterceptor.SUCCESSFUL;
 import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.omg.PortableInterceptor.TRANSPORT_RETRY;
 import org.omg.PortableInterceptor.USER_EXCEPTION;
-
-import javax.security.auth.x500.X500Principal;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.logging.Level;
 
 import static java.util.Arrays.asList;
 
@@ -248,7 +245,7 @@ public class SecClientRequestInterceptor extends org.omg.CORBA.LocalObject imple
 
             // Create a DER encoding of the principal name as a GSSUPName - realm is not currently factored into the
             // parsing of the principal name from the IdentityToken so is left blank.
-            GSSUPName gssupName = new GSSUPName(distinguishedPrincipalCredential.getPrincipal().getName(), "");
+            GSSUPName gssupName = new GSSUPName(distinguishedPrincipalCredential.principal().getName(), "");
             byte[] expname = gssupName.getExportedName();
             GSS_NT_ExportedNameHelper.insert(any, expname);
 
@@ -286,51 +283,39 @@ public class SecClientRequestInterceptor extends org.omg.CORBA.LocalObject imple
         /* CDR encoded Security Attribute Service element */
         byte[] cdr_encoded_saselm = null;
 
-        java.lang.Object cred = null; // A single JAAS credential
+        Object cred = null; // A single JAAS credential
 
         if (_logger.isLoggable(Level.FINE))
             _logger.log(Level.FINE, "++++ Entered " + prname + "send_request" + "()");
-        SecurityContext secctxt = null; // SecurityContext to be sent
+        SecurityContext securityContext = null; // SecurityContext to be sent
         ORB orb = orbHelper.getORB();
         org.omg.CORBA.Object effective_target = ri.effective_target();
         try {
-            secctxt = secContextUtil.getSecurityContext(effective_target);
-        } catch (InvalidMechanismException ime) {
+            securityContext = secContextUtil.getSecurityContext(effective_target);
+        } catch (InvalidMechanismException | InvalidIdentityTokenException ime) {
             _logger.log(Level.SEVERE, "iiop.sec_context_exception", ime);
             throw new RuntimeException(ime.getMessage());
-        } catch (InvalidIdentityTokenException iite) {
-            _logger.log(Level.SEVERE, "iiop.runtime_exception", iite);
-            throw new RuntimeException(iite.getMessage());
-        }
+        } 
 
         /**
          * In an unprotected invocation, there is nothing to be sent to the service context field. Check for
          * this case.
          */
-        if (secctxt == null) {
+        if (securityContext == null) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Security context is null (nothing to add to service context)");
             }
             return;
         }
-
-        final SecurityContext sCtx = secctxt;
+        
         /* Construct an authentication token */
-        if (secctxt.authcls != null) {
-            cred = AccessController.doPrivileged(new PrivilegedAction() {
-                @Override
-                public java.lang.Object run() {
-                    return getCred(sCtx.subject.getPrivateCredentials(sCtx.authcls), sCtx.authcls);
-                }
-            });
-
+        if (securityContext.authcls != null) {
+            cred = getCred(securityContext.subject.getPrivateCredentials(securityContext.authcls), securityContext.authcls);
+            
             try {
-
-                SecurityMechanismSelector sms = Lookups.getSecurityMechanismSelector();
-                ConnectionContext cc = sms.getClientConnectionContext();
-                CompoundSecMech mech = cc.getMechanism();
-
-                cAuthenticationToken = createAuthToken(cred, secctxt.authcls, orb, mech);
+                
+                CompoundSecMech mech = Lookups.getSecurityMechanismSelector().getClientConnectionContext().getMechanism();
+                cAuthenticationToken = createAuthToken(cred, securityContext.authcls, orb, mech);
             } catch (Exception e) {
                 _logger.log(Level.SEVERE, "iiop.createauthtoken_exception", e);
                 throw new SecurityException(localStrings.getLocalString("secclientreqinterceptor.err_authtok_create",
@@ -339,10 +324,10 @@ public class SecClientRequestInterceptor extends org.omg.CORBA.LocalObject imple
         }
 
         /* Construct an identity token */
-        if (secctxt.identcls != null) {
-            cred = getCred(secctxt.subject.getPublicCredentials(secctxt.identcls), secctxt.identcls);
+        if (securityContext.identcls != null) {
+            cred = getCred(securityContext.subject.getPublicCredentials(securityContext.identcls), securityContext.identcls);
             try {
-                cIdentityToken = createIdToken(cred, secctxt.identcls, orb);
+                cIdentityToken = createIdToken(cred, securityContext.identcls, orb);
             } catch (Exception e) {
                 _logger.log(Level.SEVERE, "iiop.createidtoken_exception", e);
                 throw new SecurityException(localStrings.getLocalString("secclientreqinterceptor.err_idtok_create",

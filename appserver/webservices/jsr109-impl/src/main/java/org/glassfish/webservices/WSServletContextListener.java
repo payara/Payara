@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -209,10 +209,7 @@ public class WSServletContextListener implements ServletContextListener {
                 rmbuilder.sequenceInactivityTimeout(Long.parseLong(rxConfig.getInactivityTimeout().trim()));
 
             }
-            if (endpoint.getHttpResponseBufferSize() != null) {
-                rmbuilder.destinationBufferQuota(Long.parseLong(endpoint.getHttpResponseBufferSize().trim()));
 
-            }
             if (rxConfig.getBaseRetransmissionInterval() != null) {
                 rmbuilder.messageRetransmissionInterval(Long.parseLong(rxConfig.getBaseRetransmissionInterval().trim()));
             }
@@ -224,24 +221,12 @@ public class WSServletContextListener implements ServletContextListener {
             if (rxConfig.getAcknowledgementInterval() != null) {
                 rmbuilder.acknowledgementTransmissionInterval(Long.parseLong(rxConfig.getAcknowledgementInterval().trim()));
             }
-            if (rxConfig.getSequenceExpiration() != null) {
-                logger.log(Level.INFO, LogUtils.CONFIGURATION_IGNORE_IN_WLSWS,
-                        new Object[]{endpoint.getEndpointName(), "<sequence-expiration>"});
-            }
+
             if (rxConfig.getBufferRetryCount() != null) {
                 rmbuilder.maxMessageRetransmissionCount(Long.parseLong(rxConfig.getBufferRetryCount().trim()));
             }
-            if (rxConfig.getBufferRetryDelay() != null) {
-                logger.log(Level.INFO, LogUtils.CONFIGURATION_IGNORE_IN_WLSWS,
-                        new Object[]{endpoint.getEndpointName(), "<buffer-retry-delay>"});
-            }
 
             wsFeatures.add(rmbuilder.build());
-        } else {
-            if (endpoint.getHttpResponseBufferSize() != null) {
-                logger.log(Level.WARNING, LogUtils.CONFIGURATION_UNSUPPORTED_IN_WLSWS,
-                        new Object[]{endpoint.getEndpointName(), "<http-response-buffersize>"});
-            }
         }
 
         if (wsFeatures.size() > 0) {

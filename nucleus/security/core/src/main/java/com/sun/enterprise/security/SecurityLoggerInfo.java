@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security;
 
 import java.util.logging.Logger;
@@ -116,20 +117,6 @@ public class SecurityLoggerInfo {
             action = "Check the server logs and contact Payara Support.",
             level = "WARNING")
     public static final String copyingSecurityConfigFilesIOError = LOGMSG_PREFIX + "-01013";
-    
-    @LogMessageInfo(
-            message = "An error occurred while upgrading the security config files.",
-            cause = "Upgrade security config files from a previous version.",
-            action = "Check the server logs and contact Payara Support.",
-            level = "SEVERE")
-    public static final String securityUpgradeServiceException = LOGMSG_PREFIX + "-01014";
-    
-    @LogMessageInfo(
-            message = "Upgrade from v2 EE  to v3.1 requires manual steps. Please refer to the v3.1 Upgrade Guide for details.",
-            cause = "Upgrade security config files from a previous version.",
-            action = "Please refer to the v3.1 Upgrade Guide for details.",
-            level = "WARNING")
-    public static final String securityUpgradeServiceWarning = LOGMSG_PREFIX + "-01015";
     
     // General login processing messages: start 1050
     @LogMessageInfo(
@@ -272,14 +259,6 @@ public class SecurityLoggerInfo {
             action = "An exception occurred while processing username and password for security.",
             level = "SEVERE")
     public static final String usernamePasswordEnteringSecurityError = LOGMSG_PREFIX + "-05039";
-    
-    @LogMessageInfo(
-            message = "Exception in security accesscontroller action.",
-            cause = "Running a privileged action",
-            action = "Check the server logs and contact Payara Support",
-            level = "SEVERE")
-    public static final String securityAccessControllerActionError = LOGMSG_PREFIX + "-05043";
-   
     
     @LogMessageInfo(
             message = "Audit: Authentication refused for [{0}].",

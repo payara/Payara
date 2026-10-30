@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -52,7 +52,7 @@ public class DockerConstants {
     public static final String PAYARA_DAS_HOST = "PAYARA_DAS_HOST";
     public static final String PAYARA_DAS_PORT = "PAYARA_DAS_PORT";
     public static final String PAYARA_NODE_NAME = "PAYARA_NODE_NAME";
-    public static final String PAYARA_INSTALL_DIR = "/opt/payara/payara6";
+    public static final String PAYARA_INSTALL_DIR = "/opt/payara/payara7";
     public static final String DOCKER_HOST_CONFIG_KEY = "HostConfig";
     public static final String DOCKER_MOUNTS_KEY = "Mounts";
     public static final String DOCKER_MOUNTS_TYPE_KEY = "Type";

@@ -1,0 +1,61 @@
+delete-system-properties(1) asadmin Utility Subcommands delete-system-properties(1)
+
+NAME
+       delete-system-properties - removes one or more system properties of
+       the domain, configuration, cluster, or server instance
+
+SYNOPSIS
+           delete-system-properties [--help] [--target target_name ]
+           property_name[:property_name]*
+
+DESCRIPTION
+       The delete-system-properties subcommand deletes one or more system
+       properties of a domain, configuration, cluster, or server instance.
+       Multiple property names are separated by colons (:). Make sure that
+       the system properties are not referenced elsewhere in the
+       configuration before deleting them.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option specifies the target on which you are deleting the
+           system properties. The valid targets for this subcommand are
+           instance, cluster, configuration, domain, and server. Server is
+           the default option.
+
+OPERANDS
+       property_name[:property_name]*
+           A colon-separated list of names of the system properties to
+           remove.
+
+EXAMPLES
+       Example 1, Deleting a Single System Property
+           This example deletes the system property named http-listener-port.
+
+               asadmin> delete-system-properties http-listener-port
+               System Properties [http-listener-port] deleted from target server. Make sure you check their references.
+               Command delete-system-properties executed successfully.
+
+       Example 2, Deleting Multiple System Properties
+           This example deletes the system properties named http-listener-port
+           and https-listener-port.
+
+               asadmin> delete-system-properties http-listener-port:https-listener-port
+               System Properties [http-listener-port, https-listener-port] deleted from target server. Make sure you check their references.
+               Command delete-system-properties executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-system-property(1), create-system-properties(1), list-system-properties(1)
+
+       asadmin(1M)

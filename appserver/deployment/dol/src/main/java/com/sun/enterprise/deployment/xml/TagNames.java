@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] Payara Foundation and/or affiliates
+// Portions Copyright [2022-2024] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.xml;
 
@@ -169,23 +169,27 @@ public interface TagNames {
     public static final String MANAGED_EXECUTOR_MAX_ASYNC = "max-async";
     public static final String MANAGED_EXECUTOR_HUNG_TASK_THRESHOLD = "hung-task-threshold";
     public static final String MANAGED_EXECUTOR_CONTEXT_SERVICE_REF = "context-service-ref";
+    public static final String MANAGED_EXECUTOR_QUALIFIER = "qualifier";
 
     public static final String MANAGED_THREAD_FACTORY = "managed-thread-factory";
     public static final String MANAGED_THREAD_FACTORY_NAME = "name";
     public static final String MANAGED_THREAD_FACTORY_CONTEXT_SERVICE_REF = "context-service-ref";
     public static final String MANAGED_THREAD_FACTORY_PRIORITY = "priority";
+    public static final String MANAGED_THREAD_FACTORY_QUALIFIER = "qualifier";
 
     public static final String MANAGED_SCHEDULED_EXECUTOR = "managed-scheduled-executor";
     public static final String MANAGED_SCHEDULED_EXECUTOR_NAME = "name";
     public static final String MANAGED_SCHEDULED_EXECUTOR_CONTEXT_SERVICE_REF = "context-service-ref";
     public static final String MANAGED_SCHEDULED_EXECUTOR_MAX_ASYNC = "max-async";
     public static final String MANAGED_SCHEDULED_EXECUTOR_HUNG_TASK_THRESHOLD = "hung-task-threshold";
+    public static final String MANAGED_SCHEDULED_EXECUTOR_QUALIFIER = "qualifier";
 
     public static final String CONTEXT_SERVICE = "context-service";
     public static final String CONTEXT_SERVICE_NAME = "name";
     public static final String CONTEXT_SERVICE_CLEARED = "cleared";
     public static final String CONTEXT_SERVICE_PROPAGATED = "propagated";
     public static final String CONTEXT_SERVICE_UNCHANGED = "unchanged";
+    public static final String CONTEXT_SERVICE_QUALIFIER = "qualifier";
 
     public static final String PERSISTENCE_CONTEXT_REF = "persistence-context-ref";
     public static final String PERSISTENCE_CONTEXT_REF_NAME = "persistence-context-ref-name";
@@ -252,14 +256,6 @@ public interface TagNames {
     public static final String JAVAEE_NAMESPACE = "http://xmlns.jcp.org/xml/ns/javaee";
     public static final String JAKARTAEE_NAMESPACE = "https://jakarta.ee/xml/ns/jakartaee";
     public static final String XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
-
-    public static final String WLS_WEB_APP_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-web-app";
-    public static final String WLS_EJB_JAR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-ejb-jar";
-    public static final String WLS_WEBSERVICES_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-webservices";
-    public static final String WLS_CONNECTOR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-connector";
-    public static final String WLS_APPLICATION_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application";
-    public static final String WLS_APPLICATION_CLIENT_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application-client";
-    public final static String WLS_APPLICATION_SCHEMA_LOCATION = "http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.5/weblogic-application.xsd";
 
     public static final String PERSISTENCE_XML_NAMESPACE = "urn:ejb3-namespace";
     public final static String W3C_XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";

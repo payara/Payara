@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -44,7 +44,10 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.admin.amx.config.AMXConfiguration;
+
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.inject.Inject;
@@ -63,10 +66,13 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
+import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  * Asadmin command to set the Monitoring Service configuration.
@@ -96,22 +102,17 @@ public class SetMonitoringServiceConfiguration implements AdminCommand {
     @Param(name = "mbeansenabled", optional = true, alias = "mbeanEnabled")
     private Boolean mbeanEnabled;
 
-    /**
-     *
-     * @deprecated Since 5.194. Use set-amx-enabled command instead.
-     */
-    @Deprecated
-    @Param(name = "amxenabled", optional = true, alias = "amxEnabled")
-    private Boolean amxEnabled;
-
     @Param(name = "dtraceenabled", optional = true, alias = "dtraceEnabled")
     private Boolean dtraceEnabled;
+
+    @Param(name = "otelenabled", optional = true, alias = "otelEnabled")
+    private Boolean otelEnabled;
 
     @Inject
     protected Target targetUtil;
 
     @Inject
-    ServiceLocator serviceLocator;
+    UnprocessedConfigListener unprocessedConfigListener;
 
     @Inject
     private Logger logger;
@@ -148,21 +149,24 @@ public class SetMonitoringServiceConfiguration implements AdminCommand {
                          monitoringServiceProxy.setDtraceEnabled(String.valueOf(dtraceEnabled));
                     }
 
-                    if (amxEnabled != null) {
-                        AMXConfiguration amxConfiguration = config.getExtensionByType(AMXConfiguration.class);
-                        ConfigSupport.apply(new SingleConfigCode<AMXConfiguration>() {
-                            @Override
-                            public Object run(final AMXConfiguration amxConfigurationProxy) throws PropertyVetoException, TransactionFailure {
-                                amxConfigurationProxy.setEnabled((String.valueOf(amxEnabled)));
-                                return amxConfigurationProxy;
-                            }
-                        }, amxConfiguration);
+                    if (otelEnabled != null) {
+                        String value = String.valueOf(otelEnabled);
+                        boolean changed = !value.equals(monitoringServiceProxy.getOpenTelemetryEnabled());
+                        monitoringServiceProxy.setOpenTelemetryEnabled(value);
+                        if (changed) {
+                            UnprocessedChangeEvent event = new UnprocessedChangeEvent(
+                                    new PropertyChangeEvent(monitoringServiceProxy, "otelEnabled", !otelEnabled, otelEnabled),
+                                    "Restart required due toggle of OpenTelemetry setting");
+                            UnprocessedChangeEvents events = new UnprocessedChangeEvents(event);
+                            unprocessedConfigListener.unprocessedTransactedEvents(Collections.singletonList(events));
+                        }
                     }
 
                     actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return monitoringServiceProxy;
                 }
             }, monitoringService);
+
         } catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Failed to execute the command set-monitoring-service-configuration: {0}",  ex.getCause().getMessage());
             actionReport.setMessage(ex.getCause().getMessage());

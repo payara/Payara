@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022-2025] Payara Foundation and/or affiliates
+// Portions Copyright [2022-2026] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.deploy.shared;
 
@@ -50,6 +50,8 @@ import org.glassfish.hk2.api.PerLookup;
 
 import java.io.*;
 import org.glassfish.hk2.utilities.CleanerFactory;
+
+import java.lang.ref.Cleaner;
 import java.util.*;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.jar.JarEntry;
@@ -96,7 +98,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     // parent jar file for embedded jar
     private InputJarArchive parentArchive;
 
-    private static StringManager localStrings = StringManager.getManager(InputJarArchive.class);
+    private static final StringManager localStrings = StringManager.getManager(InputJarArchive.class);
 
     // track entry enumerations to close them if needed when the archive is closed
     private final WeakHashMap<EntryEnumeration,Object> entryEnumerations =
@@ -448,16 +450,16 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * requested top-level directory entries or all non-directory entries be returned
      * in the enumeration.
      *
-     * @param uriToReadForEntries
      * @param topLevelDirectoriesOnly
      * @return
      * @throws FileNotFoundException
      * @throws IOException
      */
     private EntryEnumeration createEntryEnumeration(final boolean topLevelDirectoriesOnly) throws FileNotFoundException, IOException {
-        final JarEntrySource source = (parentArchive == null ?
-            new ArchiveJarEntrySource(uri) :
-            new SubarchiveJarEntrySource(parentArchive.jarFile, uri));
+        final JarEntrySource source =
+                parentArchive == null
+                        ? new ArchiveJarEntrySource(uri)
+                        : new SubarchiveJarEntrySource(parentArchive.jarFile, uri);
         if (topLevelDirectoriesOnly) {
             return new TopLevelDirectoryEntryEnumeration(source);
         } else {
@@ -480,17 +482,40 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * invoked, we still provide one to close up the JarFile.  This should help
      * reduce the chance for locked JARs on Windows due to open streams.
      */
-    private abstract class EntryEnumeration implements Enumeration<String> {
+    private abstract static class EntryEnumeration implements Enumeration<String> {
 
         /* look-ahead of one entry */
         private JarEntry nextMatchingEntry;
 
-        /* source of JarEntry objects for building the enumeration values */
-        private final JarEntrySource jarEntrySource;
+        private final CleanableEntryEnumerationState state;
+        private final Cleaner.Cleanable cleanable;
+
+        static class CleanableEntryEnumerationState implements Runnable {
+
+            /* source of JarEntry objects for building the enumeration values */
+            private final JarEntrySource jarEntrySource;
+
+            CleanableEntryEnumerationState(JarEntrySource jarEntrySource) {
+                this.jarEntrySource = jarEntrySource;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    jarEntrySource.close();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
+            public JarEntrySource getJarEntrySource() {
+                return jarEntrySource;
+            }
+        }
 
         private EntryEnumeration(final JarEntrySource jarEntrySource) {
-            this.jarEntrySource = jarEntrySource;
-            registerCloseEvent();
+            this.state = new CleanableEntryEnumerationState(jarEntrySource);
+            this.cleanable = CleanerFactory.create().register(this, state);
         }
 
         /**
@@ -517,7 +542,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
         }
 
         protected JarEntry getNextJarEntry() throws IOException {
-            return jarEntrySource.getNextJarEntry();
+            return state.getJarEntrySource().getNextJarEntry();
         }
 
         /**
@@ -531,23 +556,9 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
         protected abstract JarEntry skipToNextMatchingEntry();
 
         private void closeNoRemove() {
-            try {
-                jarEntrySource.close();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
+            cleanable.clean();
         }
 
-        void close() {
-            closeNoRemove();
-            entryEnumerations.remove(this);
-        }
-
-        public final void registerCloseEvent() {
-            CleanerFactory.create().register(this, () -> {
-                close();
-            });
-        }
     }
 
     /**
@@ -580,9 +591,9 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      */
     private static class ArchiveJarEntrySource implements JarEntrySource {
 
-        private JarFile sourceJarFile;
+        private final JarFile sourceJarFile;
 
-        private Enumeration<JarEntry> jarEntries;
+        private final Enumeration<JarEntry> jarEntries;
 
         private ArchiveJarEntrySource(final URI archiveURI) throws IOException {
             sourceJarFile = getJarFile(archiveURI);
@@ -608,7 +619,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      */
     private static class SubarchiveJarEntrySource implements JarEntrySource {
 
-        private JarInputStream jis;
+        private final JarInputStream jis;
 
         private SubarchiveJarEntrySource(final JarFile jf, final URI uri) throws IOException {
             final JarEntry subarchiveJarEntry = jf.getJarEntry(uri.getSchemeSpecificPart());
@@ -633,7 +644,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
      * This implementation uses the enumeration of JarEntry objects from the
      * JarFile itself.
      */
-    private class TopLevelDirectoryEntryEnumeration extends EntryEnumeration {
+    private static class TopLevelDirectoryEntryEnumeration extends EntryEnumeration {
 
         private TopLevelDirectoryEntryEnumeration(final JarEntrySource jarEntrySource) throws FileNotFoundException, IOException {
             super(jarEntrySource);
@@ -668,7 +679,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     /**
      * Enumerates entries in the archive that are not directories.
      */
-    private class NonDirectoryEntryEnumeration extends EntryEnumeration {
+    private static class NonDirectoryEntryEnumeration extends EntryEnumeration {
 
         private NonDirectoryEntryEnumeration(final JarEntrySource jarEntrySource) throws IOException {
             super(jarEntrySource);

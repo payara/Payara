@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
+//Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
 package org.glassfish.admin.rest.generator;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -52,15 +52,41 @@ import java.util.logging.Level;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.hk2.api.ServiceLocator;
+import com.sun.ejb.codegen.ClassGenerator;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+
+import static org.objectweb.asm.Opcodes.AASTORE;
+import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACC_SUPER;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ANEWARRAY;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.ASTORE;
+import static org.objectweb.asm.Opcodes.BIPUSH;
+import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.DUP;
+import static org.objectweb.asm.Opcodes.GETFIELD;
+import static org.objectweb.asm.Opcodes.ICONST_0;
+import static org.objectweb.asm.Opcodes.ICONST_1;
+import static org.objectweb.asm.Opcodes.ICONST_2;
+import static org.objectweb.asm.Opcodes.ICONST_3;
+import static org.objectweb.asm.Opcodes.ICONST_4;
+import static org.objectweb.asm.Opcodes.ICONST_5;
+import static org.objectweb.asm.Opcodes.INVOKEINTERFACE;
+import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
+import static org.objectweb.asm.Opcodes.NEW;
+import static org.objectweb.asm.Opcodes.POP;
+import static org.objectweb.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Opcodes.V17;
 
 /**
  * @author Ludovic Champenois
  */
-public class ASMClassWriter implements ClassWriter, Opcodes {
+public class ASMClassWriter implements ClassWriter {
     private static final String INJECTOR_FIELD = "serviceLocator";
     private static final String FORNAME_INJECTOR_TYPE = "Lorg/glassfish/hk2/api/ServiceLocator;";
     private static final String INTERFACE_INJECTOR_TYPE = "org/glassfish/hk2/api/ServiceLocator";
@@ -69,11 +95,11 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
     
     private static final String PATH_CLASS_NAME = "Ljakarta/ws/rs/Path;";
 
-    private org.objectweb.asm.ClassWriter cw = new org.objectweb.asm.ClassWriter(0);
+    private final org.objectweb.asm.ClassWriter cw = new org.objectweb.asm.ClassWriter(0);
     private String className;
     private ServiceLocator habitat;
     private final String generatedPath;
-    private Map<String, String> generatedMethods = new HashMap<String, String>();
+    private final Map<String, String> generatedMethods = new HashMap<>();
   //  private String baseClassName;
   //  private String resourcePath;
 
@@ -91,7 +117,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         } else {
             baseClassName = "org/glassfish/admin/rest/resources/" + baseClassName;
         }
-        cw.visit(V1_5, ACC_PUBLIC + ACC_SUPER, generatedPath + className , null,
+        cw.visit(V17, ACC_PUBLIC + ACC_SUPER, generatedPath + className , null,
                  baseClassName , null);
 
         if (resourcePath != null) {
@@ -240,7 +266,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         boolean isget = (httpMethod.equals("GET"));
 
 
-        cw.visit(V1_5, ACC_PUBLIC + ACC_SUPER, generatedPath + commandResourceClassName, null,
+        cw.visit(V17, ACC_PUBLIC + ACC_SUPER, generatedPath + commandResourceClassName, null,
                 baseClassName, null);
    //     cw.visitInnerClass(generatedPath + commandResourceClassName +"$1", null, null, 0);
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
@@ -458,54 +484,18 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         return cw.toByteArray();
     }
 
-    public String defineClass(Class similarClass, byte[] classBytes) throws Exception {
-
-        String generatedClassName = "org.glassfish.admin.rest.resources.generatedASM.";
-        generatedClassName =  generatedClassName + className;
-
-        byte[] byteContent = getByteClass();
+    public void defineClass(Class similarClass, byte[] classBytes) throws Exception {
+        String generatedClassName = "org.glassfish.admin.rest.resources.generatedASM." + className;
+        RestLogging.restLogger.log(Level.FINEST, "Generating class {0}", generatedClassName);
+        ClassLoader loader = similarClass.getClassLoader();
         ProtectionDomain pd = similarClass.getProtectionDomain();
-
-        java.lang.reflect.Method jm = null;
-        for (java.lang.reflect.Method jm2 : ClassLoader.class.getDeclaredMethods()) {
-            if (jm2.getName().equals("defineClass") && jm2.getParameterTypes().length == 5) {
-                jm = jm2;
-                break;
-            }
-        }
-        if (jm==null){//should never happen, makes findbug happy
-            throw new RuntimeException("cannot find method called defineclass...");
-        }
-        final java.lang.reflect.Method clM = jm;
+        byte[] byteContent = getByteClass();
+        ClassGenerator.defineClass(loader, generatedClassName, byteContent, pd);
         try {
-            java.security.AccessController.doPrivileged(
-                    new java.security.PrivilegedExceptionAction() {
-
-                        @Override
-                        public java.lang.Object run() throws Exception {
-                            if (!clM.isAccessible()) {
-                                clM.setAccessible(true);
-                            }
-                            return null;
-                        }
-                    });
-
-            RestLogging.restLogger.log(Level.FINEST, "Loading bytecode for {0}", generatedClassName);
-            clM.invoke(similarClass.getClassLoader()
-                    /*Thread.currentThread().getContextClassLoader()*/, generatedClassName, byteContent, 0,
-                     byteContent.length, pd);
-
-            try {
-               similarClass.getClassLoader().loadClass(generatedClassName);
-            } catch (ClassNotFoundException cnfEx) {
-                throw new RuntimeException(cnfEx);
-            }
-
-            return generatedClassName;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            loader.loadClass(generatedClassName);
+        } catch (ClassNotFoundException cnfEx) {
+            throw new GeneratorException(cnfEx);
         }
-
     }
 
     /*

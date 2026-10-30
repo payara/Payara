@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -201,12 +201,7 @@ public class SaxParserHandler extends DefaultHandler {
         for (Map.Entry<String, String> entry : dtdMapping.entrySet()) {
             final String publicID = entry.getKey();
             final String dtd = entry.getValue();
-            String systemIDResolution = resolvePublicID(publicID, dtd);
-            if (systemIDResolution == null) {
-                MAPPING_STUFF.mapping.put(publicID, dtd.substring(dtd.lastIndexOf('/') + 1));
-            } else {
-                MAPPING_STUFF.mapping.put(publicID, systemIDResolution);
-            }
+            MAPPING_STUFF.mapping.put(publicID, dtd.substring(dtd.lastIndexOf('/') + 1));
         }
 
         /*
@@ -238,12 +233,7 @@ public class SaxParserHandler extends DefaultHandler {
                 }
 
                 String fileName = null;
-                String namespaceResolution = resolveSchemaNamespace(systemID);
-                if (namespaceResolution != null) {
-                    fileName = getSchemaURLFor(namespaceResolution);
-                } else {
-                    fileName = getSchemaURLFor(systemID.substring(systemID.lastIndexOf('/') + 1));
-                }
+                fileName = getSchemaURLFor(systemID.substring(systemID.lastIndexOf('/') + 1));
                 // if this is not a request for a schema located in our repository,
                 // let's hope that the hint provided by schemaLocation is correct
                 if (fileName == null) {
@@ -339,44 +329,6 @@ public class SaxParserHandler extends DefaultHandler {
             return null;
         }
         return f;
-    }
-
-    /**
-     * Determine whether the syatemID starts with a known namespace. If so, strip off that namespace and return the rest.
-     * Otherwise, return null
-     *
-     * @param systemID The systemID to examine
-     * @return the part if the namespace to find in the file system or null if the systemID does not start with a known
-     * namespace
-     */
-    public static String resolveSchemaNamespace(String systemID) {
-        List<String> namespaces = DOLUtils.getProprietarySchemaNamespaces();
-        for (int n = 0; n < namespaces.size(); ++n) {
-            String namespace = namespaces.get(n);
-            if (systemID.startsWith(namespace)) {
-                return systemID.substring(namespace.length());
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Determine whether the publicID starts with a known proprietary value. If so, strip off that value and return the
-     * rest. Otherwise, return null
-     *
-     * @param publicID The publicID to examine
-     * @return the part if the namespace to find in the file system or null if the publicID does not start with a known
-     * namespace
-     */
-    public static String resolvePublicID(String publicID, String dtd) {
-        List<String> dtdStarts = DOLUtils.getProprietaryDTDStart();
-        for (int n = 0; n < dtdStarts.size(); ++n) {
-            String dtdStart = dtdStarts.get(n);
-            if (dtd.startsWith(dtdStart)) {
-                return dtd.substring(dtdStart.length());
-            }
-        }
-        return null;
     }
 
     @Override

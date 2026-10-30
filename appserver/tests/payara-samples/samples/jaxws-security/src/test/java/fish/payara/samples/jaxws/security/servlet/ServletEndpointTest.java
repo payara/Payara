@@ -13,7 +13,7 @@
  *    language governing permissions and limitations under the License.
  *
  *    When distributing the software, include this License Header Notice in each
- *    file and include the License file at glassfish/legal/LICENSE.txt.
+ *    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  *    GPL Classpath Exception:
  *    The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -101,33 +101,29 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
         insecureSSLConfigurator.revertSSLConfiguration();
     }
 
-    //@Test
-    // TODO - uncomment after solving problem: "MustUnderstand headers:[{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Security] are not understood"
-    //@RunAsClient
+    @Test
+    @RunAsClient
     public void testUnrestrictedSoapRequest() throws IOException, URISyntaxException {
         serviceConnection = sendSoapHttpRequest("request.xml");
         assertResponseOK(serviceConnection);
     }
 
-    //@Test
-    // TODO - uncomment after solving problem: "MustUnderstand headers:[{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Security] are not understood"
-    //@RunAsClient
+    @Test
+    @RunAsClient
     public void testPermittedSoapRequest() throws IOException, URISyntaxException {
         serviceConnection = sendSoapHttpRequest("request-restricted.xml");
         assertResponseOK(serviceConnection);
     }
 
-    //@Test
-    // TODO - uncomment after solving problem: "MustUnderstand headers:[{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Security] are not understood"
-    //@RunAsClient
+    @Test
+    @RunAsClient
     public void testSoapRequestWithIncorrectCredentials() throws IOException, URISyntaxException {
         serviceConnection = sendSoapHttpRequest("request-with-bad-password.xml");
         assertResponseFailedWithMessage(serviceConnection, "Authentication of Username Password Token Failed");
     }
 
-    //@Test
-    // TODO - uncomment after solving problem: "MustUnderstand headers:[{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Security] are not understood"
-    //@RunAsClient
+    @Test
+    @RunAsClient
     public void testSoapRequestUserNotAllowedExecution() throws IOException, URISyntaxException {
         serviceConnection = sendSoapHttpRequest("request-not-allowed.xml");
         assertResponseFailedWithMessage(serviceConnection, "Caller was not permitted access");

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2023 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
@@ -556,10 +556,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 type = archiveHandler.getArchiveType();
             }
             appProps.setProperty(Application.ARCHIVE_TYPE_PROP_NAME, type);
-            if (appProps.getProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP) == null) {
-                appProps.setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, Boolean.FALSE.toString());
+            if (useWarLibs != null) {
+                appProps.setProperty(DeploymentProperties.WARLIBS, useWarLibs.toString());
             }
-
             savedAppConfig.store(appProps);
 
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, previousTargets);
@@ -790,9 +789,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         if (isredeploy) {
             //preserve settings first before undeploy
             Application app = apps.getModule(Application.class, name);
-            if (app.isLifecycleModule()) {
-                throw new IllegalArgumentException(localStrings.getLocalString("lifecyclemodule_withsamename_exists", "Lifecycle module with same name {0} already exists, please pick a different name for the application. ", name));
-            }
 
             // we save some of the old registration information in our deployment parameters
             settingsFromDomainXML(app);
@@ -807,9 +803,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             parameters.add(DeploymentProperties.TARGET, target);
             parameters.add(DeploymentProperties.KEEP_REPOSITORY_DIRECTORY, keepreposdir.toString());
             parameters.add(DeploymentProperties.IS_REDEPLOY, isredeploy.toString());
-            if (dropandcreatetables != null) {
-                parameters.add(DeploymentProperties.DROP_TABLES, dropandcreatetables.toString());
-            }
             parameters.add(DeploymentProperties.IGNORE_CASCADE, force.toString());
             if (keepstate != null) {
                 parameters.add(DeploymentProperties.KEEP_STATE, keepstate.toString());

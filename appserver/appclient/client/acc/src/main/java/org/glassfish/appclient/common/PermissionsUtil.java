@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,27 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2018-2024 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package org.glassfish.appclient.common;
 
 import com.sun.enterprise.security.permissionsxml.CommponentType;
-import com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil;
 import com.sun.enterprise.security.permissionsxml.PermissionsXMLLoader;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.CodeSource;
-import java.security.NoSuchAlgorithmException;
 import java.security.PermissionCollection;
-import java.security.Policy;
-import java.security.URIParameter;
-import java.security.cert.Certificate;
+
+import jakarta.security.jacc.PolicyContext;
+import jakarta.security.jacc.PolicyFactory;
 
 public class PermissionsUtil {
 
@@ -129,14 +124,8 @@ public class PermissionsUtil {
     }
     
     private static PermissionCollection getEEPolicyPermissions(URL fileUrl) throws IOException {
-        try {
-            return 
-                Policy.getInstance("JavaPolicy", new URIParameter(fileUrl.toURI()))
-                      .getPermissions(new CodeSource(
-                              new URL(GlobalPolicyUtil.CLIENT_TYPE_CODESOURCE), (Certificate[]) null));
-        } catch (NoSuchAlgorithmException | MalformedURLException | URISyntaxException e) {
-            throw new IllegalStateException(e);
-        }
+        return PolicyFactory.getPolicyFactory().getPolicy("JavaPolicy")
+                .getPermissionCollection(PolicyContext.get(PolicyContext.SUBJECT));
     }
 
     private static String getClientInstalledPath() {

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -66,7 +66,6 @@ import static org.junit.Assert.assertFalse;
  */
 @SuppressWarnings({"StaticNonFinalField"})
 public class MiniXmlParserTest {
-    private static File hasProfiler;
     private static File wrongOrder;
     private static File rightOrder;
     private static File noconfig;
@@ -93,7 +92,6 @@ public class MiniXmlParserTest {
 
         rightOrder = new File(MiniXmlParserTest.class.getClassLoader().getResource("rightorder.xml").getPath());
         noconfig = new File(MiniXmlParserTest.class.getClassLoader().getResource("noconfig.xml").getPath());
-        hasProfiler = new File(MiniXmlParserTest.class.getClassLoader().getResource("hasprofiler.xml").getPath());
         adminport = new File(MiniXmlParserTest.class.getClassLoader().getResource("adminport.xml").getPath());
         adminport2 = new File(MiniXmlParserTest.class.getClassLoader().getResource("adminport2.xml").getPath());
         noCloseRightOrder = new File(
@@ -111,7 +109,6 @@ public class MiniXmlParserTest {
         assertTrue(wrongOrder.exists());
         assertTrue(rightOrder.exists());
         assertTrue(noconfig.exists());
-        assertTrue(hasProfiler.exists());
         assertTrue(noDomainName.exists());
         assertTrue(clusters1.exists());
         assertTrue(clusters1.length() > 100);
@@ -264,44 +261,6 @@ public class MiniXmlParserTest {
             MiniXmlParser instance = new MiniXmlParser(rightOrder, "server");
             Map<String, String> sysProps = instance.getSystemProperties();
             assertEquals("valueFromServer", sysProps.get("test-prop"));
-        }
-        catch (MiniXmlParserException ex) {
-            Logger.getLogger(MiniXmlParserTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    /*
-     * Positive test case -- make sure profiler is parsed correctly
-     * here is the piece of xml it will be parsing:
-     *
-    <profiler classpath="/profiler/class/path" enabled="true" name="MyProfiler" native-library-path="/bin">
-    <jvm-options>-Dprofiler3=foo3</jvm-options>
-    <jvm-options>-Dprofiler2=foo2</jvm-options>
-    <jvm-options>-Dprofiler1=foof</jvm-options>
-    </profiler>
-     *
-     */
-    @Test
-    public void profilerParsing() {
-        
-        try {
-            MiniXmlParser instance = new MiniXmlParser(hasProfiler, "server");
-            Map<String, String> config = instance.getProfilerConfig();
-            List<String> jvm = instance.getProfilerJvmOptions();
-            Map<String, String> sysProps = instance.getProfilerSystemProperties();
-            assertEquals(3, jvm.size());
-            assertEquals("-Dprofiler3=foo3", jvm.get(0));
-            assertEquals("-Dprofiler2=foo2", jvm.get(1));
-            assertEquals("-Dprofiler1=foof", jvm.get(2));
-            assertNotNull(config);
-            assertEquals(4, config.size());
-            assertEquals("/profiler/class/path", config.get("classpath"));
-            assertEquals("MyProfiler", config.get("name"));
-            assertEquals("/bin", config.get("native-library-path"));
-            assertEquals(2, sysProps.size());
-            assertEquals("value1", sysProps.get("name1"));
-            assertEquals("value2", sysProps.get("name2"));
         }
         catch (MiniXmlParserException ex) {
             Logger.getLogger(MiniXmlParserTest.class.getName()).log(Level.SEVERE, null, ex);
@@ -534,5 +493,18 @@ public class MiniXmlParserTest {
        opt = new JvmOption("-XX:xxx");
        assertFalse("Min Version Not Present", opt.minVersion.isPresent());
        assertFalse("Max Version Not Present", opt.maxVersion.isPresent());
+    }
+
+    @Test
+    public void adminRealmDefaultsWhenAttributeAbsent() throws MiniXmlParserException {
+        File f = new File(getClass().getClassLoader()
+                .getResource("adminrealmstripped.xml").getPath());
+        MiniXmlParser instance = new MiniXmlParser(f, "server");
+        assertEquals("admin-realm", instance.getAdminRealmName());
+        Map<String, String> props = instance.getAdminRealmProperties();
+        assertNotNull(props);
+        assertEquals("com.sun.enterprise.security.auth.realm.file.FileRealm",
+                props.get("classname"));
+        assertNotNull(props.get("file"));
     }
 }

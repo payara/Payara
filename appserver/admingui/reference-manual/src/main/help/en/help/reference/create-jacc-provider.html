@@ -230,8 +230,8 @@ in <code>domain.xml</code>.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jacc-provider
---policyproviderclass fish.payara.security.jacc.provider.PolicyProviderImpl
---policyconfigfactoryclass fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl
+--policyproviderclass org.glassfish.exousia.modules.def.DefaultPolicy
+--policyconfigfactoryclass org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory
 testJACC
 
 Command create-jacc-provider executed successfully.</code></pre>

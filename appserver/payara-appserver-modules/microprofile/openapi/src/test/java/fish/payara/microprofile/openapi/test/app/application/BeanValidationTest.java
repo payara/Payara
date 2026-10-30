@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -41,6 +41,7 @@ package fish.payara.microprofile.openapi.test.app.application;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
@@ -52,9 +53,16 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 import org.junit.Test;
 
 import java.util.List;
@@ -62,6 +70,7 @@ import java.util.List;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 @Path("/bean-validation")
@@ -123,7 +132,7 @@ public class BeanValidationTest extends OpenApiApplicationTest {
     }
 
     @POST
-    @Path("/negativeorzero//{param}")
+    @Path("/negativeorzero/{param}")
     public void negativeOrZeroTest(@PathParam("param") @NegativeOrZero int value) {
     }
 
@@ -136,6 +145,44 @@ public class BeanValidationTest extends OpenApiApplicationTest {
     @Path("/positiveorzero/{param}")
     public void positiveOrZeroTest(@PathParam("param") @PositiveOrZero int value) {
     }
+
+    @POST
+    public void noPathParam(@Valid @NotEmpty List<String> myList) {
+    }
+
+    @GET
+    @Consumes(MediaType.WILDCARD)
+    public void getNoPathParam(@NotEmpty List<String> myList) {
+    }
+
+    @PUT
+    @Consumes(MediaType.WILDCARD)
+    public void putNoPathParam(@Valid @NotEmpty List<String> myList) {
+    }
+
+    @POST
+    @Path("/positiveorzeroquery")
+    public void positiveOrZeroQueryTest(@QueryParam("param") @PositiveOrZero int value) {
+    }
+
+    @POST
+    @Path("/positiveorzeromultiplequery")
+    public void positiveOrZeroMultipleQueryTest(@QueryParam("param") @PositiveOrZero int value, @QueryParam("param2") @PositiveOrZero int value2) {
+    }
+
+    @POST
+    @Path("/positiveorzerowildcard")
+    @Consumes(MediaType.WILDCARD)
+    public void positiveOrZeroWildcardQueryTest(@PositiveOrZero int value, @QueryParam("param") @PositiveOrZero int value2) {
+    }
+
+    @DELETE
+    public void delete(@Valid @NotEmpty List<String> myList) {
+    }
+
+    @POST
+    @Path("/notemptyheader")
+    public void notEmptyHeaderTest(@HeaderParam("X-Test") @NotEmpty String header) {}
 
     @Test
     public void notEmptyTest() {
@@ -162,6 +209,15 @@ public class BeanValidationTest extends OpenApiApplicationTest {
 
         assertEquals(1, result.size());
         assertTrue(result.contains("1"));
+
+        link = path(getOpenAPIJson(), "paths./test/bean-validation/notemptyheader.post");
+        assertNotNull(link);
+        assertTrue(link.get("parameters").isArray());
+        result = link.get("parameters").findValuesAsText("minLength");
+
+        assertEquals(1, result.size());
+        assertTrue(result.contains("1"));
+        assertEquals("X-Test", link.get("parameters").get(0).get("name").asText());
     }
 
     @Test
@@ -210,24 +266,22 @@ public class BeanValidationTest extends OpenApiApplicationTest {
         assertTrue(link.get("parameters").isArray());
 
         List<String> result = link.get("parameters").findValuesAsText("maximum");
-        assertEquals(1, result.size());
-        assertTrue(result.contains("3"));
+        assertEquals(0, result.size());
 
         result = link.get("parameters").findValuesAsText("exclusiveMaximum");
         assertEquals(1, result.size());
-        assertTrue(result.contains("true"));
+        assertTrue(result.contains("3"));
 
         link = path(getOpenAPIJson(), "paths./test/bean-validation/decimalmin/{param}.post");
         assertNotNull(link);
         assertTrue(link.get("parameters").isArray());
 
         result = link.get("parameters").findValuesAsText("minimum");
-        assertEquals(1, result.size());
-        assertTrue(result.contains("1"));
+        assertEquals(0, result.size());
 
         result = link.get("parameters").findValuesAsText("exclusiveMinimum");
         assertEquals(1, result.size());
-        assertTrue(result.contains("true"));
+        assertTrue(result.contains("1"));
     }
 
     @Test
@@ -259,12 +313,11 @@ public class BeanValidationTest extends OpenApiApplicationTest {
         assertTrue(link.get("parameters").isArray());
 
         List<String> result = link.get("parameters").findValuesAsText("maximum");
-        assertEquals(1, result.size());
-        assertTrue(result.contains("0"));
+        assertEquals(0, result.size());
 
         result = link.get("parameters").findValuesAsText("exclusiveMaximum");
         assertEquals(1, result.size());
-        assertTrue(result.contains("true"));
+        assertTrue(result.contains("0"));
 
         link = path(getOpenAPIJson(), "paths./test/bean-validation/negativeorzero/{param}.post");
         assertNotNull(link);
@@ -285,12 +338,11 @@ public class BeanValidationTest extends OpenApiApplicationTest {
         assertTrue(link.get("parameters").isArray());
 
         List<String> result = link.get("parameters").findValuesAsText("minimum");
-        assertEquals(1, result.size());
-        assertTrue(result.contains("0"));
+        assertEquals(0, result.size());
 
         result = link.get("parameters").findValuesAsText("exclusiveMinimum");
         assertEquals(1, result.size());
-        assertTrue(result.contains("true"));
+        assertTrue(result.contains("0"));
 
         link = path(getOpenAPIJson(), "paths./test/bean-validation/positiveorzero/{param}.post");
         assertNotNull(link);
@@ -302,5 +354,57 @@ public class BeanValidationTest extends OpenApiApplicationTest {
 
         result = link.get("parameters").findValuesAsText("exclusiveMinimum");
         assertEquals(0, result.size());
+
+        link = path(getOpenAPIJson(), "paths./test/bean-validation/positiveorzeroquery.post");
+        assertNotNull(link);
+        assertTrue(link.get("parameters").isArray());
+
+        result = link.get("parameters").findValuesAsText("minimum");
+        assertEquals(1, result.size());
+        assertTrue(result.contains("0"));
+
+        link = path(getOpenAPIJson(), "paths./test/bean-validation/positiveorzeromultiplequery.post");
+        assertNotNull(link);
+        assertTrue(link.get("parameters").isArray());
+
+        result = link.get("parameters").findValuesAsText("minimum");
+        assertEquals(2, result.size());
+        assertTrue(result.contains("0"));
+        assertEquals("param", link.get("parameters").get(0).get("name").asText());
+        assertEquals("param2", link.get("parameters").get(1).get("name").asText());
+
+
+        link = path(getOpenAPIJson(), "paths./test/bean-validation/positiveorzerowildcard.post.requestBody.content");
+        assertNotNull(link);
+
+        result = link.get("*/*").findValuesAsText("minimum");
+        assertEquals(1, result.size());
+        assertTrue(result.contains("0"));
+
+        link = path(getOpenAPIJson(), "paths./test/bean-validation/positiveorzerowildcard.post");
+        assertNotNull(link);
+        assertTrue(link.get("parameters").isArray());
+
+        result = link.get("parameters").findValuesAsText("minimum");
+        assertEquals(1, result.size());
+        assertTrue(result.contains("0"));
+        assertEquals("param", link.get("parameters").get(0).get("name").asText());
+    }
+
+    @Test
+    public void noPathParameterTest() {
+        JsonNode link = path(getOpenAPIJson(), "paths./test/bean-validation.post");
+        assertNotNull(link);
+
+        JsonNode schema = path(getOpenAPIJson(), "paths./test/bean-validation.post.requestBody.content.application/json.schema");
+        assertNotNull(schema);
+        assertEquals("1", schema.get("minItems").asText());
+
+        assertThrows(AssertionError.class, () -> path(getOpenAPIJson(), "paths./test/bean-validation.get.requestBody.content.*/*.schema"));
+
+
+        JsonNode schema3 = path(getOpenAPIJson(), "paths./test/bean-validation.put.requestBody.content.*/*.schema");
+        assertNotNull(schema3);
+        assertEquals("1", schema3.get("minItems").asText());
     }
 }

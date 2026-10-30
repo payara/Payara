@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -95,20 +95,6 @@ public class MasterPasswordFileManager extends KeystoreManager {
         final PEFileLayout layout = getFileLayout(config);
         final File pwdFile = layout.getMasterPasswordFile();    
         FileUtils.deleteFile(pwdFile);
-    }
-
-    /**
-     * Create the master password keystore at the default path. This routine can also modify the master password
-     * if the keystore already exists.
-     * @param config
-     * @param masterPassword
-     * @throws RepositoryException
-     */
-    @Deprecated
-    protected void createMasterPasswordFile(RepositoryConfig config, String masterPassword)
-        throws RepositoryException
-    {
-        this.createMasterPasswordFile(config, masterPassword, null);
     }
 
     /**
@@ -180,20 +166,6 @@ public class MasterPasswordFileManager extends KeystoreManager {
             //Return null if the password file does not exist.
             return null;
         }
-    }
-
-    /**
-     * Changes the master password in the master password file
-     * @param saveMasterPassword
-     * @param config
-     * @param newPassword
-     * @throws RepositoryException
-     */
-    @Deprecated
-    protected void changeMasterPasswordInMasterPasswordFile(RepositoryConfig config, String newPassword,
-        boolean saveMasterPassword) throws RepositoryException
-    {
-        this.changeMasterPasswordInMasterPasswordFile(config, newPassword, saveMasterPassword, null);
     }
 
     /**

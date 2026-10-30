@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -366,7 +366,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
         answer.setProperty("request.adapter.context.root", contextRoot());
         
         
-        answer.setProperty("request.glassfish-acc.xml.content", 
+        answer.setProperty("request.payara-acc.xml.content",
                 Util.toXMLEscaped(accConfigContent.sunACC()));
         answer.setProperty("request.appclient.login.conf.content",
                 Util.toXMLEscaped(accConfigContent.appClientLogin()));
@@ -398,23 +398,16 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
     }
 
     /**
-     * Returns the expression "-targetserver=host:port[,...]" representing the
+     * Returns the expression "host:port[,...]" representing the
      * currently-active ORBs to which the ACC could attempt to bootstrap.
+     * The preceding "-targetserver=" gets added by the constructor of
+     * {@link ACCArgQueryParams}
      * @return
      */
     private String targetServerSetting(final Properties props) {
-        String result = null;
-        try {
-            result = orbFactory.getIIOPEndpoints();
-        } catch (NullPointerException npe) {
-            /*
-             * orbFactory.getIIOPEndpoints is supposed to return a valid
-             * answer whether this server is in a cluster or not.  A bug
-             * causes it to throw a NullPointerException in the non-cluster case.
-             * So catch that and use the configured listener for this server.
-             *
-             * Find the IIOP listener with the default listener ID.
-             */
+        String result = orbFactory.getIIOPEndpoints();
+        if (result == null || result.isEmpty()) {
+            // Find the IIOP listener with the default listener ID.
             String port = null;
             for (IiopListener listener : iiopService.getIiopListener()) {
                 if (listener.getId().equals(DEFAULT_ORB_LISTENER_ID)) {
@@ -424,6 +417,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
             }
             result = props.getProperty("request.host") + ":" + port;
         }
+
         return result;
     }
 

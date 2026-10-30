@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -124,42 +124,6 @@ public interface SecurityService extends ConfigBeanProxy, PropertyBag {
     public void setDefaultPrincipalPassword(String value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the anonymousRole property.
-     *
-     * This attribute is deprecated.
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "AttributeDeprecated")
-    public String getAnonymousRole();
-
-    /**
-     * Sets the value of the anonymousRole property.
-     *
-     * @param value allowed object is {@link String }
-     * @throws PropertyVetoException
-     */
-    public void setAnonymousRole(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the auditEnabled property.
-     *
-     * If true, additional access logging is performed to provide audit information
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    public String getAuditEnabled();
-
-    /**
-     * Sets the value of the auditEnabled property.
-     *
-     * @param value allowed object is {@link String }
-     * @throws PropertyVetoException
-     */
-    public void setAuditEnabled(String value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the jacc property. Specifies the name of the jacc-provider element to use for setting up the JACC infrastructure. The default value
      * "default" does not need to be changed unless adding a custom JACC provider.
      *
@@ -177,25 +141,6 @@ public interface SecurityService extends ConfigBeanProxy, PropertyBag {
 
      */
     public void setJacc(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the auditModules property.
-     *
-     * Optional list of audit provider modules which will be used by the audit subsystem. Default value refers to the internal log-based audit module
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "default")
-    public String getAuditModules();
-
-    /**
-     * Sets the value of the auditModules property.
-     *
-     * @param value allowed object is {@link String }
-     * Sets the username for this authorized internal admin user entry.
-     * @throws PropertyVetoException
-     */
-    public void setAuditModules(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the activateDefaultPrincipalToRoleMapping property.
@@ -295,29 +240,6 @@ public interface SecurityService extends ConfigBeanProxy, PropertyBag {
      */
     @Element(required = true)
     public List<JaccProvider> getJaccProvider();
-
-    /**
-     * Gets the value of the auditModule property.
-     * <p/>
-     * <p/>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the auditModule property.
-     * <p/>
-     * <p/>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAuditModule().add(newItem);
-     * </pre>
-     * <p/>
-     * <p/>
-     * <p/>
-     * Objects of the following type(s) are allowed in the list {@link AuditModule }
-     * @return 
-     */
-    @Element
-    public List<AuditModule> getAuditModule();
 
     /**
      * Gets the value of the messageSecurityConfig property.

@@ -3,16 +3,23 @@
 def pom
 def DOMAIN_NAME
 def payaraBuildNumber
+def buildId
+
 pipeline {
     agent {
         label 'general-purpose'
     }
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5', daysToKeepStr: '14'))
+    }
     environment {
         MP_METRICS_TAGS='tier=integration'
         MP_CONFIG_CACHE_DURATION=0
+        JAVA_HOME = tool("zulu-21")
+        DOMAIN_NAME = "test-domain"
     }
     tools {
-        jdk "zulu-11"
+        jdk "zulu-21"
         maven "maven-3.6.3"
     }
     stages {
@@ -21,36 +28,34 @@ pipeline {
                 script {
                     pom = readMavenPom file: 'pom.xml'
                     payaraBuildNumber = "PR${env.ghprbPullId}#${currentBuild.number}"
-                    DOMAIN_NAME = "test-domain"
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
-              }
+                }
             }
         }
         stage('Build') {
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild,BuildEmbedded \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
-                    -Djavadoc.skip -Dsource.skip"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-            post {
-                success{
-                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
-                    archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
-                    stash name: 'payara-target', includes: 'appserver/distributions/payara/target/**', allowEmpty: true
-                    stash name: 'payara-micro', includes: 'appserver/extras/payara-micro/payara-micro-distribution/target/**', allowEmpty: true 
-                    stash name: 'payara-embedded-all', includes: 'appserver/extras/embedded/all/target/**', allowEmpty: true 
-                    stash name: 'payara-embedded-web', includes: 'appserver/extras/embedded/web/target/**', allowEmpty: true 
-                    dir('/home/ubuntu/.m2/repository/'){
-                        stash name: 'payara-m2-repository', includes: '**', allowEmpty: true
-                    }
-                }
-                always {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara6/glassfish/logs/server.log'
+                script {
+                    echo 'Fetching Build Job Artifacts'
+
+                    def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
+                    def repoOrg = env.CHANGE_FORK ?: 'Payara'
+
+                    def buildJob = build job: 'Build/Build',
+                    wait: true,
+                    parameters: [
+                        string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
+                        string(name: 'repoOrg', value: repoOrg),
+                        string(name: 'jdkVer', value: 'zulu-21'),
+                        string(name: 'stream', value: 'Community'),
+                        string(name: 'profiles', value: 'BuildEmbedded'),
+                        booleanParam(name: 'skipTests', value: false),
+                        string(name: 'multiThread', value: '1'),
+                        booleanParam(name: 'archiveMavenRepository', value: true)
+                    ]
+
+                    buildId = buildJob.getNumber().toString()
                 }
             }
         }
@@ -64,21 +69,28 @@ pipeline {
                         retry(3)
                     }
                     steps {
+
+                        processPayaraArtifacts(buildId)
+
                         setupDomain()
-                        
+
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """rm  ~/test\\|sa.mv.db  || true"""
                         sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
-                        -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara6/glassfish\" \
+                        -Dglassfish.home=\"${pwd()}/payara7/glassfish\" \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
+                        -Dsurefire.rerunFailingTestsCount=2 \
+                        -Dfailsafe.rerunFailingTestsCount=2 \
                         -f appserver/tests/quicklook/pom.xml"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
                         always {
-                            junit 'appserver/tests/quicklook/test-output/QuickLookTests/*.xml'
                             stopDomain()
+                        }
+                        success {
+                            junit 'appserver/tests/quicklook/test-output/QuickLookTests/*.xml'
                         }
                         cleanup {
                             saveLogsAndCleanup 'quicklook-log.zip'
@@ -93,159 +105,277 @@ pipeline {
                         retry(3)
                     }
                     steps {
+
+                        processPayaraArtifacts(buildId, true)
                         setupDomain()
-                        
+
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
-                        -Dpayara.version=${pom.version} \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all \
-                        -f appserver/tests/payara-samples """
+                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                         -Djavax.xml.accessExternalSchema=all \
+                         -Dsurefire.rerunFailingTestsCount=2 \
+                         -Dfailsafe.rerunFailingTestsCount=2 \
+                         -Dpayara.home="${pwd()}/payara7" \
+                         -Dpayara.domain.name=test-domain \
+                         -f appserver/tests/payara-samples """
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
                         always {
-                            processReportAndStopDomain()
+                            stopDomain()
+                        }
+                        success {
+                            junit '**/target/*-reports/*.xml'
                         }
                         cleanup {
                             saveLogsAndCleanup 'samples-log.zip'
                         }
                     }
                 }
-                stage('MP TCK Runners') {
+                stage('MicroProfile Config TCK') {
                     agent {
                         label 'general-purpose'
                     }
-                    options {
-                        retry(3)
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: "Build"),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'Config'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/microprofile-6.1"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        
-                        setupDomain()
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
-                        -Ppayara-server-remote,full"""
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                }
+                stage('MicroProfile Fault Tolerance TCK') {
+                    agent {
+                        label 'general-purpose'
                     }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'mp-tck-log.zip'
-                        }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'Fault-Tolerance'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile Health TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'Health'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile JWT Auth TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP JWT Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'JWT-Auth'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP JWT Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile Metrics TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'Metrics'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile OpenAPI TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'OpenAPI'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile OpenTelemetry JVM Metrics TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry JVM Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'OpenTelemetry-JVM-Metrics-Runtime'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry JVM Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile OpenTelemetry JVM Metrics Application TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry JVM Metrics Application TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'OpenTelemetry-JVM-Metrics-Application'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry JVM Metrics Application TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile OpenTelemetry Tracing Logging TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry Tracing Logging TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'OpenTelemetry-Tracing-Logging'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry Tracing Logging TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile REST Client TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'Rest-Client'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('EE8 Tests') {
                     agent {
                         label 'general-purpose'
                     }
-                    options {
-                        retry(3)
-                    }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara6"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        
-                        setupDomain()
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                        -Ppayara-server-remote,stable"
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'Miscellaneous/Run-EE8-Samples',
+                        parameters: [
+                            string(name: 'payaraBuildNumber', value: "${buildId}"),
+                            string(name: 'buildProject', value: "Build/Build"),
+                            string(name: 'repoOrg', value: 'Payara'),
+                            string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
+                            string(name: 'jdkChoice', value: 'zulu-21'),
+                            string(name: 'arquillianProfile', value: 'payara-server-remote')
+                        ]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'ee8-samples-log.zip'
-                        }
                     }
                 }
                 stage('CargoTracker Tests') {
                     agent {
                         label 'general-purpose'
                     }
-                    options {
-                        retry(3)
-                    }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara6"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        
-                        setupDomain()
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh "rm -rf /tmp/cargo*"
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh  """mvn -B -V -ff -e clean verify --strict-checksums -Dsurefire.useFile=false \
-                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                         -Djavax.xml.accessExternalSchema=all \
-                         -Ppayara-server-remote -DtrimStackTrace=false"""
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running CargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'Miscellaneous/Run-CargoTracker',
+                        parameters: [
+                            string(name: 'payaraBuildNumber', value: "${buildId}"),
+                            string(name: 'buildProject', value: "Build/Build"),
+                            string(name: 'repoOrg', value: 'Payara'),
+                            string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
+                            string(name: 'jdkChoice', value: 'zulu-21'),
+                            string(name: 'arquillianProfile', value: 'payara-server-remote')
+                        ]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'cargotracker-log.zip'
-                        }
                     }
                 }
                 stage('EE7 Tests') {
                     agent {
                         label 'general-purpose'
                     }
-                    options {
-                        retry(3)
-                    }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara6"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
-                        setupDomain()
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -B -V -ff -e clean install --strict-checksums \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                        -Dpayara_domain=${DOMAIN_NAME} \
-                        -Ppayara-server-remote,stable,payara6"""
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'Miscellaneous/Run-EE7-Samples',
+                        parameters: [
+                            string(name: 'payaraBuildNumber', value: "${buildId}"),
+                            string(name: 'buildProject', value: "Build/Build"),
+                            string(name: 'repoOrg', value: 'Payara'),
+                            string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
+                            string(name: 'jdkChoice', value: 'zulu-21'),
+                            string(name: 'arquillianProfile', value: 'payara-server-remote')
+                        ]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'ee7-samples-log.zip'
-                        }
-                    }
                 }
-
                 stage('Payara Functional Tests') {
                     agent {
                         label 'general-purpose'
@@ -254,38 +384,69 @@ pipeline {
                         retry(3)
                     }
                     steps {
-                        setupM2RepositoryOnly()
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash Micro and Embedded *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        unstash name: 'payara-micro'
-                        unstash name: 'payara-embedded-all'
-                        unstash name: 'payara-embedded-web'
-                        
+                        processPayaraArtifacts(buildId, true)
+
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums \
-                        -Dpayara.version=${pom.version} \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
                         -DskipTests \
-                        -f appserver/tests/payara-samples """
+                        -f appserver/tests/payara-samples -pl fish.payara.samples:payara-samples \
+                        -pl fish.payara.samples:samples-test-utils -pl fish.payara.samples:test-domain-setup \
+                        -pl fish.payara.samples:payara-samples-profiled-tests"""
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
-                        -Dpayara.version=${pom.version} \
+                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed \
+                        -Dsurefire.rerunFailingTestsCount=2 \
+                        -Dfailsafe.rerunFailingTestsCount=2 \
                         -f appserver/tests/functional/payara-micro """
-                        
+
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Embedded  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean verify --strict-checksums -PFullProfile \
-                        -Dversion=${pom.version} -f appserver/tests/functional/embeddedtest """
-                        
+                        -Dversion=${pom.version} \
+                        -Dsurefire.rerunFailingTestsCount=2 \
+                        -Dfailsafe.rerunFailingTestsCount=2 \
+                        -f appserver/tests/functional/embeddedtest """
+
                         sh """mvn -V -B -ff clean verify --strict-checksums -PWebProfile \
-                        -Dversion=${pom.version} -f appserver/tests/functional/embeddedtest """
-                        
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        -Dversion=${pom.version} \
+                        -Dsurefire.rerunFailingTestsCount=2 \
+                        -Dfailsafe.rerunFailingTestsCount=2 \
+                        -f appserver/tests/functional/embeddedtest """
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running deployment groups tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """export PAYARA_HOME=${pwd()}/payara7 && pytest appserver/tests/functional/deployment-groups/test_deployment_group.py -v -s"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran deployment groups tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """python3 appserver/tests/functional/asadmin/run_all_tests.py \
+                        --asadmin ${pwd()}/payara7/bin/asadmin"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran asadmin test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running payara-application.xml tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean verify --strict-checksums -Ppayara-server-remote \
+                                -Dsurefire.rerunFailingTestsCount=2 \
+                                -Dfailsafe.rerunFailingTestsCount=2 \
+                                -f appserver/tests/functional/payara-application-xml """
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran payara-application.xml tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JMS ping tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """export PAYARA_HOME=${pwd()}/payara7 && python3 appserver/tests/functional/jms/test_jms_ping.py \
+                        --domain-name ${env.DOMAIN_NAME} """
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JMS ping tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
-                        cleanup {
+                        always {
+                            stopDomain()
+                        }
+                        success {
                             processReport()
                         }
+                        cleanup {
+                            saveLogsAndCleanup 'asadmin-log.zip'
+                       }
                     }
                 }
             }
@@ -295,36 +456,18 @@ pipeline {
 
 void makeDomain() {
     script{
-        ASADMIN = "./appserver/distributions/payara/target/stage/payara6/bin/asadmin"
+        ASADMIN = "./payara7/bin/asadmin"
         DOMAIN_NAME = "test-domain"
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
 }
 
 void setupDomain() {
-    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-    unstash name: 'payara-target'
-    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-    dir('/home/ubuntu/.m2/repository/'){
-        unstash name: 'payara-m2-repository'
-    }    
-    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up domain  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     makeDomain()
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} start-database || true"
-}
-
-void setupM2RepositoryOnly() {
-    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-    dir('/home/ubuntu/.m2/repository/'){
-        unstash name: 'payara-m2-repository'
-    }    
-}
-
-void processReportAndStopDomain() {
-    junit '**/target/*-reports/*.xml'
-    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-    sh "${ASADMIN} stop-database || true"
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Domain setup complete  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 }
 
 void processReport() {
@@ -337,8 +480,89 @@ void stopDomain() {
 }
 
 void saveLogsAndCleanup(String logArchiveName) {
-    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara6/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
+    zip archive: true, dir: "./payara7/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
     echo 'tidying up after tests: '
     sh "rm -f -v *.zip"
     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
+}
+
+void updatePomPayaraVersion(String payaraVersion) {
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Updating pom.xml payara.version property for Shrinkwrap resolver  *#*#*#*#*#*#*#*#*#*#*#*#'
+    echo "Setting payara.version to: ${payaraVersion}"
+    sh script: "sed -i \"s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${payaraVersion}<\\/payara\\.version>/g\" pom.xml", label: "Update pom.xml payara.version property"
+}
+
+void processPayaraArtifacts(String buildId, boolean restoreMavenRepo = false) {
+    // Grab Payara artifact from given job
+    echo "Grabbing artifacts from Build/Build: ${buildId}"
+
+    // Determine filter based on whether we need Maven repository
+    def artifactFilter = 'payara-bom.pom,payara-embedded-all.jar,payara-embedded-web.jar,payara-micro.jar,payara-web.zip,payara.zip'
+    if (restoreMavenRepo) {
+        artifactFilter += ',maven-repository.zip'
+    }
+
+    copyArtifacts(projectName: "Build/Build",
+        selector: specific("${buildId}"),
+        filter: artifactFilter,
+        target: 'artifacts/')
+
+    // If Maven repository is included, restore it
+    if (restoreMavenRepo && fileExists('artifacts/maven-repository.zip')) {
+        echo "Restoring Maven repository"
+        sh 'unzip -o artifacts/maven-repository.zip -d ~/.m2/repository'
+        echo "Maven repository restored to ~/.m2/repository"
+    }
+
+    def payaraHome = "${env.WORKSPACE}/payara7"
+    echo "payaraHome = ${payaraHome}"
+
+    // Get the Payara version from the extracted distribution
+    def payaraVersion = getPayaraVersion()
+    echo "Extracted Payara Version from ${payaraHome}/glassfish/config/branding/glassfish-version.properties: ${payaraVersion}"
+
+    if (!payaraVersion) {
+        error("Failed to determine Payara version from glassfish-version.properties")
+    }
+
+    // Install the distributions for any jobs that try to pull directly from Maven
+    // Move into a different directory to stop Maven using the current pom
+    echo "Installing copied artifacts to local maven repo"
+    def installArtifactsScript = """
+        mkdir tmp
+        cd tmp
+        mvn install:install-file -DgeneratePom=true -DgroupId=fish.payara.distributions -DartifactId=payara -Dversion=${payaraVersion} -Dpackaging=zip -Dfile=${env.WORKSPACE}/artifacts/payara.zip
+        mvn install:install-file -DgeneratePom=true -DgroupId=fish.payara.distributions -DartifactId=payara-web -Dversion=${payaraVersion} -Dpackaging=zip -Dfile=${env.WORKSPACE}/artifacts/payara-web.zip
+        mvn install:install-file -DgeneratePom=true -DgroupId=fish.payara.extras -DartifactId=payara-micro -Dversion=${payaraVersion} -Dpackaging=jar -Dfile=${env.WORKSPACE}/artifacts/payara-micro.jar
+        mvn install:install-file -DgroupId=fish.payara.api -DartifactId=payara-bom -Dversion=${payaraVersion} -Dpackaging=pom -Dfile=${env.WORKSPACE}/artifacts/payara-bom.pom
+        cd ..
+    """
+    sh installArtifactsScript
+
+    echo "Updating pom.xml payara.version property for Shrinkwrap resolver"
+    def updatePayaraVersionScript = """
+        sed -i "s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${payaraVersion}<\\/payara\\.version>/g" pom.xml
+    """
+    sh updatePayaraVersionScript
+}
+
+def extractPayara() {
+    if (!fileExists('payara7')) {
+        echo 'Extracting payara.zip...'
+        sh 'unzip -q artifacts/payara.zip -d .'
+    } else {
+        echo 'payara7 directory already exists'
+    }
+}
+
+def getPayaraVersion() {
+    extractPayara()
+
+    def versionFile = "${pwd()}/payara7/glassfish/config/branding/glassfish-version.properties"
+    if (!fileExists(versionFile)) {
+        error("glassfish-version.properties not found at: ${versionFile}")
+    }
+
+    def props = readProperties file: versionFile
+    return "${props.major_version}.${props.minor_version}.${props.update_version}"
 }

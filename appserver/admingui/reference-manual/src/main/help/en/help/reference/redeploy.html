@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -90,8 +90,6 @@
 [--upload={true|false}]
 [--retrieve local_dirpath]
 [--dbvendorname dbvendorname]
-[--createtables={true|false}|--dropandcreatetables={true|false}]
-[--uniquetablenames={true|false}]
 [--deploymentplan deployment_plan]
 [--altdd alternate_deploymentdescriptor]
 [--runtimealtdd runtime_alternate_deploymentdescriptor]
@@ -226,40 +224,9 @@ local directory.</p>
 created. Supported values include <code>db2</code>, <code>mssql</code>, <code>oracle</code>, <code>derby</code>,
 <code>javadb</code>, <code>postgresql</code>, and <code>sybase</code>, case-insensitive. If not
 specified, the value of the <code>database-vendor-name</code> attribute in
-<code>glassfish-ejb-jar.xml</code> is used. If no value is specified, a
-connection is made to the resource specified by the <code>jndi-name</code>
-subelement of the <code>cmp-resource</code> element in the
-<code>glassfish-ejb-jar.xml</code> file, and the database vendor name is read. If
+<code>glassfish-ejb-jar.xml</code> is used. If
 the connection cannot be established, or if the value is not
 recognized, SQL-92 compliance is presumed.</p>
-</dd>
-<dt class="hdlist1"><code>--createtables</code></dt>
-<dd>
-<p>If specified as true, creates tables at deployment of an application
-with unmapped CMP beans. If specified as false, tables are not
-created. If not specified, the value of the <code>create-tables-at-deploy</code>
-entry in the <code>cmp-resource</code> element of the <code>glassfish-ejb-jar.xml</code>
-file determines whether or not tables are created. No unique
-constraints are created for the tables.</p>
-</dd>
-<dt class="hdlist1"><code>--dropandcreatetables</code></dt>
-<dd>
-<p>If specified as true when the component is redeployed, the tables
-created by the previous deployment are dropped before creating the new
-tables. Applies to deployed applications with unmapped CMP beans. If
-specified as false, tables are neither dropped nor created. If not
-specified, the tables are dropped if the <code>drop-tables-at-undeploy</code>
-entry in the <code>cmp-resource</code> element of the <code>glassfish-ejb-jar.xml</code>
-file is set to true, and the new tables are created if the
-<code>create-tables-at-deploy</code> entry in the <code>cmp-resource</code> element of the
-<code>glassfish-ejb-jar.xml</code> file is set to true.</p>
-</dd>
-<dt class="hdlist1"><code>--uniquetablenames</code></dt>
-<dd>
-<p>Guarantees unique table names for all the beans and results in a hash
-code added to the table names. This is useful if you have an
-application with case-sensitive bean names. Applies to applications
-with unmapped CMP beans.</p>
 </dd>
 <dt class="hdlist1"><code>--deploymentplan</code></dt>
 <dd>
@@ -289,10 +256,11 @@ top-level deployment descriptor packaged in the archive. For example,
 for an EAR, the <code>--runtimealtdd</code> option overrides
 <code>glassfish-application.xml</code>. For a standalone module, the
 <code>--runtimealtdd</code> option overrides the top-level module descriptor such
-as <code>glassfish-web.xml</code>. Applies to \{product---name} deployment
-descriptors only (<code>glassfish-*.xml</code>); the name of the alternate
-deployment descriptor file must begin with <code>glassfish-</code>. Does not
-apply to <code>sun-*.xml</code> deployment descriptors, which are deprecated.</p>
+as <code>payara-web.xml</code>. Applies to <code>payara-web.xml</code> and \{product---name}
+deployment descriptors only (<code>glassfish-*.xml</code>); the name of the alternate
+deployment descriptor file must be <code>payara-web.xml</code> or begin with
+<code>glassfish-</code>. Does not apply to <code>sun-*.xml</code> deployment
+descriptors, which are deprecated.</p>
 </dd>
 <dt class="hdlist1"><code>--deploymentorder</code></dt>
 <dd>
@@ -657,7 +625,6 @@ Command redeploy executed successfully</code></pre>
 </div>
 <div class="paragraph">
 <p><a href="deploy.html#deploy-1"><code>deploy</code>(1)</a>, <a href="get.html#get-1"><code>get</code>(1)</a>,
-<a href="list-components.html#list-components-1"><code>list-components</code>(1)</a>,
 <a href="undeploy.html#undeploy-1"><code>undeploy</code>(1)</a></p>
 </div>
 <div class="paragraph">

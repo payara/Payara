@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.server;
 
@@ -54,7 +54,6 @@ import com.sun.enterprise.admin.report.HTMLActionReporter;
 import java.beans.PropertyChangeEvent;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.inject.Inject;
@@ -162,7 +161,9 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
                         appName = ((ApplicationRef)parent).getRef();
                         propertyName = event.getPropertyName();
                     } else if (parent instanceof Property) {
-                        appName = ((Property)parent).getParent(Application.class).getName();
+                        if (((Property) parent).getParent() instanceof Application grandparent) {
+                            appName = grandparent.getName();
+                        }
                         propertyName = ((Property)parent).getName();
                     }
                     // if it's not a user application, let's not do
@@ -177,7 +178,6 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
                     } else if (ServerTags.CONTEXT_ROOT.equals(propertyName)
                             || ServerTags.VIRTUAL_SERVERS.equals(propertyName)
                             || ServerTags.AVAILABILITY_ENABLED.equals(propertyName)
-                            || ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(propertyName)
                             || ServerTags.EMPTY_BEANS_XML_MODE_ALL_PROP.equals(propertyName)) {
                         // for other changes, reload the application
                         handleOtherAppConfigChanges(event.getSource(), appName);
@@ -192,25 +192,11 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
     }
 
     public void postConstruct() {
-        Properties arguments = startupContext.getArguments(); 
-        if (arguments != null) {
-            boolean isUpgrade = Boolean.valueOf(
-                arguments.getProperty(UPGRADE_PARAM));  
-            if (isUpgrade) {
-                // we don't want to register this listener for the upgrade
-                // start up
-                return;
-            }
-        }
         transactions.addTransactionsListener(this);
     }
 
     private void handleAppEnableChange(Object parent, 
         String appName, boolean enabled) {
-        Application application = applications.getApplication(appName);
-        if (application.isLifecycleModule()) {
-            return;
-        }
         if (enabled) {
             if (isCurrentInstanceMatchingTarget(parent)) {
                 enableApplication(appName);
@@ -224,9 +210,6 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
 
     private void handleOtherAppConfigChanges(Object parent, String appName) {
         Application application = applications.getApplication(appName);
-        if (application.isLifecycleModule()) {
-            return;
-        }
         // reload the application for other application related 
         // config changes if the application is in enabled state
         if (isCurrentInstanceMatchingTarget(parent) && 

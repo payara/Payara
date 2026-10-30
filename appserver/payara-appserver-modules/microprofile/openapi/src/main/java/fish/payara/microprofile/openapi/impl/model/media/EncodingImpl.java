@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -68,7 +68,12 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
         String styleEnum = annotation.getValue("style", String.class);
         if (styleEnum != null) {
-            from.setStyle(Style.valueOf(styleEnum.toUpperCase()));
+            for (Style potentialStyle : Style.values()) {
+                if (potentialStyle.toString().equals(styleEnum)) {
+                    from.setStyle(potentialStyle);
+                    break;
+                }
+            }
         }
         from.setExplode(annotation.getValue("explode", Boolean.class));
         from.setAllowReserved(annotation.getValue("allowReserved", Boolean.class));

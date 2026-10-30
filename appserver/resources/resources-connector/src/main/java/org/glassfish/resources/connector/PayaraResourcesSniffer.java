@@ -16,7 +16,7 @@
  *  file and include the License.
  * 
  *  When distributing the software, include this License Header Notice in each
- *  file and include the License file at glassfish/legal/LICENSE.txt.
+ *  file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  * 
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -82,5 +82,10 @@ public class PayaraResourcesSniffer extends ResourcesSniffer {
         final List<String> result = new ArrayList<String>();
         result.add(ResourceConstants.PAYARA_RESOURCES_LOCATION);
         return result;
+    }
+    
+    @Override
+    public List<String> getDeploymentConfigurationPaths() {
+        return deploymentConfigurationPaths;
     }
 }

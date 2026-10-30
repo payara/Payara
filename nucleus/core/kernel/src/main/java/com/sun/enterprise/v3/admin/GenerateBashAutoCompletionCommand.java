@@ -16,7 +16,7 @@
  *  file and include the License.
  *
  *  When distributing the software, include this License Header Notice in each
- *  file and include the License file at glassfish/legal/LICENSE.txt.
+ *  file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -208,7 +208,7 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
             //write function to tell bash what function the autocompletion is for
             writer.write(COMPLETE_CALL);
             writer.newLine();
-            //Add directory of payara6/glassfish/bin to the path
+            //Add directory of payara7/glassfish/bin to the path
             writer.write(ADD_PATH);
             writer.write(serverContext.getInstallRoot().getPath() + File.separator + "bin");
             //flush the buffer
