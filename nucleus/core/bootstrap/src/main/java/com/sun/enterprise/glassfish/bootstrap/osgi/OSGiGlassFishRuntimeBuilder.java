@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2026] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
 import com.sun.enterprise.glassfish.bootstrap.MainHelper;
@@ -50,6 +52,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
+import org.osgi.framework.wiring.FrameworkWiring;
 
 import java.io.*;
 import java.util.List;
@@ -155,7 +158,13 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
                 bundleProvisioner.setBundleContext(framework.getBundleContext());
             }
 
-            // Step 2: Start bundles
+            // Step 2: resolve all bundles in one resolver run, then start bundles. Resolving them one by one as
+            // they are started or first loaded from repeats the candidate computation for every run.
+            if (Boolean.parseBoolean(System.getProperty("glassfish.osgi.resolve.all", "true"))) {
+                framework.adapt(FrameworkWiring.class).resolveBundles(null);
+            }
+            long t1a = System.currentTimeMillis();
+            logger.logp(Level.FINE, "OSGiGlassFishRuntimeBuilder", "build", "Resolved all bundles in {0} ms", t1a - t1);
             bundleProvisioner.startBundles();
             long t2 = System.currentTimeMillis();
 
