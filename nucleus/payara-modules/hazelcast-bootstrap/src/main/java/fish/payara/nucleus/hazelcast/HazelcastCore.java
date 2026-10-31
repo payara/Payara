@@ -74,14 +74,12 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.ServerEnvironment.Status;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -154,6 +152,12 @@ public class HazelcastCore implements EventListener, ConfigListener {
     private CachingProvider hazelcastCachingProvider;
     private boolean enabled;
     private boolean booted=false;
+    /**
+     * Whether the server has started; together with {@link #booted} guarded by {@link #bootstrapState}. The
+     * bootstrap complete event is sent by whichever of the server start and the Hazelcast boot happens second.
+     */
+    private boolean serverStarted;
+    private final Object bootstrapState = new Object();
     private String memberName;
     private String memberGroup;
 
@@ -219,6 +223,27 @@ public class HazelcastCore implements EventListener, ConfigListener {
         if (datagridEncryptionValue) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Data grid encryption is enabled");
         }
+        if (enabled) {
+            startBootstrap();
+        }
+    }
+
+    /**
+     * Boots Hazelcast on its own thread so that the startup services and the applications load meanwhile. Every
+     * accessor still waits for the boot to finish through the synchronized {@link #bootstrapHazelcast()}, and
+     * retries it should the boot have failed.
+     */
+    private void startBootstrap() {
+        Thread bootstrap = new Thread(() -> {
+            try {
+                bootstrapHazelcast();
+            } catch (RuntimeException e) {
+                Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, "Hazelcast failed to start", e);
+            }
+        }, "hazelcast-bootstrap");
+        bootstrap.setContextClassLoader(clh.getCommonClassLoader());
+        bootstrap.setDaemon(true);
+        bootstrap.start();
     }
 
     /**
@@ -302,18 +327,16 @@ public class HazelcastCore implements EventListener, ConfigListener {
     public void event(Event event) {
         if (event.is(Deployment.ALL_APPLICATIONS_STOPPED)) {
             shutdownHazelcast();
-        } else if (event.is(Deployment.ALL_APPLICATIONS_LOADED)) {
-            ClassLoader oldCL = Utility.getClassLoader();
-            try {
-                Utility.setContextClassLoader(clh.getCommonClassLoader());
-                bootstrapHazelcast();
-            } finally {
-                Utility.setContextClassLoader(oldCL);
+        } else if (event.is(EventTypes.SERVER_STARTUP)) {
+            boolean announce;
+            synchronized (bootstrapState) {
+                serverStarted = true;
+                // only after all startup services have been initialized, and only if the boot got there first
+                announce = isEnabled() && booted;
             }
-        }
-        else if(event.is(EventTypes.SERVER_STARTUP) && isEnabled() && booted) {
-            // send this event only after all Startup services have been initialized
-            events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+            if (announce) {
+                events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+            }
         }
     }
 
@@ -644,12 +667,15 @@ public class HazelcastCore implements EventListener, ConfigListener {
             setAttribute(theInstance.getCluster().getLocalMember().getUuid(), INSTANCE_GROUP_ATTRIBUTE, memberGroup);
             hazelcastCachingProvider = new HazelcastServerCachingProvider(theInstance);
             bindToJNDI();
-            if(env.getStatus() == Status.started) {
-                // only issue this event if the server is already running,
-                // otherwise the SERVER_STARTUP event will issue this event as well
+            boolean announce;
+            synchronized (bootstrapState) {
+                booted = true;
+                // otherwise the SERVER_STARTUP event issues this event once all startup services are initialized
+                announce = serverStarted;
+            }
+            if (announce) {
                 events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
             }
-            booted = true;
         }
     }
 
