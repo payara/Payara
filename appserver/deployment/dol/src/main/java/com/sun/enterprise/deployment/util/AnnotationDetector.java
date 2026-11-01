@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,97 +38,111 @@
  * holder.
  */
 // Portions Copyright [2020-2026] Payara Foundation and/or affiliates
-
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.annotation.introspection.AnnotationScanner;
-import com.sun.enterprise.deployment.annotation.introspection.ClassFile;
-import com.sun.enterprise.deployment.annotation.introspection.ConstantPoolInfo;
-import org.glassfish.api.deployment.archive.ReadableArchive;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.JandexIndexer;
+import org.glassfish.internal.deployment.JandexIndexer.Index;
+import org.jboss.jandex.Indexer;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.util.Enumeration;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Level;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
 
 /**
- * Abstract superclass for specific types of annotation detectors.
+ * Detects the presence of annotations in an archive without loading classes: through the Jandex
+ * indexes of the deployment in progress, or by indexing the archive directly where there is none
+ * (the application client container).
  *
  * @author Jerome Dochez
  */
 public class AnnotationDetector {
-    
-    protected final ClassFile classFile;
-    protected final AnnotationScanner scanner;
 
-    public AnnotationDetector(AnnotationScanner scanner) {
-        this.scanner = scanner;
-        ConstantPoolInfo poolInfo = new ConstantPoolInfo(scanner);
-        classFile = new ClassFile(poolInfo);
+    /** the component-defining annotations of enterprise beans */
+    public static final List<String> EJB_COMPONENT_ANNOTATIONS = List.of(
+            "jakarta.ejb.Stateless", "jakarta.ejb.Stateful", "jakarta.ejb.MessageDriven", "jakarta.ejb.Singleton");
+
+    /** the annotations of a resource adapter */
+    public static final List<String> CONNECTOR_ANNOTATIONS = List.of(
+            "jakarta.resource.spi.Connector", "jakarta.resource.spi.AdministeredObject",
+            "jakarta.resource.spi.Activation", "jakarta.resource.spi.AuthenticationMechanism",
+            "jakarta.resource.spi.ConfigProperty", "jakarta.resource.spi.ConnectionDefinition",
+            "jakarta.resource.spi.ConnectionDefinitions", "jakarta.resource.spi.SecurityPermission");
+
+    /** the annotations referring to a persistence unit */
+    public static final List<String> PERSISTENCE_UNIT_ANNOTATIONS = List.of(
+            "jakarta.persistence.PersistenceUnit", "jakarta.persistence.PersistenceUnits");
+
+    private final List<String> annotationNames;
+
+    public AnnotationDetector(Collection<String> annotationNames) {
+        this.annotationNames = new ArrayList<>(annotationNames);
     }
-    
-    public boolean hasAnnotationInArchiveWithNoScanning(ReadableArchive archive) throws IOException {
-        DeploymentContext deploymentContext = DeploymentUtils.getCurrentDeploymentContext();
-        JandexIndexer indexer = deploymentContext == null || Globals.getDefaultHabitat() == null
-                ? null : Globals.getDefaultHabitat().getService(JandexIndexer.class);
 
-        // we are on the client side so we need to scan annotations
-        if (indexer == null) {
-            return hasAnnotationInArchive(archive);
-        }
-
-        List<URI> uris = new ArrayList<>();
-        uris.add(archive.getURI());
+    /**
+     * @return whether a class of the archive or of the libraries it refers to carries one of the
+     * annotations
+     */
+    public boolean hasAnnotationInArchive(ReadableArchive archive) throws IOException {
+        List<URI> others = additionalArchives(archive);
         try {
-            uris.addAll(DOLUtils.getLibraryJarURIs(null, archive));
+            others.addAll(DOLUtils.getLibraryJarURIs(null, archive));
         } catch (Exception e) {
             DOLUtils.getDefaultLogger().log(Level.WARNING, e.getMessage(), e);
         }
-
-        // force populating the annotations field in the scanner
-        scanner.isAnnotation("foo");
-
-        Set<String> annotations = scanner.getAnnotations();
-        return annotations != null && indexer.hasAnyAnnotations(deploymentContext, uris, annotations.toArray(new String[0]));
-    }
-
-    public boolean hasAnnotationInArchive(ReadableArchive archive) throws IOException {
-
-        Enumeration<String> entries = archive.entries();
-        while (entries.hasMoreElements()) {
-            String entryName = entries.nextElement();
-            if (entryName.endsWith(".class")) {
-                if (containsAnnotation(archive, entryName)) {
+        DeploymentContext deploymentContext = DeploymentUtils.getCurrentDeploymentContext();
+        if (deploymentContext != null) {
+            List<URI> uris = new ArrayList<>();
+            uris.add(archive.getURI());
+            uris.addAll(others);
+            return Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                    .hasAnyAnnotations(deploymentContext, uris, annotationNames.toArray(new String[0]));
+        }
+        // no deployment in progress, e.g. in the application client container: index directly
+        if (hasAnnotations(archive)) {
+            return true;
+        }
+        ArchiveFactory archiveFactory = Globals.getDefaultHabitat().getService(ArchiveFactory.class);
+        for (URI uri : others) {
+            try (ReadableArchive other = archiveFactory.openArchive(uri)) {
+                if (hasAnnotations(other)) {
                     return true;
                 }
-            } 
+            }
         }
         return false;
     }
 
+    /**
+     * @return whether the class file at the entry carries one of the annotations
+     */
     public boolean containsAnnotation(ReadableArchive archive, String entryName) throws IOException {
-        return containsAnnotation(archive.getEntry(entryName), archive.getEntrySize(entryName));    
+        try (InputStream stream = archive.getEntry(entryName)) {
+            if (stream == null) {
+                return false;
+            }
+            Indexer indexer = new Indexer();
+            indexer.index(stream);
+            return new Index(indexer.complete()).hasAnnotations(annotationNames);
+        }
     }
 
-    protected boolean containsAnnotation(InputStream is, long size) 
-        throws IOException {
-        boolean result = false;
-         // check if it contains top level annotations...
-        try (ReadableByteChannel channel = Channels.newChannel(is)) {
-            if (channel != null) {
-                result = classFile.containsAnnotation(channel, size);
-            }
-            return result;
-        }
+    /**
+     * @return archives to detect in addition to the archive itself and its libraries
+     */
+    protected List<URI> additionalArchives(ReadableArchive archive) throws IOException {
+        return new ArrayList<>();
+    }
+
+    private boolean hasAnnotations(ReadableArchive archive) throws IOException {
+        return new Index(JandexIndexer.indexArchive(archive, entry -> true)).hasAnnotations(annotationNames);
     }
 }

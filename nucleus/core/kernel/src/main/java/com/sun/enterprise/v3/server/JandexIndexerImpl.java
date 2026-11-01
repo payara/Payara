@@ -115,6 +115,7 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
     private static final Pattern ARCHIVE_ENTRY = Pattern.compile("\\.([jwr]ar)$");
     /** expanded module directories inside an expanded EAR, e.g. {@code ejb_jar} */
     private static final Pattern EXPANDED_MODULE = Pattern.compile("_[jwr]ar$");
+    private static final int RECENT_INDEXES = 32;
 
     @Inject
     private ArchiveFactory archiveFactory;
@@ -129,6 +130,17 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
     private PayaraExecutorService executorService;
 
     private final Queue<Runnable> pendingCacheWrites = new ConcurrentLinkedQueue<>();
+
+    /**
+     * indexes built outside of a deployment (archive type detection, the embedded EJB container) by
+     * archive identity, so the deployment that follows reuses them
+     */
+    private final Map<String, Index> recentIndexes = Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Index> eldest) {
+            return size() > RECENT_INDEXES;
+        }
+    });
 
     @PostConstruct
     public void postConstruct() {
@@ -146,7 +158,7 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
         ReadableArchive source = deploymentContext.getSource();
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(deploymentContext);
         try (DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, source.getName())) {
-            indexRootArchive(source, indexes, tracing);
+            indexRootArchive(source, recentIndex(deploymentContext.getOriginalSource()), indexes, tracing);
         }
         if (DeploymentUtils.useWarLibraries(deploymentContext)) {
             for (String warLibrary : DeploymentUtils.getWarLibraryCache().keySet()) {
@@ -210,6 +222,93 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
     }
 
     @Override
+    public Index indexArchive(ReadableArchive archive) throws IOException {
+        String identity = identity(archive);
+        if (identity == null) {
+            return indexOrGetFromCache(archive);
+        }
+        Index index = recentIndexes.get(identity);
+        if (index == null) {
+            index = indexOrGetFromCache(archive);
+            recentIndexes.put(identity, index);
+        }
+        return index;
+    }
+
+    @Override
+    public boolean hasAnnotations(ReadableArchive archive, Collection<String> annotationNames) throws IOException {
+        String[] names = annotationNames.toArray(new String[0]);
+        List<String> nestedArchives = new ArrayList<>();
+        for (String entry : Collections.list(archive.entries())) {
+            if (!entry.contains("/") && ARCHIVE_ENTRY.matcher(entry).find() && !archive.isDirectory(entry)) {
+                nestedArchives.add(entry);
+            }
+        }
+        List<URI> libraries = DeploymentUtils.getExternalLibraries(archive);
+        DeploymentContext deploymentContext = DeploymentUtils.getCurrentDeploymentContext();
+        if (deploymentContext != null) {
+            List<URI> archives = new ArrayList<>();
+            archives.add(archive.getURI());
+            for (String nested : nestedArchives) {
+                try (ReadableArchive nestedArchive = archive.getSubArchive(nested)) {
+                    if (nestedArchive != null) {
+                        archives.add(nestedArchive.getURI());
+                    }
+                }
+            }
+            archives.addAll(libraries);
+            return hasAnyAnnotations(deploymentContext, archives, names);
+        }
+        if (indexArchive(archive).hasAnnotations(names)) {
+            return true;
+        }
+        for (String nested : nestedArchives) {
+            try (ReadableArchive nestedArchive = archive.getSubArchive(nested)) {
+                if (nestedArchive != null && indexArchive(nestedArchive).hasAnnotations(names)) {
+                    return true;
+                }
+            }
+        }
+        for (URI library : libraries) {
+            try (ReadableArchive libraryArchive = archiveFactory.openArchive(library)) {
+                if (indexArchive(libraryArchive).hasAnnotations(names)) {
+                    return true;
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, e, () -> "Cannot find archive " + library + " referenced from archive "
+                        + archive.getName() + ", it will be ignored for annotation scanning");
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return the index built for the archive before the deployment started, e.g. by archive type
+     * detection, or null
+     */
+    private Index recentIndex(ReadableArchive archive) {
+        String identity = identity(archive);
+        return identity == null ? null : recentIndexes.get(identity);
+    }
+
+    /**
+     * @return a content identity of a jar (name, size and checksum) or of an archive nested in one, or
+     * null for a directory
+     */
+    private static String identity(ReadableArchive archive) {
+        if (!(archive instanceof InputJarArchive)) {
+            return null;
+        }
+        long crc = ((InputJarArchive) archive).getArchiveCrc();
+        if (crc >= 0) {
+            return archive.getName() + "-" + archive.getArchiveSize() + "-" + Long.toHexString(crc);
+        }
+        ReadableArchive parent = archive.getParentArchive();
+        String parentIdentity = parent == null ? null : identity(parent);
+        return parentIdentity == null ? null : parentIdentity + "!/" + archive.getURI().getSchemeSpecificPart();
+    }
+
+    @Override
     public void event(Event<?> event) {
         if (event.is(Deployment.DEPLOYMENT_SUCCESS)) {
             for (Runnable write; (write = pendingCacheWrites.poll()) != null;) {
@@ -220,7 +319,7 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
         }
     }
 
-    private void indexRootArchive(ReadableArchive source, Map<String, Index> indexes,
+    private void indexRootArchive(ReadableArchive source, Index recent, Map<String, Index> indexes,
                                   StructuredDeploymentTracing tracing) throws IOException {
         List<String> entries = Collections.list(source.entries());
         Set<String> expandedModules = new HashSet<>();
@@ -238,7 +337,7 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
                 subArchives.add(entry);
             }
         }
-        Index rootIndex = readPrebuiltIndex(source);
+        Index rootIndex = recent != null ? recent : readPrebuiltIndex(source);
         if (rootIndex == null) {
             rootIndex = new Index(JandexIndexer.indexArchive(source,
                     entry -> expandedModules.stream().noneMatch(module -> entry.startsWith(module + "/"))));
@@ -364,15 +463,11 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
      * (directories, nested archives, snapshot builds)
      */
     private Path cacheFile(ReadableArchive archive) {
-        if (!(archive instanceof InputJarArchive) || archive.getName().contains("-SNAPSHOT")) {
+        String identity = identity(archive);
+        if (identity == null || identity.contains("!/") || archive.getName().contains("-SNAPSHOT")) {
             return null;
         }
-        long crc = ((InputJarArchive) archive).getArchiveCrc();
-        if (crc < 0) {
-            return null;
-        }
-        return Path.of(serverEnvironment.getInstanceRoot().getPath(), CACHE_DIRECTORY,
-                archive.getName() + "-" + archive.getArchiveSize() + "-" + Long.toHexString(crc) + CACHE_SUFFIX);
+        return Path.of(serverEnvironment.getInstanceRoot().getPath(), CACHE_DIRECTORY, identity + CACHE_SUFFIX);
     }
 
     private static Index readCache(Path cacheFile) {

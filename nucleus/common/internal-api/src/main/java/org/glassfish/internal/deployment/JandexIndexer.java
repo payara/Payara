@@ -225,6 +225,24 @@ public interface JandexIndexer {
     boolean hasAnyAnnotations(DeploymentContext deploymentContext, Collection<URI> archives, String... annotationNames);
 
     /**
+     * Index an archive outside of a deployment, e.g. to detect its type before a deployment context
+     * exists. The index is remembered, so a deployment of the same archive reuses it instead of
+     * indexing again.
+     */
+    Index indexArchive(ReadableArchive archive) throws IOException;
+
+    /**
+     * Whether a class of the archive, of an archive nested at its top level or of a library on its
+     * manifest {@code Class-Path} carries one of the annotations. Uses the deployment's indexes
+     * when a deployment is in progress, otherwise {@link #indexArchive(ReadableArchive)}.
+     */
+    boolean hasAnnotations(ReadableArchive archive, Collection<String> annotationNames) throws IOException;
+
+    default boolean hasAnnotations(ReadableArchive archive, Class<?>... annotationTypes) throws IOException {
+        return hasAnnotations(archive, Arrays.stream(annotationTypes).map(Class::getName).collect(Collectors.toList()));
+    }
+
+    /**
      * @return names of the classes in the whole deployment annotated with any of the given annotations
      */
     default Set<String> getAnnotatedClassNames(DeploymentContext deploymentContext, String... annotationNames) {
@@ -253,6 +271,17 @@ public interface JandexIndexer {
 
     static IndexView compositeIndex(Collection<Index> indexes) {
         return CompositeIndex.create(indexes.stream().map(Index::getIndex).collect(Collectors.<IndexView>toList()));
+    }
+
+    /**
+     * @return a view over the indexes completed by the classes the class loader can see, resolved on
+     * demand without loading them: superclasses and interfaces in the server or in libraries,
+     * annotation types and their defaults (see {@link ClassLoaderIndex})
+     */
+    static IndexView compositeIndex(Collection<Index> indexes, ClassLoader classLoader) {
+        List<IndexView> views = indexes.stream().map(Index::getIndex).collect(Collectors.<IndexView>toList());
+        views.add(new ClassLoaderIndex(classLoader));
+        return CompositeIndex.create(views);
     }
 
     /**
