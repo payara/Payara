@@ -55,13 +55,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2026] [Payara Foundation and/or its affiliates]
 
 package org.apache.naming.resources;
 
 import java.nio.file.LinkOption;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
@@ -154,6 +155,12 @@ public class FileDirContext extends BaseDirContext {
     protected Map<String, File> listFileCache =
             Collections.synchronizedMap(new WeakHashMap<String, File>());
     // END S1AS8PE 4965170
+
+    /**
+     * The directories looked up so far, by path: the real path of each and the names of its entries,
+     * valid while the directory is unmodified.
+     */
+    private final Map<String, DirectoryEntries> directoryCache = new ConcurrentHashMap<>();
 
     /**
      * Absolute normalized filename of the base.
@@ -265,6 +272,7 @@ public class FileDirContext extends BaseDirContext {
      */
     public void release() {
 
+        directoryCache.clear();
         caseSensitive = true;
         allowLinking = false;
         absoluteBase = null;
@@ -926,11 +934,7 @@ public class FileDirContext extends BaseDirContext {
             }
 
             // Check that this file belongs to our root path
-            String canPath = null;
-            try {
-                canPath = normalize(file.toPath().toRealPath(LinkOption.NOFOLLOW_LINKS).toString());
-            } catch (IOException e) {
-            }
+            String canPath = realPath(file);
             if (canPath == null || canonicalBase == null || (!canPath.startsWith(canonicalBase) && !allowLinking)) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NULL_CANONICAL_PATH);
@@ -1004,6 +1008,67 @@ public class FileDirContext extends BaseDirContext {
         fCache.put(keyName,file);
         // END S1AS8PE 4965170
         return file;
+    }
+
+    /**
+     * The real path of the file, links left unresolved: the real path of its directory, and its own name
+     * as the directory lists it. Resolving a path itself costs a scan of every directory along it on a
+     * case-insensitive file system, so the directory's real path and listing are computed once and reused
+     * while the directory is unmodified.
+     *
+     * @return the normalized real path, or null if the file cannot be resolved
+     */
+    private String realPath(File file) {
+        File directory = file.getParentFile();
+        DirectoryEntries entries = directory == null ? null : directoryEntries(directory);
+        if (entries != null && entries.names.contains(file.getName())) {
+            return normalize(entries.realPath + File.separatorChar + file.getName());
+        }
+        // not listed under this exact name: resolving the file itself settles a case mismatch, or a file
+        // added since the listing was taken
+        try {
+            return normalize(file.toPath().toRealPath(LinkOption.NOFOLLOW_LINKS).toString());
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private DirectoryEntries directoryEntries(File directory) {
+        String key = directory.getPath();
+        long lastModified = directory.lastModified();
+        DirectoryEntries entries = directoryCache.get(key);
+        if (entries != null && entries.lastModified == lastModified) {
+            return entries;
+        }
+        String[] names = directory.list();
+        if (names == null) {
+            directoryCache.remove(key);
+            return null;
+        }
+        try {
+            entries = new DirectoryEntries(lastModified,
+                    directory.toPath().toRealPath(LinkOption.NOFOLLOW_LINKS).toString(), names);
+        } catch (IOException e) {
+            directoryCache.remove(key);
+            return null;
+        }
+        directoryCache.put(key, entries);
+        return entries;
+    }
+
+    /**
+     * A directory's real path and the exact-case names of its entries, as of its modification time.
+     */
+    private static final class DirectoryEntries {
+        final long lastModified;
+        final String realPath;
+        final Set<String> names;
+
+        DirectoryEntries(long lastModified, String realPath, String[] names) {
+            this.lastModified = lastModified;
+            this.realPath = realPath;
+            this.names = new HashSet<>(Arrays.asList(names));
+        }
     }
 
     private boolean isInvalidWindowsFilename(String name) {
