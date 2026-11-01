@@ -267,7 +267,7 @@ public class EJBHandler extends AbstractResourceHandler {
         // the component interface is the return type of the home's create method
         ClassInfo home = index.getClassByName(beanInterface);
         if (home != null) {
-            for (MethodInfo m : AbstractEjbHandler.publicMethods(index, home)) {
+            for (MethodInfo m : ClassHierarchy.publicMethods(index, home)) {
                 if (m.name().equals("create")) {
                     ejbRef.setEjbInterface(ClassHierarchy.rawName(m.returnType()));
                     break;

@@ -574,27 +574,12 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         if (home == null) {
             return null;
         }
-        for (MethodInfo m : publicMethods(index, home)) {
+        for (MethodInfo m : ClassHierarchy.publicMethods(index, home)) {
             if (m.name().startsWith("create")) {
                 return ClassHierarchy.rawName(m.returnType());
             }
         }
         return null;
-    }
-
-    /**
-     * The equivalent of {@code Class.getMethods()} for an interface: its methods and those of its
-     * super-interfaces.
-     */
-    static List<MethodInfo> publicMethods(IndexView index, ClassInfo intf) {
-        List<MethodInfo> methods = new ArrayList<>(intf.methods());
-        for (DotName superIntf : ClassHierarchy.allInterfaces(index, intf)) {
-            ClassInfo superInfo = index.getClassByName(superIntf);
-            if (superInfo != null) {
-                methods.addAll(superInfo.methods());
-            }
-        }
-        return methods;
     }
 
     /**

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.util;
 
@@ -59,8 +59,9 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.cluster.DistributedLockType;
+import jakarta.ejb.TimedObject;
+import jakarta.ejb.Timer;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -69,6 +70,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.ejb.LogFacade;
+import org.glassfish.ejb.deployment.BeanMethodCalculatorImpl;
 import org.glassfish.ejb.deployment.descriptor.DummyEjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
@@ -77,8 +79,11 @@ import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.deployment.descriptor.InterceptorBindingDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.deployment.AnnotationTypesProvider;
+import org.glassfish.internal.deployment.ClassHierarchy;
 import org.glassfish.logging.annotation.LogMessageInfo;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 
 /**
  * This class validates a EJB Bundle descriptor once loaded from an .jar file
@@ -184,7 +189,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
             return;
         }
 
-        ClassLoader cl = bundleDesc.getClassLoader();
+        IndexView index = BeanMethodCalculatorImpl.indexFor(bundleDesc.getClassLoader());
 
         List<InterceptorBindingDescriptor> newBindings = 
             new LinkedList<InterceptorBindingDescriptor>();
@@ -200,10 +205,10 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                 String ejbName = next.getEjbName();
 
                 EjbDescriptor ejbDesc = bundleDesc.getEjbByName(ejbName);
-                Class ejbClass = null;
-           
+                ClassInfo ejbClass = null;
+
                 try {
-                    ejbClass = cl.loadClass(ejbDesc.getEjbClassName());
+                    ejbClass = BeanMethodCalculatorImpl.classInfo(index, ejbDesc.getEjbClassName());
                 } catch(Exception e) {
                     RuntimeException re = new RuntimeException
                         ("Error loading ejb class "+ejbDesc.getEjbClassName());
@@ -213,9 +218,9 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
 
                 boolean isMethod = false;
 
-                for(Method ejbClassMethod : ejbClass.getDeclaredMethods()) {
+                for(MethodInfo ejbClassMethod : ejbClass.methods()) {
 
-                    if( ejbClassMethod.getName().equals(methodName) ) {
+                    if( ejbClassMethod.name().equals(methodName) ) {
 
                         isMethod = true;
 
@@ -248,7 +253,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                 
                 // We didn't find a method with this name in class methods,
                 // check if it's a constructor
-                if (!isMethod && methodName.equals(ejbClass.getSimpleName())) {
+                if (!isMethod && methodName.equals(ClassHierarchy.simpleName(ejbClass))) {
                     // Constructor - will resolve via implicit comparison
                     newBindings.add(next);
                     continue;                   
@@ -287,14 +292,15 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
         computeRuntimeDefault(ejb);
         checkDependsOn(ejb);
 
-        validateConcurrencyMetadata(ejb);
+        // the bean's classes are read from the index, no class is loaded
+        IndexView index = BeanMethodCalculatorImpl.indexFor(ejb.getEjbBundleDescriptor().getClassLoader());
+        validateConcurrencyMetadata(ejb, index);
         validateStatefulTimeout(ejb);
         validatePassivationConfiguration(ejb);
 
         try {
 
-            ClassLoader cl = ejb.getEjbBundleDescriptor().getClassLoader();
-            Class ejbClass = cl.loadClass(ejb.getEjbClassName());
+            ClassInfo ejbClass = BeanMethodCalculatorImpl.classInfo(index, ejb.getEjbClassName());
 
             if (Globals.getDefaultHabitat() == null) {
                 return;
@@ -306,7 +312,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                     if(!desc.isSingleton()) {
                         throw new IllegalArgumentException("Only Sinlgeton beans can be Clustered: " + desc.getName());
                     }
-                    if (!Serializable.class.isAssignableFrom(ejbClass)) {
+                    if (!ClassHierarchy.isSubtype(index, ejbClass, Serializable.class)) {
                         throw new IllegalStateException(String.format("Clustered Singleton %s must be Serializable", desc.getName()));
                     }
                     if(desc.getClusteredLockType() == DistributedLockType.LOCK) {
@@ -315,15 +321,10 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                 }
             }
 
-            // Perform 2.x style TimedObject processing if the class 
-            // hasn't already been identified as a timed object.  
-            AnnotationTypesProvider provider = Globals.getDefaultHabitat().getService(AnnotationTypesProvider.class, "EJB");
-            if (provider == null) {
-                throw new RuntimeException("Cannot find AnnotationTypesProvider named 'EJB'");
-            }
-
-            if( ejb.getEjbTimeoutMethod() == null && 
-                    provider.getType("jakarta.ejb.TimedObject").isAssignableFrom(ejbClass) ) {
+            // Perform 2.x style TimedObject processing if the class
+            // hasn't already been identified as a timed object.
+            if( ejb.getEjbTimeoutMethod() == null &&
+                    ClassHierarchy.isSubtype(index, ejbClass, TimedObject.class) ) {
                 MethodDescriptor timedObjectMethod =
                         new MethodDescriptor("ejbTimeout",
                                                  "TimedObject timeout method",
@@ -338,8 +339,8 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                 // timeout method can have any access type and be anywhere
                 // in the bean class hierarchy.
                 MethodDescriptor timeoutMethodDescOrig = ejb.getEjbTimeoutMethod();
-                MethodDescriptor timeoutMethodDesc = 
-                        processTimeoutMethod(ejb, timeoutMethodDescOrig, provider, ejbClass);
+                MethodDescriptor timeoutMethodDesc =
+                        processTimeoutMethod(ejb, timeoutMethodDescOrig, index, ejbClass);
                 ejb.setEjbTimeoutMethod(timeoutMethodDesc);
             }
 
@@ -358,7 +359,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
 
                 MethodDescriptor timeoutMethodDescOrig = sd.getTimeoutMethod();
                 MethodDescriptor timeoutMethodDesc =
-                        processTimeoutMethod(ejb, timeoutMethodDescOrig, provider, ejbClass);
+                        processTimeoutMethod(ejb, timeoutMethodDescOrig, index, ejbClass);
                 sd.setTimeoutMethod(timeoutMethodDesc);
             }
 
@@ -454,7 +455,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
     }
 
 
-    private void validateConcurrencyMetadata(EjbDescriptor ejb) {
+    private void validateConcurrencyMetadata(EjbDescriptor ejb, IndexView index) {
 
         if( ejb instanceof EjbSessionDescriptor ) {
 
@@ -465,7 +466,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
 
             for(EjbSessionDescriptor.AccessTimeoutHolder accessTimeoutHolder : accessTimeoutInfo) {
                 MethodDescriptor accessTimeoutMethodDesc = accessTimeoutHolder.method;
-                Method accessTimeoutMethod = accessTimeoutMethodDesc.getMethod(ejb);
+                MethodInfo accessTimeoutMethod = accessTimeoutMethodDesc.getMethod(ejb, index);
                 if(accessTimeoutMethod == null) {
                     throw new RuntimeException("Invalid AccessTimeout method signature "
                             + accessTimeoutMethodDesc +
@@ -475,7 +476,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
             }
 
             for(MethodDescriptor lockMethodDesc : sessionDesc.getReadAndWriteLockMethods()) {
-                Method readLockMethod = lockMethodDesc.getMethod(sessionDesc);
+                MethodInfo readLockMethod = lockMethodDesc.getMethod(sessionDesc, index);
                 if( readLockMethod == null ) {
                     throw new RuntimeException("Invalid Lock method signature "
                             + lockMethodDesc +
@@ -679,26 +680,18 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
         }
     }
 
-    private MethodDescriptor processTimeoutMethod(EjbDescriptor ejb, 
-            MethodDescriptor timeoutMethodDescOrig, AnnotationTypesProvider provider, 
-            Class ejbClass) throws ClassNotFoundException {
-        Method m = timeoutMethodDescOrig.getDeclaredMethod(ejb);
+    private MethodDescriptor processTimeoutMethod(EjbDescriptor ejb,
+            MethodDescriptor timeoutMethodDescOrig, IndexView index, ClassInfo ejbClass) {
+        MethodInfo m = timeoutMethodDescOrig.getDeclaredMethod(ejb, index);
         if (m == null) {
            // In case deployment descriptor didn't specify "jakarta.ejb.Timer"
            // as the method-params, and we were not relying on it before,
            // check explicitly for a method with "jakarta.ejb.Timer" param type.
-            Class[] params = new Class[1];
-            if (provider!=null) {
-                params[0] = provider.getType("jakarta.ejb.Timer");
-            } else {
-                throw new RuntimeException("Cannot find AnnotationTypesProvider named 'EJB'");
-            }
-
-            m = timeoutMethodDescOrig.getDeclaredMethod(ejb, params);
+            m = timeoutMethodDescOrig.getDeclaredMethod(ejb, index, new String[] {Timer.class.getName()});
         }
 
         if (m == null) {
-            throw new RuntimeException("Class " + ejbClass.getName() +
+            throw new RuntimeException("Class " + ejbClass.name() +
                     " does not define timeout method " + 
                     timeoutMethodDescOrig.getFormattedString());        
         }

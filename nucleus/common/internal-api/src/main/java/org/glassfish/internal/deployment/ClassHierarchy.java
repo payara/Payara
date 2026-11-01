@@ -54,10 +54,13 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -330,6 +333,78 @@ public final class ClassHierarchy {
     public static boolean matches(MethodInfo method, String name, String[] javaParameterNames) {
         return method.name().equals(name)
                 && (javaParameterNames == null || Arrays.equals(javaParameterNames(method), javaParameterNames));
+    }
+
+    /**
+     * The equivalent of {@code Class.getMethods()} without the methods of {@code java.lang.Object}: the
+     * public methods of the type, of its superclasses and of its super-interfaces, a method of a subtype
+     * hiding the same signature of a supertype; static methods of interfaces are not inherited.
+     */
+    public static List<MethodInfo> publicMethods(IndexView index, ClassInfo type) {
+        return publicMethods(index, type, false);
+    }
+
+    /**
+     * @param includeObjectMethods whether the public methods of {@code java.lang.Object} a class inherits
+     * are included, as {@code Class.getMethods()} does for a class
+     */
+    public static List<MethodInfo> publicMethods(IndexView index, ClassInfo type, boolean includeObjectMethods) {
+        Map<String, MethodInfo> methods = new LinkedHashMap<>();
+        Set<DotName> interfaces = new LinkedHashSet<>();
+        for (ClassInfo current : hierarchy(index, type)) {
+            for (MethodInfo method : current.methods()) {
+                if (Modifier.isPublic(method.flags()) && !method.name().startsWith("<")) {
+                    methods.putIfAbsent(signature(method), method);
+                }
+            }
+            interfaces.addAll(current.interfaceNames());
+        }
+        if (includeObjectMethods && !isInterface(type)) {
+            ClassInfo object = index.getClassByName(OBJECT);
+            if (object != null) {
+                for (MethodInfo method : object.methods()) {
+                    if (Modifier.isPublic(method.flags()) && !method.name().startsWith("<")) {
+                        methods.putIfAbsent(signature(method), method);
+                    }
+                }
+            }
+        }
+        Set<DotName> seen = new HashSet<>();
+        Deque<DotName> queue = new ArrayDeque<>(interfaces);
+        while (!queue.isEmpty()) {
+            DotName name = queue.poll();
+            if (!seen.add(name)) {
+                continue;
+            }
+            ClassInfo itf = index.getClassByName(name);
+            if (itf == null) {
+                continue;
+            }
+            for (MethodInfo method : itf.methods()) {
+                if (Modifier.isPublic(method.flags()) && !Modifier.isStatic(method.flags()) && !method.name().startsWith("<")) {
+                    methods.putIfAbsent(signature(method), method);
+                }
+            }
+            queue.addAll(itf.interfaceNames());
+        }
+        return new ArrayList<>(methods.values());
+    }
+
+    /**
+     * @return the first of the methods matching the name and parameter class names, see
+     * {@link #matches(MethodInfo, String, String[])}, or null
+     */
+    public static MethodInfo find(Collection<MethodInfo> methods, String name, String[] javaParameterNames) {
+        for (MethodInfo method : methods) {
+            if (matches(method, name, javaParameterNames)) {
+                return method;
+            }
+        }
+        return null;
+    }
+
+    private static String signature(MethodInfo method) {
+        return method.name() + "(" + String.join(",", javaParameterNames(method)) + ")";
     }
 
     private static String descriptor(PrimitiveType type) {

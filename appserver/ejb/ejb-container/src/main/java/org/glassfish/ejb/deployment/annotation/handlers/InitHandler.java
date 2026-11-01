@@ -131,7 +131,7 @@ public class InitHandler extends AbstractAttributeHandler {
         if( (adaptedCreateMethodName == null) || (adaptedCreateMethodName.equals("")) ) {
             // Can't make any assumptions about matching method name.  Look for
             // a method with the same parameter types.
-            for(MethodInfo next : AbstractEjbHandler.publicMethods(index, homeIntf)) {
+            for(MethodInfo next : ClassHierarchy.publicMethods(index, homeIntf)) {
                 if( next.name().startsWith("create") &&
                     Arrays.equals(ClassHierarchy.javaParameterNames(next), beanParameterTypes) ) {
                     createMethod = next;
@@ -145,7 +145,7 @@ public class InitHandler extends AbstractAttributeHandler {
             }
         } else {
             // Find method with explicit name and matching parameter types.
-            for(MethodInfo next : AbstractEjbHandler.publicMethods(index, homeIntf)) {
+            for(MethodInfo next : ClassHierarchy.publicMethods(index, homeIntf)) {
                 if( next.name().equals(adaptedCreateMethodName) &&
                     Arrays.equals(ClassHierarchy.javaParameterNames(next), beanParameterTypes) ) {
                     createMethod = next;
