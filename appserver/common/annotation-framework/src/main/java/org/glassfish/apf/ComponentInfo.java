@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,42 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * ComponentInfo.java
- *
- * Created on November 1, 2005, 5:23 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Field;
-import java.lang.reflect.Constructor;
+import org.jboss.jandex.FieldInfo;
+import org.jboss.jandex.MethodInfo;
+
+import java.util.List;
 
 /**
- * This class encapsulates information about a component (usually a Java EE 
- * component). 
- * @author Jerome Dochez
+ * This interface provides the members of a component class, including those inherited from its
+ * superclasses, whose annotations are to be processed.
+ *
+ * @author Shing Wai Chan
  */
 public interface ComponentInfo {
-    
-    /*
-     * @return the list of constructors
+
+    /**
+     * @return the public constructors
      */
-    public Constructor[] getConstructors();
-    
-    /*
-     * @return the list of public methods
+    List<MethodInfo> getConstructors();
+
+    /**
+     * @return the declared methods of the class and its superclasses, overridden ones excluded
      */
-    public Method[] getMethods();
-    
-    /*
-     * @return the list of public fields
+    List<MethodInfo> getMethods();
+
+    /**
+     * @return the declared fields of the class and its superclasses
      */
-    public Field[] getFields();
-    
+    List<FieldInfo> getFields();
 }

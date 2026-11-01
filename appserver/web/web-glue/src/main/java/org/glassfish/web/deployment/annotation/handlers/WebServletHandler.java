@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.web.deployment.annotation.handlers;
 
@@ -49,11 +49,21 @@ import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
-import org.glassfish.apf.*;
+import org.glassfish.apf.AnnotatedElementHandler;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.ProcessingContext;
+import org.glassfish.apf.ResultType;
+import org.glassfish.internal.deployment.ClassHierarchy;
 import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
 
-import jakarta.servlet.annotation.WebInitParam;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import java.util.Arrays;
@@ -84,9 +94,8 @@ public class WebServletHandler extends AbstractWebHandler {
         if (aeHandler instanceof WebBundleContext) {
             WebBundleContext webBundleContext = (WebBundleContext)aeHandler;
             WebBundleDescriptor descriptor = webBundleContext.getDescriptor();
-            WebServlet webServletAn = (WebServlet)ainfo.getAnnotation();
-            Class servletClass = (Class)ainfo.getAnnotatedElement();
-            String servletName = getServletName(webServletAn, servletClass);
+            ClassInfo servletClass = ainfo.getAnnotatedElement().asClass();
+            String servletName = getServletName(ainfo, servletClass);
 
             // create a WebComponentDescriptor if there is none
             WebComponentDescriptor webCompDesc = findWebComponentDescriptor(
@@ -101,7 +110,7 @@ public class WebServletHandler extends AbstractWebHandler {
     }
 
     private WebComponentDescriptor findWebComponentDescriptor(
-            String servletName, Class servletClass,
+            String servletName, ClassInfo servletClass,
             WebBundleDescriptor descriptor,
             ProcessingContext context) {
 
@@ -111,7 +120,7 @@ public class WebServletHandler extends AbstractWebHandler {
         if (state != null) {
             if (webCompDesc == null) {
                 WebComponentDescriptor[] webCompDescs
-                        = descriptor.getWebComponentByImplName(servletClass.getName());
+                        = descriptor.getWebComponentByImplName(servletClass.name().toString());
                 if (webCompDescs.length > 0) {
                     webCompDesc = webCompDescs[0];
                 }
@@ -145,10 +154,8 @@ public class WebServletHandler extends AbstractWebHandler {
             AnnotationInfo ainfo, WebBundleContext webBundleContext)
             throws AnnotationProcessorException {
 
-        WebServlet webServletAn = (WebServlet)ainfo.getAnnotation();
-
-        Class webCompClass = (Class)ainfo.getAnnotatedElement();
-        String servletName = getServletName(webServletAn, webCompClass);
+        ClassInfo webCompClass = ainfo.getAnnotatedElement().asClass();
+        String servletName = getServletName(ainfo, webCompClass);
 
         WebComponentDescriptor webCompDesc =
             webBundleContext.getDescriptor().getWebComponentByCanonicalName(servletName);
@@ -171,18 +178,19 @@ public class WebServletHandler extends AbstractWebHandler {
             AnnotationInfo ainfo, WebComponentDescriptor webCompDesc)
             throws AnnotationProcessorException {
 
-        Class webCompClass = (Class)ainfo.getAnnotatedElement();
-        if (!HttpServlet.class.isAssignableFrom(webCompClass)) {
+        IndexView index = ainfo.getIndex();
+        ClassInfo webCompClass = ainfo.getAnnotatedElement().asClass();
+        String webCompClassName = webCompClass.name().toString();
+        if (!ClassHierarchy.isSubtype(index, webCompClass, HttpServlet.class)) {
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(
                 "web.deployment.annotation.handlers.needtoextend",
                 "The Class {0} having annotation {1} need to be a derived class of {2}.",
-                new Object[] { webCompClass.getName(), WebServlet.class.getName(), HttpServlet.class.getName() }));
+                new Object[] { webCompClassName, WebServlet.class.getName(), HttpServlet.class.getName() }));
             return getDefaultFailedResult();
         }
 
-        WebServlet webServletAn = (WebServlet)ainfo.getAnnotation();
-        String servletName = getServletName(webServletAn, webCompClass);
+        String servletName = getServletName(ainfo, webCompClass);
         if (!servletName.equals(webCompDesc.getCanonicalName())) {
             // skip the processing as it is not for given webCompDesc
             return getDefaultProcessedResult();
@@ -190,7 +198,7 @@ public class WebServletHandler extends AbstractWebHandler {
 
         String webCompImpl = webCompDesc.getWebComponentImplementation();
         if (webCompImpl != null && webCompImpl.length() > 0 &&
-                (!webCompImpl.equals(webCompClass.getName()) || !webCompDesc.isServlet())) {
+                (!webCompImpl.equals(webCompClassName) || !webCompDesc.isServlet())) {
 
             String messageKey = null;
             String defaultMessage = null;
@@ -205,84 +213,77 @@ public class WebServletHandler extends AbstractWebHandler {
             
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(messageKey, defaultMessage,
-                new Object[] { webCompDesc.getCanonicalName(), webCompImpl, webCompClass.getName(),
+                new Object[] { webCompDesc.getCanonicalName(), webCompImpl, webCompClassName,
                 WebServlet.class.getName() }));
             return getDefaultFailedResult();
         }
         webCompDesc.setServlet(true);
-        webCompDesc.setWebComponentImplementation(webCompClass.getName());
+        webCompDesc.setWebComponentImplementation(webCompClassName);
 
         if (webCompDesc.getUrlPatternsSet().isEmpty()) {
-            String[] urlPatterns = webServletAn.urlPatterns();
-            if (urlPatterns == null || urlPatterns.length == 0) {
-                urlPatterns = webServletAn.value();
+            String[] urlPatterns = ainfo.stringArrayValue("urlPatterns");
+            if (urlPatterns.length == 0) {
+                urlPatterns = ainfo.stringArrayValue("value");
             }
 
             // no url patterns is accepted as it may be defined in top level xml
             boolean validUrlPatterns = true;
-            if (urlPatterns != null && urlPatterns.length > 0) {
-                for (String up : urlPatterns) {
-                    if (!URLPattern.isValid(up)) {
-                        validUrlPatterns = false;
-                        break;
-                    }
-                    webCompDesc.addUrlPattern(TranslatedConfigView.expandValue(up));
+            for (String up : urlPatterns) {
+                if (!URLPattern.isValid(up)) {
+                    validUrlPatterns = false;
+                    break;
                 }
+                webCompDesc.addUrlPattern(TranslatedConfigView.expandValue(up));
             }
 
             if (!validUrlPatterns) {
-                String urlPatternString =
-                    (urlPatterns != null) ? Arrays.toString(urlPatterns) : "";
-
                 throw new IllegalArgumentException(localStrings.getLocalString(
                         "web.deployment.annotation.handlers.invalidUrlPatterns",
                         "Invalid url patterns for {0}: {1}.",
-                        new Object[] { webCompClass, urlPatternString }));
+                        new Object[] { webCompClass, Arrays.toString(urlPatterns) }));
             }
         }
 
         if (webCompDesc.getLoadOnStartUp() == null) {
-            webCompDesc.setLoadOnStartUp(webServletAn.loadOnStartup());
+            webCompDesc.setLoadOnStartUp(ainfo.intValue("loadOnStartup"));
         }
 
-        WebInitParam[] initParams = webServletAn.initParams();
-        if (initParams != null && initParams.length > 0) {
-            for (WebInitParam initParam : initParams) {
-                webCompDesc.addInitializationParameter(
-                        new EnvironmentProperty(
-                            initParam.name(), TranslatedConfigView.expandValue(initParam.value()),
-                            initParam.description()));
-            }
+        for (AnnotationInstance initParam : ainfo.nestedArrayValue("initParams")) {
+            webCompDesc.addInitializationParameter(
+                    new EnvironmentProperty(
+                        AnnotationValues.string(index, initParam, "name"),
+                        TranslatedConfigView.expandValue(AnnotationValues.string(index, initParam, "value")),
+                        AnnotationValues.string(index, initParam, "description")));
         }
 
         if (webCompDesc.getSmallIconUri() == null) {
-            webCompDesc.setSmallIconUri(webServletAn.smallIcon());
+            webCompDesc.setSmallIconUri(ainfo.stringValue("smallIcon"));
         }
         if (webCompDesc.getLargeIconUri() == null) {
-            webCompDesc.setLargeIconUri(webServletAn.largeIcon());
+            webCompDesc.setLargeIconUri(ainfo.stringValue("largeIcon"));
         }
 
         if (webCompDesc.getDescription() == null ||
                 webCompDesc.getDescription().length() == 0) {
-            webCompDesc.setDescription(webServletAn.description());
+            webCompDesc.setDescription(ainfo.stringValue("description"));
         }
 
         if (webCompDesc.getDisplayName() == null ||
                 webCompDesc.getDisplayName().length() == 0) {
-            webCompDesc.setDisplayName(webServletAn.displayName());
+            webCompDesc.setDisplayName(ainfo.stringValue("displayName"));
         }
 
         if (webCompDesc.isAsyncSupported() == null) {
-            webCompDesc.setAsyncSupported(webServletAn.asyncSupported());
+            webCompDesc.setAsyncSupported(ainfo.booleanValue("asyncSupported"));
         }
 
         return getDefaultProcessedResult();
     }
 
-    private String getServletName(WebServlet webServletAn, Class<?> webCompClass) {
-        String servletName = webServletAn.name();
-        if (servletName == null || servletName.length() == 0) {
-            servletName = webCompClass.getName();
+    private String getServletName(AnnotationInfo ainfo, ClassInfo webCompClass) {
+        String servletName = ainfo.stringValue("name");
+        if (servletName.length() == 0) {
+            servletName = webCompClass.name().toString();
         }
         else {
             servletName = TranslatedConfigView.expandValue(servletName);
@@ -291,13 +292,13 @@ public class WebServletHandler extends AbstractWebHandler {
     }
 
     private WebComponentDescriptor createWebComponentDescriptor(String servletName,
-            Class<?> webCompClass, WebBundleDescriptor webBundleDescriptor) {
+            ClassInfo webCompClass, WebBundleDescriptor webBundleDescriptor) {
 
         WebComponentDescriptor webCompDesc = new WebComponentDescriptorImpl();
         webCompDesc.setName(servletName);
         webCompDesc.setCanonicalName(servletName);
         webCompDesc.setServlet(true);
-        webCompDesc.setWebComponentImplementation(webCompClass.getName());
+        webCompDesc.setWebComponentImplementation(webCompClass.name().toString());
         webBundleDescriptor.addWebComponentDescriptor(webCompDesc);
         return webCompDesc;
     }

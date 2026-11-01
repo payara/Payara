@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2024 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2024-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,10 +42,8 @@ package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
 import com.sun.enterprise.deployment.ConcurrencyQualifiedDescriptor;
 import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Abstract parent for concurrency handlers.
@@ -53,10 +51,6 @@ import java.util.stream.Collectors;
  * @author Petr Aubrecht
  */
 public abstract class AbstractConcurrencyHandler extends AbstractResourceHandler {
-    protected static Set<String> mapToSetOfStrings(Class<?>[] qualifiers) {
-        return Arrays.asList(qualifiers).stream().map(c -> c.getName()).collect(Collectors.toSet());
-    }
-
     protected static boolean descriptorAlreadyPresent(Set<ResourceDescriptor> resourceDescriptors, ConcurrencyQualifiedDescriptor descriptor) {
         Optional<ResourceDescriptor> optResourceDescriptor = resourceDescriptors.stream().filter(d -> d.equals(descriptor)).findAny();
         return optResourceDescriptor.isPresent();

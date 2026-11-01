@@ -37,17 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.ElementType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBHome;
-import jakarta.ejb.EJBLocalHome;
-import jakarta.ejb.Local;
 
 import com.sun.enterprise.deployment.EjbReferenceDescriptor;
 import com.sun.enterprise.deployment.InjectionTarget;
@@ -55,12 +46,26 @@ import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBLocalHome;
+import jakarta.ejb.Local;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.FieldInfo;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
+
+import java.lang.annotation.ElementType;
 
 import static com.sun.enterprise.util.StringUtils.ok;
 
@@ -75,7 +80,7 @@ public class EJBHandler extends AbstractResourceHandler {
 
     protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EJBHandler.class);
-    
+
     public EJBHandler() {
     }
 
@@ -84,19 +89,17 @@ public class EJBHandler extends AbstractResourceHandler {
      * one returned by @see getAnnotationType(). All information
      * pertinent to the annotation and its context is encapsulated
      * in the passed AnnotationInfo instance.
+     * This is a method in interface AnnotationHandler.
      *
      * @param ainfo the annotation information
      * @param rcContexts an array of ResourceContainerContext
      * @return HandlerProcessingResult
      */
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
-            ResourceContainerContext[] rcContexts)
+    @Override
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-
-        EJB ejbAn = (EJB)ainfo.getAnnotation();
-        return processEJB(ainfo, rcContexts, ejbAn);
+        return processEJB(ainfo, rcContexts, ainfo.getAnnotation());
     }
-
 
     /**
      * Process a particular annotation whose type is the same as the
@@ -110,59 +113,61 @@ public class EJBHandler extends AbstractResourceHandler {
      * @return HandlerProcessingResult
      */
     protected HandlerProcessingResult processEJB(AnnotationInfo ainfo,
-            ResourceContainerContext[] rcContexts, EJB ejbAn)
+            ResourceContainerContext[] rcContexts, AnnotationInstance ejbAn)
             throws AnnotationProcessorException {
-        EjbReferenceDescriptor ejbRefs[] = null;
+        IndexView index = ainfo.getIndex();
+        String name = AnnotationValues.string(index, ejbAn, "name");
+        String beanInterfaceAttribute = AnnotationValues.className(index, ejbAn, "beanInterface");
+        boolean defaultBeanInterfaceAttribute = beanInterfaceAttribute.equals(Object.class.getName());
 
         String defaultLogicalName = null;
-        Class defaultBeanInterface = null;
+        String defaultBeanInterface = null;
         InjectionTarget target = null;
 
         if (ElementType.FIELD.equals(ainfo.getElementType())) {
-            Field f = (Field)ainfo.getAnnotatedElement();
-            String targetClassName = f.getDeclaringClass().getName();
+            FieldInfo f = ainfo.getAnnotatedElement().asField();
+            String targetClassName = f.declaringClass().name().toString();
 
-            defaultLogicalName = targetClassName + "/" + f.getName();
+            defaultLogicalName = targetClassName + "/" + f.name();
 
-            defaultBeanInterface = f.getType();
+            defaultBeanInterface = ClassHierarchy.javaName(f.type());
 
             target = new InjectionTarget();
             target.setClassName(targetClassName);
-            target.setFieldName(f.getName());
+            target.setFieldName(f.name());
             target.setMetadataSource(MetadataSource.ANNOTATION);
-            
+
         } else if (ElementType.METHOD.equals(ainfo.getElementType())) {
 
-            Method m = (Method)ainfo.getAnnotatedElement();
-            String targetClassName = m.getDeclaringClass().getName();
+            MethodInfo m = ainfo.getAnnotatedElement().asMethod();
+            String targetClassName = m.declaringClass().name().toString();
 
             validateInjectionMethod(m, ainfo);
 
             // Derive javabean property name.
             String propertyName = getInjectionMethodPropertyName(m, ainfo);
 
+            // prefixing with fully qualified type name
             defaultLogicalName = targetClassName + "/" + propertyName;
 
-            defaultBeanInterface = m.getParameterTypes()[0];
+            defaultBeanInterface = ClassHierarchy.javaName(m.parameterTypes().get(0));
 
             target = new InjectionTarget();
             target.setClassName(targetClassName);
-            target.setMethodName(m.getName());
+            target.setMethodName(m.name());
             target.setMetadataSource(MetadataSource.ANNOTATION);
-            
+
         } else if( ElementType.TYPE.equals(ainfo.getElementType()) ) {
             // name() and beanInterface() are required for TYPE-level @EJB
-            // if either of them not set, fail fast.  See issue 17284
-            if (ejbAn.name().equals("") ||
-                    ejbAn.beanInterface() == Object.class ) {
-                Class c = (Class) ainfo.getAnnotatedElement();
+            if (name.equals("") || defaultBeanInterfaceAttribute ) {
+                ClassInfo c = ainfo.getAnnotatedElement().asClass();
                 AnnotationProcessorException fatalException =
                     new AnnotationProcessorException(localStrings.getLocalString(
                     "enterprise.deployment.annotation.handlers.invalidtypelevelejb",
                     "Invalid TYPE-level @EJB with name() = [{0}] and " +
                     "beanInterface = [{1}] in {2}.  Each TYPE-level @EJB " +
                     "must specify both name() and beanInterface().",
-                    new Object[] { ejbAn.name(), ejbAn.beanInterface(), c }),
+                    new Object[] { name, beanInterfaceAttribute, c }),
                     ainfo);
                 fatalException.setFatal(true);
                 throw fatalException;
@@ -173,12 +178,15 @@ public class EJBHandler extends AbstractResourceHandler {
         }
 
         // NOTE that default value is Object.class, not null
-        Class beanInterface = (ejbAn.beanInterface() == Object.class) ?
-            defaultBeanInterface : ejbAn.beanInterface();
-        String logicalName = ejbAn.name().equals("") ?
-            defaultLogicalName : ejbAn.name();
+        String beanInterface = defaultBeanInterfaceAttribute ? defaultBeanInterface : beanInterfaceAttribute;
+        String logicalName = name.equals("") ? defaultLogicalName : name;
 
-        ejbRefs = getEjbReferenceDescriptors(logicalName, rcContexts);
+        String description = AnnotationValues.string(index, ejbAn, "description");
+        String lookup = AnnotationValues.string(index, ejbAn, "lookup");
+        String mappedName = AnnotationValues.string(index, ejbAn, "mappedName");
+        String beanName = AnnotationValues.string(index, ejbAn, "beanName");
+
+        EjbReferenceDescriptor[] ejbRefs = getEjbReferenceDescriptors(logicalName, rcContexts);
         for (EjbReferenceDescriptor ejbRef : ejbRefs) {
             if (target != null)
                 ejbRef.addInjectionTarget(target);
@@ -186,22 +194,19 @@ public class EJBHandler extends AbstractResourceHandler {
             if (!ok(ejbRef.getName()))  // a new one
                 ejbRef.setName(logicalName);
 
-            // merge type information
-            setEjbType(ejbRef, beanInterface);
+            setEjbType(index, ejbRef, DotName.createSimple(beanInterface));
 
-            // merge description
-            if (!ok(ejbRef.getDescription()) && ok(ejbAn.description()))
-                ejbRef.setDescription(ejbAn.description());
+            if (!ok(ejbRef.getDescription()) && ok(description))
+                ejbRef.setDescription(description);
 
             // merge lookup-name and mapped-name
-            if (!ejbRef.hasLookupName() && ok(ejbAn.lookup()))
-                ejbRef.setLookupName(ejbAn.lookup());
-            if (!ok(ejbRef.getMappedName()) && ok(ejbAn.mappedName()))
-                ejbRef.setMappedName(ejbAn.mappedName());
+            if (!ejbRef.hasLookupName() && ok(lookup))
+                ejbRef.setLookupName(lookup);
+            if (!ok(ejbRef.getMappedName()) && ok(mappedName))
+                ejbRef.setMappedName(mappedName);
 
-            // merge beanName/linkName
-            if (!ok(ejbRef.getLinkName()) && ok(ejbAn.beanName()))
-                ejbRef.setLinkName(ejbAn.beanName());
+            if (!ok(ejbRef.getLinkName()) && ok(beanName))
+                ejbRef.setLinkName(beanName);
         }
 
         return getDefaultProcessedResult();
@@ -214,13 +219,11 @@ public class EJBHandler extends AbstractResourceHandler {
      * @param rcContexts
      * @return an array of EjbReferenceDescriptor
      */
-    private EjbReferenceDescriptor[] getEjbReferenceDescriptors(
-            String logicalName, ResourceContainerContext[] rcContexts) {
-        EjbReferenceDescriptor ejbRefs[] =
-                new EjbReferenceDescriptor[rcContexts.length];
+    private EjbReferenceDescriptor[] getEjbReferenceDescriptors(String logicalName,
+            ResourceContainerContext[] rcContexts) {
+        EjbReferenceDescriptor[] ejbRefs = new EjbReferenceDescriptor[rcContexts.length];
         for (int i = 0; i < rcContexts.length; i++) {
-            EjbReferenceDescriptor ejbRef =
-                (EjbReferenceDescriptor)rcContexts[i].getEjbReference(logicalName);
+            EjbReferenceDescriptor ejbRef = (EjbReferenceDescriptor)rcContexts[i].getEjbReference(logicalName);
             if (ejbRef == null) {
                 ejbRef = new EjbReferenceDescriptor();
                 rcContexts[i].addEjbReferenceDescriptor(ejbRef);
@@ -231,82 +234,48 @@ public class EJBHandler extends AbstractResourceHandler {
         return ejbRefs;
     }
 
-    /**
-     * Set the type information for the EJB, but only if it hasn't
-     * already been set by the deployment descriptor.
-     */
-    private void setEjbType(EjbReferenceDescriptor ejbRef,
-                                         Class beanInterface) {
-        if (EJBHome.class.isAssignableFrom(beanInterface) ||
-                EJBLocalHome.class.isAssignableFrom(beanInterface)) {
-            setEjbHomeType(ejbRef, beanInterface);
+    private void setEjbType(IndexView index, EjbReferenceDescriptor ejbRef, DotName beanInterface) {
+        if (ClassHierarchy.isSubtype(index, beanInterface, EJBHome.class) ||
+                ClassHierarchy.isSubtype(index, beanInterface, EJBLocalHome.class)) {
+            setEjbHomeType(index, ejbRef, beanInterface);
         } else {
-            setEjbIntfType(ejbRef, beanInterface);
+            setEjbIntfType(index, ejbRef, beanInterface);
         }
     }
 
-    /**
-     * Set the type information for the EJB starting with the EJB business
-     * interface, but only if it hasn't already been set.
-     */
-    private void setEjbIntfType(EjbReferenceDescriptor ejbRef,
-                                        Class beanInterface) {
+    private void setEjbIntfType(IndexView index, EjbReferenceDescriptor ejbRef, DotName beanInterface) {
+        // the interface was set in xml
         if (ejbRef.getEjbInterface() != null)
             return;
 
-        // only set it if not already set by DD
-        ejbRef.setEjbInterface(beanInterface.getName());
+        ejbRef.setEjbInterface(beanInterface.toString());
 
-        if (beanInterface.getAnnotation(Local.class) != null) {
-            ejbRef.setLocal(true);
-        } else {
-            // If beanInterface has @Remote annotation, setLocal(false);
-            // If beanInterface has neither @Local nor @Remote,
-            // assume remote for now. We can't know for sure until the
-            // post-validation stage.  Even though local business will 
-            // probably be more common than remote business, defaulting 
-            // to remote business simplifies the post-application 
-            // validation logic considerably.  See 
-            // EjbBundleValidator.accept(EjbReferenceDescriptor) 
-            // for more details.
-            ejbRef.setLocal(false);
-        }
+        // it's a local interface if it carries @Local, a remote one otherwise
+        ejbRef.setLocal(AbstractEjbHandler.hasAnnotation(index, beanInterface, Local.class));
         ejbRef.setType(EjbSessionDescriptor.TYPE);
     }
 
-    /**
-     * Set the type information for the EJB starting with the EJB Home
-     * interface, but only if it hasn't already been set.
-     */
-    private void setEjbHomeType(EjbReferenceDescriptor ejbRef,
-                                        Class beanInterface) {
+    private void setEjbHomeType(IndexView index, EjbReferenceDescriptor ejbRef, DotName beanInterface) {
 
+        // the home was set in xml
         if (ejbRef.getHomeClassName() != null)
             return;
 
-        // default is Session bean
         String targetBeanType = EjbSessionDescriptor.TYPE;
-        ejbRef.setHomeClassName(beanInterface.getName());
+        ejbRef.setHomeClassName(beanInterface.toString());
 
-        try {
-            // Set bean Interface as well so we have all
-            // the info that would have been in an ejb-ref/
-            // ejb-local-ref
-            Method[] methods = beanInterface.getMethods();
-            for (Method m : methods) {
-                if (m.getName().equals("create")) {
-                    ejbRef.setEjbInterface(m.getReturnType().getName());
+        // the component interface is the return type of the home's create method
+        ClassInfo home = index.getClassByName(beanInterface);
+        if (home != null) {
+            for (MethodInfo m : AbstractEjbHandler.publicMethods(index, home)) {
+                if (m.name().equals("create")) {
+                    ejbRef.setEjbInterface(ClassHierarchy.rawName(m.returnType()));
                     break;
                 }
             }
-        } catch(Exception e) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, 
-                "component intf / ejb type annotation processing error", e);
-            }
         }
 
-        ejbRef.setLocal(EJBLocalHome.class.isAssignableFrom(beanInterface));
+        ejbRef.setLocal(ClassHierarchy.isSubtype(index, beanInterface, EJBLocalHome.class));
         ejbRef.setType(targetBeanType);
     }
 }

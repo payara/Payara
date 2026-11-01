@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
@@ -45,15 +46,12 @@ import com.sun.enterprise.deployment.annotation.handlers.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import jakarta.resource.spi.ConnectionDefinitions;
-import jakarta.resource.spi.ConnectionDefinition;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.glassfish.apf.*;
-import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
+import org.jboss.jandex.AnnotationInstance;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -68,18 +66,14 @@ public class ConnectionDefinitionsHandler extends AbstractHandler  {
 
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
-        ConnectionDefinitions connDefns = (ConnectionDefinitions) element.getAnnotation();
 
         if (aeHandler instanceof RarBundleContext) {
 
             //TODO V3 what if there is @ConnectionDefiniton as well @ConnectionDefinitions specified on same class ?
             //TODO V3 should we detect & avoid duplicates here ?
-            ConnectionDefinition[] definitions = connDefns.value();
-            if (definitions != null) {
-                for (ConnectionDefinition defn : definitions) {
-                    ConnectionDefinitionHandler cdh = new ConnectionDefinitionHandler();
-                    cdh.processAnnotation(element, defn);
-                }
+            for (AnnotationInstance defn : element.nestedArrayValue("value")) {
+                ConnectionDefinitionHandler cdh = new ConnectionDefinitionHandler();
+                cdh.processAnnotation(element, defn);
             }
         } else {
             getFailureResult(element, "not a rar bundle context", true);
@@ -103,8 +97,7 @@ public class ConnectionDefinitionsHandler extends AbstractHandler  {
         HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
         result.addResult(getAnnotationType(), ResultType.FAILED);
         if (doLog) {
-            Class c = (Class) element.getAnnotatedElement();
-            String className = c.getName();
+            String className = element.getDeclaringClass().name().toString();
             Object args[] = new Object[]{
                 element.getAnnotation(),
                 className,

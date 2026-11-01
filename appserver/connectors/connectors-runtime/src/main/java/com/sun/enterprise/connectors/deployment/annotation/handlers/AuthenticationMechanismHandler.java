@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
@@ -51,16 +52,12 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import jakarta.resource.spi.AuthenticationMechanism;
 import jakarta.resource.spi.Connector;
-import jakarta.resource.spi.security.GenericCredential;
-import jakarta.resource.spi.security.PasswordCredential;
 import java.lang.annotation.Annotation;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.ietf.jgss.GSSCredential;
 import org.glassfish.apf.*;
-import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
+import org.glassfish.internal.deployment.ClassHierarchy;
 import org.jvnet.hk2.annotations.Service;
 
 
@@ -76,7 +73,6 @@ public class AuthenticationMechanismHandler extends AbstractHandler {
 
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
-        AuthenticationMechanism authMechanism = (AuthenticationMechanism) element.getAnnotation();
 
         if (aeHandler instanceof RarBundleContext) {
             boolean isConnectionDefinition = hasConnectorAnnotation(element);
@@ -88,9 +84,10 @@ public class AuthenticationMechanismHandler extends AbstractHandler {
                     desc.setOutboundResourceAdapter(ora);
                 }
                 OutboundResourceAdapter ora = desc.getOutboundResourceAdapter();
-                String[] description = authMechanism.description();
-                int authMechanismValue = getAuthMechVal(authMechanism.authMechanism());
-                AuthenticationMechanism.CredentialInterface ci = authMechanism.credentialInterface();
+                String[] description = element.stringArrayValue("description");
+                int authMechanismValue = getAuthMechVal(element.stringValue("authMechanism"));
+                AuthenticationMechanism.CredentialInterface ci =
+                        element.enumValue("credentialInterface", AuthenticationMechanism.CredentialInterface.class);
                 String credentialInterface = ora.getCredentialInterfaceName(ci);
                 //XXX: Siva: For now use the first description
                 String firstDesc = "";
@@ -110,8 +107,7 @@ public class AuthenticationMechanismHandler extends AbstractHandler {
     }
 
     private boolean hasConnectorAnnotation(AnnotationInfo element) {
-        Class c = (Class) element.getAnnotatedElement();
-        return c.getAnnotation(Connector.class) != null;
+        return ClassHierarchy.annotation(element.getIndex(), element.getAnnotatedElement(), Connector.class) != null;
     }
 
     public Class<? extends Annotation>[] getTypeDependencies() {
@@ -143,8 +139,7 @@ public class AuthenticationMechanismHandler extends AbstractHandler {
         HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
         result.addResult(getAnnotationType(), ResultType.FAILED);
         if (doLog) {
-            Class c = (Class) element.getAnnotatedElement();
-            String className = c.getName();
+            String className = element.getDeclaringClass().name().toString();
             Object args[] = new Object[]{
                 element.getAnnotation(),
                 className,

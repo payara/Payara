@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,35 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf.impl;
 
+import org.jboss.jandex.AnnotationTarget;
+
 import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
 
 /**
- * This class represent a stack element as the AnnotationContext
- * will use to store the visited AnnotatedElements.
+ * An annotated element being processed, with its type.
  *
  * @author Jerome Dochez
  */
 class StackElement {
 
     private final ElementType type;
-    private final AnnotatedElement element;
-    
-    /** Creates a new instance of StackElement */
-    public StackElement(ElementType type, AnnotatedElement element) {
+    private final AnnotationTarget element;
+
+    StackElement(ElementType type, AnnotationTarget element) {
         this.type = type;
         this.element = element;
     }
-    
+
     ElementType getElementType() {
         return type;
     }
-    
-    AnnotatedElement getAnnotatedElement() {
+
+    AnnotationTarget getAnnotatedElement() {
         return element;
     }
-    
 }

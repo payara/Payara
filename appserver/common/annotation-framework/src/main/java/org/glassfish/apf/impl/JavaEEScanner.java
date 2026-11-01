@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,28 +39,21 @@
  */
 // Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
- /*
- * JavaEEScanner.java
- *
- * Created on November 1, 2005, 5:30 PM
- */
 package org.glassfish.apf.impl;
 
 import org.glassfish.apf.ComponentInfo;
-
+import org.glassfish.apf.Scanner;
+import org.jboss.jandex.ClassInfo;
 
 /**
  * Super class for all JavaEE scanners
  *
- * @author Jerome Dochez
+ * @author Shing Wai Chan
  */
-public abstract class JavaEEScanner {
+public abstract class JavaEEScanner<T> implements Scanner<T> {
 
-
-    public ComponentInfo getComponentInfo(Class componentImpl) {
-        return new ComponentDefinition(componentImpl);
+    @Override
+    public ComponentInfo getComponentInfo(ClassInfo componentImpl) {
+        return new ComponentDefinition(componentImpl, getIndex());
     }
-
-
-
 }

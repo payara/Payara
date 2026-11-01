@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,14 +41,16 @@
 
 package org.glassfish.apf;
 
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Contract;
 
-import java.util.Set;
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
-/** 
- * This interface is responsible for scanning the binary location 
+/**
+ * This interface is responsible for scanning the binary location
  * provided and provide each binary file through a pull interfaces
  *
  * @author Jerome Dochez
@@ -57,50 +59,41 @@ import java.io.IOException;
 public interface Scanner<T> {
 
     /**
-     * Scan the archive file and gather a list of classes 
+     * Scan the archive file and gather a list of classes
      * that should be processed for annotations
      * @param archiveFile the archive file for scanning
      * @param bundleDesc the bundle descriptor associated with this archive
      * @param classLoader the classloader used to scan the annotation
-     * @throws IOException
      */
-    public void process(File archiveFile, T bundleDesc, ClassLoader classLoader) throws IOException;
+    void process(File archiveFile, T bundleDesc, ClassLoader classLoader) throws IOException;
 
-    
     /**
-     * Returns a ClassLoader capable of loading classes from the 
+     * Returns a ClassLoader capable of loading classes from the
      * underlying medium
      * @return a class loader capable of loading the classes
      */
-    public ClassLoader getClassLoader();
-    
-    /**
-     * Return a complete set of classes available from this location.
-     * @return the complete set of classes 
-     */
-    public Set<Class> getElements();
-    
-    /**
-     * Return a class instance available from this location from class name.
-     *
-     * @param classNames the list of class name
-     * @return the set of classes for given names
-     */
-    public Set<Class> getElements(Set<String> classNames);
+    ClassLoader getClassLoader();
 
     /**
-     * Sometimes, annotations processing requires more than a single class, 
-     * especially when such classes end up being a Java Component (Java Beans, 
-     * Java EE). The implementation returned from the getComponent will be 
-     * responsible for defining the complete view of this component starting 
-     * from it's implementation class.
-     * @param componentImpl class of the component.
+     * Return the classes that should be processed for annotations, resolved in the index.
      */
-    public ComponentInfo getComponentInfo(Class componentImpl);
+    Set<ClassInfo> getElements();
 
     /**
-     * Return the types information for this module
-     * @return types the archive resulting types
+     * Return the classes with the given names that should be processed for annotations, e.g. the
+     * classes changed by a hot redeployment.
      */
-    
+    Set<ClassInfo> getElements(Set<String> classNames);
+
+    /**
+     * Return the fields, constructors and methods of a class and its superclasses whose annotations
+     * are to be processed.
+     */
+    ComponentInfo getComponentInfo(ClassInfo componentImpl);
+
+    /**
+     * @return the index over the scanned archives, completed by the classes the class loader can
+     * see (super types, annotation types and their defaults), resolved without loading them
+     */
+    IndexView getIndex();
 }

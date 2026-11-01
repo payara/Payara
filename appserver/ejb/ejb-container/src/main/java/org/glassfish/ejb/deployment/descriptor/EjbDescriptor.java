@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2019-2024 Payara Foundation and/or its affiliates
+// Portions Copyright [2019-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.descriptor;
+
+import org.jboss.jandex.MethodInfo;
 
 import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.deployment.*;
@@ -636,17 +638,21 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     }
 
     public boolean hasScheduledTimerMethodFromDD(Method timerMethod) {
-        boolean match = false;
+        return hasScheduledTimerMethodFromDD(timerMethod.getName(), timerMethod.getParameterTypes().length);
+    }
 
+    public boolean hasScheduledTimerMethodFromDD(MethodInfo timerMethod) {
+        return hasScheduledTimerMethodFromDD(timerMethod.name(), timerMethod.parametersCount());
+    }
+
+    private boolean hasScheduledTimerMethodFromDD(String name, int parameterCount) {
         for (MethodDescriptor next : timerMethodDescriptors) {
-            if (next.getName().equals(timerMethod.getName())
-                    && (next.getParameterClassNames() == null || next.getParameterClassNames().length == timerMethod.getParameterTypes().length)) {
-                match = true;
-                break;
+            if (next.getName().equals(name)
+                    && (next.getParameterClassNames() == null || next.getParameterClassNames().length == parameterCount)) {
+                return true;
             }
         }
-
-        return match;
+        return false;
     }
 
     public List<ScheduledTimerDescriptor> getScheduledTimerDescriptors() {

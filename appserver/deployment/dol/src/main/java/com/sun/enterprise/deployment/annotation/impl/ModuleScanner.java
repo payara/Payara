@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,8 +38,6 @@
  * holder.
  */
 // Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates.]
-// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
-
 package com.sun.enterprise.deployment.annotation.impl;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
@@ -47,7 +45,6 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.annotation.introspection.DefaultAnnotationScanner;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import jakarta.inject.Inject;
-import org.glassfish.apf.Scanner;
 import org.glassfish.apf.impl.JavaEEScanner;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -56,6 +53,9 @@ import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.internal.deployment.JandexIndexer.Index;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Optional;
 
 import java.io.File;
@@ -68,7 +68,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 /**
@@ -76,17 +75,19 @@ import java.util.logging.Logger;
  * <p>
  * Subclasses register the archives making up the module ({@link #addScanDirectory(File)},
  * {@link #addScanJar(File)}); the classes to process are then looked up in the Jandex
- * indexes of those archives, see {@link JandexIndexer}.
+ * indexes of those archives, see {@link JandexIndexer}, and handed to the annotation
+ * processor as {@link ClassInfo} without being loaded.
  *
  * @author Shing Wai Chan
  */
-public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<T> {
+public abstract class ModuleScanner<T> extends JavaEEScanner<T> {
 
     protected File archiveFile = null;
     protected ClassLoader classLoader = null;
     protected final Set<URI> scannedURI = new LinkedHashSet<>();
     protected final Set<String> entries = new HashSet<>();
     private Collection<Index> indexes;
+    private IndexView index;
 
     @Inject
     DefaultAnnotationScanner defaultScanner;
@@ -109,9 +110,6 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
 
     @LogMessageInfo(message = "No classloader can be found to use", cause="The archive being processed is not correct.", action="Examine the archive to determine what is incorrect.", level="SEVERE")
     private static final String NO_CLASSLOADER = "AS-DEPLOYMENT-00010";
-
-    @LogMessageInfo(message = "Error in annotation processing: {0}.", level="WARNING")
-    private static final String ANNOTATION_ERROR = "AS-DEPLOYMENT-00011";
 
     @LogMessageInfo(message = "Cannot load {0}  reason : {1}.", level="WARNING")
     private static final String CLASSLOADING_ERROR = "AS-DEPLOYMENT-00012";
@@ -187,6 +185,18 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     }
 
     /**
+     * @return the view over the module's indexes, completed by the classes the module class loader
+     * can see (super types and annotation types in the server or in libraries)
+     */
+    @Override
+    public IndexView getIndex() {
+        if (index == null) {
+            index = JandexIndexer.compositeIndex(getIndexes(), classLoader);
+        }
+        return index;
+    }
+
+    /**
      * This add extra className to be scanned.
      * @param className
      */
@@ -232,32 +242,29 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     }
 
     @Override
-    public Set<Class> getElements() {
+    public Set<ClassInfo> getElements() {
         return getElements(entries);
     }
 
     @Override
-    public Set<Class> getElements(Set<String> classNames) {
-        Set<Class> elements = new HashSet<>();
+    public Set<ClassInfo> getElements(Set<String> classNames) {
+        Set<ClassInfo> elements = new HashSet<>();
         if (getClassLoader() == null) {
             deplLogger.log(Level.SEVERE, NO_CLASSLOADER);
             return elements;
         }
 
+        IndexView index = getIndex();
         for (String className : classNames) {
             if (deplLogger.isLoggable(Level.FINE)) {
                 deplLogger.log(Level.FINE, "Getting {0}", className);
             }
-            try {
-                elements.add(classLoader.loadClass(className));
-            } catch (NoClassDefFoundError err) {
-                deplLogger.log(Level.WARNING, ANNOTATION_ERROR, err);
-            } catch (ClassNotFoundException cnfe) {
-                LogRecord lr = new LogRecord(Level.WARNING, CLASSLOADING_ERROR);
-                Object args[] = { className, cnfe.getMessage() };
-                lr.setParameters(args);
-                lr.setThrown(cnfe);
-                deplLogger.log(lr);
+            ClassInfo classInfo = index.getClassByName(DotName.createSimple(className));
+            if (classInfo != null) {
+                elements.add(classInfo);
+            } else {
+                deplLogger.log(Level.WARNING, CLASSLOADING_ERROR,
+                        new Object[]{className, "the class is neither in the module nor visible to its class loader"});
             }
         }
         return elements;

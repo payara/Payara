@@ -37,10 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.web.deployment.annotation.handlers;
 
-import org.glassfish.apf.*;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.ResultType;
+import org.glassfish.internal.deployment.ClassHierarchy;
 import org.glassfish.security.common.Role;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
@@ -50,15 +57,15 @@ import com.sun.enterprise.deployment.web.WebResourceCollection;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.web.deployment.descriptor.*;
 
-import jakarta.servlet.annotation.HttpConstraint;
-import jakarta.servlet.annotation.HttpMethodConstraint;
 import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
 import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
@@ -116,13 +123,14 @@ public class ServletSecurityHandler extends AbstractWebHandler {
             AnnotationInfo ainfo, WebComponentDescriptor webCompDesc)
             throws AnnotationProcessorException {
 
-        Class webCompClass = (Class)ainfo.getAnnotatedElement();
-        if (!HttpServlet.class.isAssignableFrom(webCompClass)) {
+        IndexView index = ainfo.getIndex();
+        ClassInfo webCompClass = ainfo.getAnnotatedElement().asClass();
+        if (!ClassHierarchy.isSubtype(index, webCompClass, HttpServlet.class)) {
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(
                 "web.deployment.annotation.handlers.needtoextend",
                 "The Class {0} having annotation {1} need to be a derived class of {2}.",
-                new Object[] { webCompClass.getName(), SecurityConstraint.class.getName(), HttpServlet.class.getName() }));
+                new Object[] { webCompClass.name().toString(), SecurityConstraint.class.getName(), HttpServlet.class.getName() }));
             return getDefaultFailedResult();
         }
 
@@ -130,28 +138,27 @@ public class ServletSecurityHandler extends AbstractWebHandler {
 
         if (urlPatterns.size() > 0) {
             WebBundleDescriptor webBundleDesc = webCompDesc.getWebBundleDescriptor();
-            ServletSecurity servletSecurityAn = (ServletSecurity)ainfo.getAnnotation();
-            HttpMethodConstraint[] httpMethodConstraints = servletSecurityAn.httpMethodConstraints();
-            for (HttpMethodConstraint httpMethodConstraint : httpMethodConstraints) {
-                String httpMethod = httpMethodConstraint.value();
-                if (httpMethod == null || httpMethod.length() == 0) {
+            AnnotationInstance[] httpMethodConstraints = ainfo.nestedArrayValue("httpMethodConstraints");
+            for (AnnotationInstance httpMethodConstraint : httpMethodConstraints) {
+                String httpMethod = AnnotationValues.string(index, httpMethodConstraint, "value");
+                if (httpMethod.length() == 0) {
                     return getDefaultFailedResult();
                 }
 
                 createSecurityConstraint(webBundleDesc,
-                        urlPatterns, httpMethodConstraint.rolesAllowed(),
-                        httpMethodConstraint.emptyRoleSemantic(),
-                        httpMethodConstraint.transportGuarantee(),
+                        urlPatterns, AnnotationValues.strings(index, httpMethodConstraint, "rolesAllowed"),
+                        AnnotationValues.enumValue(index, httpMethodConstraint, "emptyRoleSemantic", EmptyRoleSemantic.class),
+                        AnnotationValues.enumValue(index, httpMethodConstraint, "transportGuarantee", TransportGuarantee.class),
                         httpMethod);
             }
-            HttpConstraint httpConstraint = servletSecurityAn.value();
-            boolean isDefault = isDefaultHttpConstraint(httpConstraint);
+            AnnotationInstance httpConstraint = ainfo.nestedValue("value");
+            boolean isDefault = isDefaultHttpConstraint(index, httpConstraint);
             if (isDefault && (httpMethodConstraints.length > 0)) { 
                 if (logger.isLoggable(Level.FINER)) {
                     StringBuilder methodString = new StringBuilder();
-                    for (HttpMethodConstraint httpMethodConstraint : httpMethodConstraints) {
+                    for (AnnotationInstance httpMethodConstraint : httpMethodConstraints) {
                         methodString.append(" ");
-                        methodString.append(httpMethodConstraint.value());
+                        methodString.append(AnnotationValues.string(index, httpMethodConstraint, "value"));
                     }
                     for (String pattern : urlPatterns) {
                         logger.finer(
@@ -164,17 +171,17 @@ public class ServletSecurityHandler extends AbstractWebHandler {
             if (!isDefault || (httpMethodConstraints.length == 0)) {
                 SecurityConstraint securityConstraint =
                         createSecurityConstraint(webBundleDesc,
-                        urlPatterns, httpConstraint.rolesAllowed(),
-                        httpConstraint.value(),
-                        httpConstraint.transportGuarantee(),
+                        urlPatterns, AnnotationValues.strings(index, httpConstraint, "rolesAllowed"),
+                        AnnotationValues.enumValue(index, httpConstraint, "value", EmptyRoleSemantic.class),
+                        AnnotationValues.enumValue(index, httpConstraint, "transportGuarantee", TransportGuarantee.class),
                         null);
 
                 // we know there is one WebResourceCollection there
                 WebResourceCollection webResColl =
                         securityConstraint.getWebResourceCollections().iterator().next();
-                for (HttpMethodConstraint httpMethodConstraint : httpMethodConstraints) {
+                for (AnnotationInstance httpMethodConstraint : httpMethodConstraints) {
                     //exclude constrained httpMethod from the top level constraint
-                    webResColl.addHttpMethodOmission(httpMethodConstraint.value());                
+                    webResColl.addHttpMethodOmission(AnnotationValues.string(index, httpMethodConstraint, "value"));
                 }
             }
         }
@@ -182,10 +189,10 @@ public class ServletSecurityHandler extends AbstractWebHandler {
         return getDefaultProcessedResult();
     }
 
-    private static boolean isDefaultHttpConstraint(HttpConstraint httpConstraint) {
-        return httpConstraint.value() == EmptyRoleSemantic.PERMIT
-                && (httpConstraint.rolesAllowed() == null || httpConstraint.rolesAllowed().length == 0)
-                && httpConstraint.transportGuarantee() == TransportGuarantee.NONE;
+    private static boolean isDefaultHttpConstraint(IndexView index, AnnotationInstance httpConstraint) {
+        return AnnotationValues.enumValue(index, httpConstraint, "value", EmptyRoleSemantic.class) == EmptyRoleSemantic.PERMIT
+                && AnnotationValues.strings(index, httpConstraint, "rolesAllowed").length == 0
+                && AnnotationValues.enumValue(index, httpConstraint, "transportGuarantee", TransportGuarantee.class) == TransportGuarantee.NONE;
     }
 
     /**

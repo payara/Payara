@@ -37,25 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import jakarta.ejb.EJBHome;
-import jakarta.ejb.EJBLocalHome;
-import jakarta.ejb.Local;
-import jakarta.ejb.LocalBean;
-import jakarta.ejb.LocalHome;
-import jakarta.ejb.Remote;
-import jakarta.ejb.RemoteHome;
-import jakarta.ejb.Timeout;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
@@ -64,26 +48,47 @@ import com.sun.enterprise.deployment.annotation.context.EjbsContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBLocalHome;
+import jakarta.ejb.Local;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.LocalHome;
+import jakarta.ejb.Remote;
+import jakarta.ejb.RemoteHome;
+import jakarta.ejb.TimedObject;
+import jakarta.ejb.Timeout;
 import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.apf.context.AnnotationContext;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.ejb.deployment.descriptor.DummyEjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.deployment.AnnotationTypesProvider;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.Type;
+
+import java.io.Externalizable;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * This is an abstract class for EJB annotation handler.
  * Concrete subclass handlers need to implements the following methods:
  *     public Class&lt;? extends Annotation&gt; getAnnotationType();
- *     protected String getAnnotatedName(Annotation annotation );
- *     protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc);
- *         Annotation annotation);
+ *     protected String getAnnotatedName(AnnotationInfo ainfo);
+ *     protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc, AnnotationInfo ainfo);
  *     protected EjbDescriptor createEjbDescriptor(String elementName,
  *         AnnotationInfo ainfo) throws AnnotationProcessorException;
  *     protected HandlerProcessingResult setEjbDescriptorInfo(
@@ -94,32 +99,31 @@ import org.glassfish.internal.deployment.AnnotationTypesProvider;
  */
 public abstract class AbstractEjbHandler extends AbstractHandler {
 
-    private AnnotationTypesProvider provider = null;
+    private static final DotName WEB_SERVICE = DotName.createSimple("jakarta.jws.WebService");
+    private static final DotName TIMER = DotName.createSimple("jakarta.ejb.Timer");
+    private static final DotName SERIALIZABLE = DotName.createSimple(Serializable.class);
+    private static final DotName EXTERNALIZABLE = DotName.createSimple(Externalizable.class);
 
     protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractEjbHandler.class);
-    
+
     public AbstractEjbHandler() {
-        ServiceLocator h = Globals.getDefaultHabitat();
-        if( h != null ) {
-            provider = h.getService(AnnotationTypesProvider.class, "EJB");
-        }
     }
+
     /**
      * Return the name attribute of given annotation.
-     * @param annotation
+     * @param ainfo the annotation
      * @return name
      */
-    protected abstract String getAnnotatedName(Annotation annotation);
+    protected abstract String getAnnotatedName(AnnotationInfo ainfo);
 
-    /*
+    /**
      * check if the given EjbDescriptor matches the given Annotation.
      * @param ejbDesc
-     * @param annotation
+     * @param ainfo
      * @return boolean check for validity of EjbDescriptor
      */
-    protected abstract boolean isValidEjbDescriptor(EjbDescriptor ejbDesc,
-            Annotation annotation);
+    protected abstract boolean isValidEjbDescriptor(EjbDescriptor ejbDesc, AnnotationInfo ainfo);
 
     /**
      * Create a new EjbDescriptor for a given elementName and AnnotationInfo.
@@ -153,7 +157,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
      * @throws org.glassfish.apf.AnnotationProcessorException
      */
     @Override
-    public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo) 
+    public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 
         ApplicationState state = ainfo
@@ -161,8 +165,8 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
                 .getArchive()
                 .getExtraData(ApplicationState.class);
 
-        Class ejbClass = (Class) ainfo.getAnnotatedElement();
-        Annotation annotation = ainfo.getAnnotation();
+        ClassInfo ejbClass = ainfo.getAnnotatedElement().asClass();
+        AnnotationInstance annotation = ainfo.getAnnotation();
         if (logger.isLoggable(Level.FINER)) {
             logger.log(Level.FINER, "@ process ejb annotation {0} in {1}", new Object[]{annotation, ejbClass});
         }
@@ -171,7 +175,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         if (aeHandler != null && aeHandler instanceof EjbContext) {
             EjbContext context = (EjbContext)aeHandler;
             EjbDescriptor desc = (EjbDescriptor) context.getDescriptor();
-            if (isValidEjbDescriptor(desc, annotation)) {
+            if (isValidEjbDescriptor(desc, ainfo)) {
                 return getDefaultProcessedResult();
             } else {
                 log(Level.SEVERE, ainfo,
@@ -191,14 +195,15 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "My context is {0}", ctx);
         }
-        
-        String elementName = getAnnotatedName(annotation);
+
+        String elementName = getAnnotatedName(ainfo);
         if (elementName.length() == 0) {
-            elementName = ejbClass.getSimpleName();            
+            elementName = ClassHierarchy.simpleName(ejbClass);
         }
         else {
             elementName = TranslatedConfigView.expandValue(elementName);
         }
+        String ejbClassName = ejbClass.name().toString();
 
         EjbBundleDescriptorImpl currentBundle = (EjbBundleDescriptorImpl) ctx.getDescriptor();
         EjbDescriptor ejbDesc = null;
@@ -216,14 +221,14 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         if (ejbDesc != null && !(ejbDesc instanceof DummyEjbDescriptor) ) {
             // element has already been defined in the standard DDs,
             // overriding rules applies
-            if (logger.isLoggable(Level.FINE)) {            
-                logger.log(Level.FINE, "Overriding rules apply for {0}", ejbClass.getName());
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Overriding rules apply for {0}", ejbClassName);
             }
 
             // don't allow ejb-jar.xml overwrite ejb type
-            if (!isValidEjbDescriptor(ejbDesc, annotation)) {
+            if (!isValidEjbDescriptor(ejbDesc, ainfo)) {
                 // this is an error
-                log(Level.SEVERE, ainfo,     
+                log(Level.SEVERE, ainfo,
                     localStrings.getLocalString(
                     "enterprise.deployment.annotation.handlers.wrongejbtype",
                     "Wrong annotation symbol for ejb {0}",
@@ -237,35 +242,34 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             // appears.
             String descriptorEjbClass = ejbDesc.getEjbClassName();
             if( descriptorEjbClass == null ) {
-                ejbDesc.setEjbClassName(ejbClass.getName());
+                ejbDesc.setEjbClassName(ejbClassName);
                 ejbDesc.applyDefaultClassToLifecycleMethods();
-            } else if( !descriptorEjbClass.equals(ejbClass.getName()) ) {
-                log(Level.SEVERE, ainfo,     
+            } else if( !descriptorEjbClass.equals(ejbClassName) ) {
+                log(Level.SEVERE, ainfo,
                     localStrings.getLocalString(
                     "enterprise.deployment.annotation.handlers.ejbclsmismatch",
                     "",
-                    new Object[] { descriptorEjbClass, elementName, 
-                                   ejbClass.getName() }));
+                    new Object[] { descriptorEjbClass, elementName, ejbClassName }));
                 return getDefaultFailedResult();
             }
 
 
         } else {
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Creating a new descriptor for {0}", ejbClass.getName());
+                logger.log(Level.FINE, "Creating a new descriptor for {0}", ejbClassName);
             }
 
             EjbDescriptor dummyEjbDesc = ejbDesc;
 
             ejbDesc = createEjbDescriptor(elementName, ainfo);
 
-            // create the actual ejb descriptor using annotation info and 
+            // create the actual ejb descriptor using annotation info and
             // the information from dummy ejb descriptor if applicable
             if (dummyEjbDesc != null) {
                 currentBundle.removeEjb(dummyEjbDesc);
                 ejbDesc.addEjbDescriptor(dummyEjbDesc);
                 // reset ejbClassName on ejbDesc
-                ejbDesc.setEjbClassName(ejbClass.getName());
+                ejbDesc.setEjbClassName(ejbClassName);
             }
 
             // add the actual ejb descriptor to the ejb bundle
@@ -280,66 +284,60 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         // in order to handle the case that a bean class has both a component-defining
         // annotation and there are other ejb-jar.xml-defined beans with the same bean class.
 
-        
-        EjbDescriptor[] ejbDescs = currentBundle.getEjbByClassName(ejbClass.getName());
+        IndexView index = ainfo.getIndex();
+        EjbDescriptor[] ejbDescs = currentBundle.getEjbByClassName(ejbClassName);
         HandlerProcessingResult procResult = null;
         for(EjbDescriptor next : ejbDescs) {
             procResult = setEjbDescriptorInfo(next, ainfo);
-            doTimedObjectProcessing(ejbClass, next);               
+            doTimedObjectProcessing(index, ejbClass, next);
         }
 
-        AnnotationContext annContext = null;
+        AnnotationContext annContext;
         if( ejbDescs.length == 1 ) {
-            annContext = new EjbContext(ejbDesc, ejbClass);
+            annContext = new EjbContext(ejbDesc, ejbClass, index);
         } else {
-
-            annContext = new EjbsContext(ejbDescs, ejbClass);
+            annContext = new EjbsContext(ejbDescs, ejbClass, index);
         }
-
 
         // we push the new context on the stack...
         ctx.getProcessingContext().pushHandler(annContext);
-        
+
         return procResult;
-    }   
+    }
 
     /**
      * Process TimedObject and @Timeout annotation.  It's better to do it
-     * when processing the initial bean type since Timeout method is a 
+     * when processing the initial bean type since Timeout method is a
      * business method that should be included in any tx processing defaulting
-     * that takes place. 
+     * that takes place.
      */
-    private void doTimedObjectProcessing(Class ejbClass, 
-                                         EjbDescriptor ejbDesc) {
-        
+    private void doTimedObjectProcessing(IndexView index, ClassInfo ejbClass, EjbDescriptor ejbDesc) {
+
         // Timeout methods can be declared on the bean class or any
-        // super-class and can be public, protected, private, or 
+        // super-class and can be public, protected, private, or
         // package access.  There can be at most one timeout method for
-        // the entire bean class hierarchy, so we start from the bean 
+        // the entire bean class hierarchy, so we start from the bean
         // class and go up, stopping when we find the first one.
 
         MethodDescriptor timeoutMethodDesc = null;
-        Class nextClass = ejbClass;
-        while((nextClass != Object.class) && (nextClass != null) 
-              && (timeoutMethodDesc == null) ) {
-            Method[] methods = nextClass.getDeclaredMethods();
-            for(Method m : methods) {
-                if( (m.getAnnotation(Timeout.class) != null) ) {
-                    timeoutMethodDesc = 
-                        new MethodDescriptor(m, MethodDescriptor.TIMER_METHOD);
+        for (ClassInfo nextClass : ClassHierarchy.hierarchy(index, ejbClass)) {
+            for (MethodInfo m : nextClass.methods()) {
+                if (m.hasDeclaredAnnotation(DotName.createSimple(Timeout.class))) {
+                    timeoutMethodDesc = new MethodDescriptor(m, MethodDescriptor.TIMER_METHOD);
                     break;
                 }
             }
-            nextClass = nextClass.getSuperclass();
+            if (timeoutMethodDesc != null) {
+                break;
+            }
         }
 
-        if( (timeoutMethodDesc == null) && 
-            jakarta.ejb.TimedObject.class.isAssignableFrom(ejbClass) ) {
+        if( (timeoutMethodDesc == null) && ClassHierarchy.isSubtype(index, ejbClass, TimedObject.class) ) {
             // If the class implements the TimedObject interface, it must
             // be ejbTimeout.
             timeoutMethodDesc = new MethodDescriptor
-                ("ejbTimeout", "@Timeout method", 
-                 new String[] { "jakarta.ejb.Timer" }, 
+                ("ejbTimeout", "@Timeout method",
+                 new String[] { TIMER.toString() },
                  MethodDescriptor.TIMER_METHOD);
         }
 
@@ -359,68 +357,58 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             EjbDescriptor ejbDesc, AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 
-        Set<Class>  localBusIntfs  = new HashSet<Class>();
-        Set<Class>  remoteBusIntfs  = new HashSet<Class>();
-        
-        Set<Class> clientInterfaces = new HashSet<Class>();
+        Set<DotName> localBusIntfs = new LinkedHashSet<>();
+        Set<DotName> remoteBusIntfs = new LinkedHashSet<>();
 
-        Class ejbClass = (Class)ainfo.getAnnotatedElement();
+        Set<DotName> clientInterfaces = new LinkedHashSet<>();
+
+        IndexView index = ainfo.getIndex();
+        ClassInfo ejbClass = ainfo.getAnnotatedElement().asClass();
 
         // First check for annotations specifying remote/local business intfs.
         // We analyze them here because they are needed during the
-        // implements clause processing for beans that specify 
+        // implements clause processing for beans that specify
         // @Stateless/@Stateful.  In addition, they should *not* be processed
         // if there is no @Stateful/@Stateless annotation.
 
-        Remote remoteBusAnn = (Remote) ejbClass.getAnnotation(Remote.class); 
+        AnnotationInstance remoteBusAnn = ClassHierarchy.annotation(index, ejbClass, Remote.class);
         boolean emptyRemoteBusAnn = false;
         if( remoteBusAnn != null ) {
-            for(Class next : remoteBusAnn.value()) {
-                if (next.getAnnotation(Local.class) != null) {
-                    AnnotationProcessorException fatalException =
-                            new AnnotationProcessorException(localStrings.getLocalString(
-                                    "enterprise.deployment.annotation.handlers.invalidbusinessinterface",
-                                    "The interface {0} cannot be both a local and a remote business interface.",
-                                    new Object[]{next.getName()}));
-                    fatalException.setFatal(true);
-                    throw fatalException;
+            for(Type next : AnnotationValues.classes(index, remoteBusAnn, "value")) {
+                DotName nextName = next.name();
+                if (hasAnnotation(index, nextName, Local.class)) {
+                    throw invalidBusinessInterface(nextName);
                 }
-                clientInterfaces.add(next);
-                remoteBusIntfs.add(next);
+                clientInterfaces.add(nextName);
+                remoteBusIntfs.add(nextName);
             }
             emptyRemoteBusAnn = remoteBusIntfs.isEmpty();
         }
 
-        Local localBusAnn = (Local) ejbClass.getAnnotation(Local.class); 
+        AnnotationInstance localBusAnn = ClassHierarchy.annotation(index, ejbClass, Local.class);
         if( localBusAnn != null ) {
-            for(Class next : localBusAnn.value()) {
-                if (next.getAnnotation(Remote.class) != null) {
-                    AnnotationProcessorException fatalException =
-                            new AnnotationProcessorException(localStrings.getLocalString(
-                                    "enterprise.deployment.annotation.handlers.invalidbusinessinterface",
-                                    "The interface {0} cannot be both a local and a remote business interface.",
-                                    new Object[]{next.getName()}));
-                    fatalException.setFatal(true);
-                    throw fatalException;
+            for(Type next : AnnotationValues.classes(index, localBusAnn, "value")) {
+                DotName nextName = next.name();
+                if (hasAnnotation(index, nextName, Remote.class)) {
+                    throw invalidBusinessInterface(nextName);
                 }
-                clientInterfaces.add(next);
-                localBusIntfs.add(next);
+                clientInterfaces.add(nextName);
+                localBusIntfs.add(nextName);
             }
         }
 
-        List<Class> imlementingInterfaces = new ArrayList<Class>();
-        List<Class> implementedDesignatedInterfaces = new ArrayList<Class>();
-        for(Class next : ejbClass.getInterfaces()) {
+        List<DotName> imlementingInterfaces = new ArrayList<>();
+        List<DotName> implementedDesignatedInterfaces = new ArrayList<>();
+        for(DotName next : ejbClass.interfaceNames()) {
             if( !excludedFromImplementsClause(next) ) {
-                if( next.getAnnotation(Local.class) != null || next.getAnnotation(Remote.class) != null ) {
+                if( hasAnnotation(index, next, Local.class) || hasAnnotation(index, next, Remote.class) ) {
                     implementedDesignatedInterfaces.add(next);
                 }
                 imlementingInterfaces.add(next);
             }
         }
 
-        LocalBean localBeanAnn = (LocalBean) ejbClass.getAnnotation(LocalBean.class);
-        if( localBeanAnn != null ) {
+        if( ClassHierarchy.annotation(index, ejbClass, LocalBean.class) != null ) {
             ejbDesc.setLocalBean(true);
         }
 
@@ -431,9 +419,9 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             ejbDesc.getRemoteBusinessClassNames().size() +
             ejbDesc.getLocalBusinessClassNames().size() +
             implementedDesignatedInterfaces.size();
-        
-        for(Class next : imlementingInterfaces) {
-            String nextIntfName = next.getName();
+
+        for(DotName next : imlementingInterfaces) {
+            String nextIntfName = next.toString();
 
             if( remoteBusIntfs.contains(next)
                 ||
@@ -442,16 +430,16 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
                 ejbDesc.getRemoteBusinessClassNames().contains(nextIntfName)
                 ||
                 ejbDesc.getLocalBusinessClassNames().contains(nextIntfName)){
-                
+
                 // Interface has already been identified as a Remote/Local
                 // business interface, so ignore.
 
-            } else if( next.getAnnotation(Local.class) != null ) {
+            } else if( hasAnnotation(index, next, Local.class) ) {
 
                 clientInterfaces.add(next);
                 localBusIntfs.add(next);
 
-            } else if( next.getAnnotation(Remote.class) != null ) {
+            } else if( hasAnnotation(index, next, Remote.class) ) {
 
                 clientInterfaces.add(next);
                 remoteBusIntfs.add(next);
@@ -472,7 +460,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
                     clientInterfaces.add(next);
 
                 } else {
-                    
+
                     // Since the component has at least one other business
                     // interface, each implements clause interface that cannot
                     // be identified as business interface via the deployment
@@ -482,48 +470,37 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             }
         }
 
-        for (Class next : clientInterfaces) {
+        for (DotName next : clientInterfaces) {
             if (remoteBusIntfs.contains(next) && localBusIntfs.contains(next)) {
-                AnnotationProcessorException fatalException =
-                        new AnnotationProcessorException(localStrings.getLocalString(
-                                "enterprise.deployment.annotation.handlers.invalidbusinessinterface",
-                                "The interface {0} cannot be both a local and a remote business interface.",
-                                new Object[]{next.getName()}));
-                fatalException.setFatal(true);
-                throw fatalException;
+                throw invalidBusinessInterface(next);
             }
         }
 
-        if (localBusIntfs.size() > 0) {
-            for(Class next : localBusIntfs) {
-                ejbDesc.addLocalBusinessClassName(next.getName());
-            }
+        for(DotName next : localBusIntfs) {
+            ejbDesc.addLocalBusinessClassName(next.toString());
         }
 
-        if (remoteBusIntfs.size() > 0) {
-            for(Class next : remoteBusIntfs) {
-                ejbDesc.addRemoteBusinessClassName(next.getName());
-            }
+        for(DotName next : remoteBusIntfs) {
+            ejbDesc.addRemoteBusinessClassName(next.toString());
         }
 
 
         // Do Adapted @Home / Adapted @LocalHome processing here too since
         // they are logically part of the structural @Stateless/@Stateful info.
-        RemoteHome remoteHomeAnn = (RemoteHome) 
-            ejbClass.getAnnotation(RemoteHome.class); 
+        AnnotationInstance remoteHomeAnn = ClassHierarchy.annotation(index, ejbClass, RemoteHome.class);
 
         if( remoteHomeAnn != null ) {
-            Class remoteHome = remoteHomeAnn.value();
-            Class remoteIntf = getComponentIntfFromHome(remoteHome);
-            if( EJBHome.class.isAssignableFrom(remoteHome) &&
+            DotName remoteHome = AnnotationValues.value(index, remoteHomeAnn, "value").asClass().name();
+            String remoteIntf = getComponentIntfFromHome(index, remoteHome);
+            if( ClassHierarchy.isSubtype(index, remoteHome, EJBHome.class) &&
                 (remoteIntf != null) ) {
 
                 clientInterfaces.add(remoteHome);
-                ejbDesc.setHomeClassName(remoteHome.getName());
-                ejbDesc.setRemoteClassName(remoteIntf.getName());
+                ejbDesc.setHomeClassName(remoteHome.toString());
+                ejbDesc.setRemoteClassName(remoteIntf);
 
             } else {
-                log(Level.SEVERE, ainfo, 
+                log(Level.SEVERE, ainfo,
                     localStrings.getLocalString(
                     "enterprise.deployment.annotation.handlers.invalidremotehome",
                     "Encountered invalid @RemoteHome interface {0}.",
@@ -532,21 +509,20 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             }
         }
 
-        LocalHome localHomeAnn = (LocalHome)
-            ejbClass.getAnnotation(LocalHome.class); 
+        AnnotationInstance localHomeAnn = ClassHierarchy.annotation(index, ejbClass, LocalHome.class);
 
         if( localHomeAnn != null ) {
-            Class localHome = localHomeAnn.value();
-            Class localIntf = getComponentIntfFromHome(localHome);
-            if( EJBLocalHome.class.isAssignableFrom(localHome) &&
+            DotName localHome = AnnotationValues.value(index, localHomeAnn, "value").asClass().name();
+            String localIntf = getComponentIntfFromHome(index, localHome);
+            if( ClassHierarchy.isSubtype(index, localHome, EJBLocalHome.class) &&
                 (localIntf != null) ) {
 
                 clientInterfaces.add(localHome);
-                ejbDesc.setLocalHomeClassName(localHome.getName());
-                ejbDesc.setLocalClassName(localIntf.getName());
+                ejbDesc.setLocalHomeClassName(localHome.toString());
+                ejbDesc.setLocalClassName(localIntf);
 
             } else {
-                log(Level.SEVERE, ainfo, 
+                log(Level.SEVERE, ainfo,
                     localStrings.getLocalString(
                     "enterprise.deployment.annotation.handlers.invalidlocalhome",
                     "Encountered invalid @LocalHome interface {0}.",
@@ -555,66 +531,86 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             }
         }
 
-        // Web Service API might not be available so do a check before looking
-        // for @WebService on bean class
-        boolean canDoWebServiceAnnCheck = false;
-        try {
-            canDoWebServiceAnnCheck = (provider.getType("jakarta.jws.WebService") != null);
-
-        } catch(Exception e) {
-            log(Level.FINE, ainfo, e.getMessage());
-        }
-
         if( (!ejbDesc.isLocalBean()) &&
             (clientInterfaces.size() == 0) &&
             !ejbDesc.hasWebServiceEndpointInterface() &&
-            ( !canDoWebServiceAnnCheck ||
-              (ejbClass.getAnnotation(jakarta.jws.WebService.class) == null) ) ) {
+            ClassHierarchy.annotation(index, ejbClass, WEB_SERVICE) == null ) {
             ejbDesc.setLocalBean(true);
         }
-        
+
         //If this is a no-Interface local EJB, set all classes for this bean
         if (ejbDesc.isLocalBean()) {
-            addNoInterfaceLocalBeanClasses(ejbDesc, ejbClass);
+            addNoInterfaceLocalBeanClasses(index, ejbDesc, ejbClass);
         }
 
 
-        return getDefaultProcessedResult();       
+        return getDefaultProcessedResult();
     }
 
-    private void addNoInterfaceLocalBeanClasses(EjbDescriptor ejbDesc, Class ejbClass) {
-        Class nextClass = ejbClass;
+    private AnnotationProcessorException invalidBusinessInterface(DotName intf) {
+        AnnotationProcessorException fatalException =
+                new AnnotationProcessorException(localStrings.getLocalString(
+                        "enterprise.deployment.annotation.handlers.invalidbusinessinterface",
+                        "The interface {0} cannot be both a local and a remote business interface.",
+                        new Object[]{intf.toString()}));
+        fatalException.setFatal(true);
+        return fatalException;
+    }
+
+    private void addNoInterfaceLocalBeanClasses(IndexView index, EjbDescriptor ejbDesc, ClassInfo ejbClass) {
         //The session bean's no-interface view can be accessed via the bean class
         //and all its super classes
-        while ((nextClass != Object.class) && (nextClass != null)) {
-            ejbDesc.addNoInterfaceLocalBeanClass(nextClass.getName());
-            nextClass = nextClass.getSuperclass();
+        for (ClassInfo nextClass : ClassHierarchy.hierarchy(index, ejbClass)) {
+            ejbDesc.addNoInterfaceLocalBeanClass(nextClass.name().toString());
         }
     }
-    private Class getComponentIntfFromHome(Class homeIntf) {
 
-        Class componentIntf = null;
-
-        Method[] methods = homeIntf.getMethods();
-        for (Method m : methods) {
-            if (m.getName().startsWith("create")) {
-                componentIntf = m.getReturnType();
-                break;
+    /**
+     * @return the name of the component interface the home interface's create methods return, or
+     * null if the home interface has none or cannot be resolved
+     */
+    private String getComponentIntfFromHome(IndexView index, DotName homeIntf) {
+        ClassInfo home = index.getClassByName(homeIntf);
+        if (home == null) {
+            return null;
+        }
+        for (MethodInfo m : publicMethods(index, home)) {
+            if (m.name().startsWith("create")) {
+                return ClassHierarchy.rawName(m.returnType());
             }
         }
-
-        return componentIntf;
+        return null;
     }
 
-    protected boolean excludedFromImplementsClause(Class intf) {
-        return ( (intf == java.io.Serializable.class) ||
-                 (intf == java.io.Externalizable.class) ||
-                 ( (intf.getPackage() != null) &&
-                   intf.getPackage().getName().equals("jakarta.ejb")) );
+    /**
+     * The equivalent of {@code Class.getMethods()} for an interface: its methods and those of its
+     * super-interfaces.
+     */
+    static List<MethodInfo> publicMethods(IndexView index, ClassInfo intf) {
+        List<MethodInfo> methods = new ArrayList<>(intf.methods());
+        for (DotName superIntf : ClassHierarchy.allInterfaces(index, intf)) {
+            ClassInfo superInfo = index.getClassByName(superIntf);
+            if (superInfo != null) {
+                methods.addAll(superInfo.methods());
+            }
+        }
+        return methods;
     }
 
-    protected void doDescriptionProcessing(String description,
-                                           EjbDescriptor ejbDescriptor) {
+    /**
+     * @return whether the (interface) type, resolved in the index, declares the annotation
+     */
+    static boolean hasAnnotation(IndexView index, DotName type, Class<?> annotationType) {
+        ClassInfo classInfo = index.getClassByName(type);
+        return classInfo != null && ClassHierarchy.annotation(index, classInfo, annotationType) != null;
+    }
+
+    protected boolean excludedFromImplementsClause(DotName intf) {
+        return intf.equals(SERIALIZABLE) || intf.equals(EXTERNALIZABLE)
+                || "jakarta.ejb".equals(intf.packagePrefix());
+    }
+
+    protected void doDescriptionProcessing(String description, EjbDescriptor ejbDescriptor) {
         // Since there are multiple descriptions allowed in the deployment
         // descriptor, there are no overriding issues here.  If the
         // component-defining annotation contains a description, it will
@@ -625,18 +621,17 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
 
     }
 
-    protected void doMappedNameProcessing(String mappedName,
-                                          EjbDescriptor ejbDesc) {
-        
+    protected void doMappedNameProcessing(String mappedName, EjbDescriptor ejbDesc) {
+
         // Set mappedName() if a value has been given in the annotation and
-        // it hasn't already been set on the descriptor via the .xml. 
+        // it hasn't already been set on the descriptor via the .xml.
         if( ejbDesc.getMappedName().equals("") ) {
             if( !mappedName.equals("") ) {
                 ejbDesc.setMappedName(mappedName);
             }
         }
-        
-        
+
+
     }
 
 }

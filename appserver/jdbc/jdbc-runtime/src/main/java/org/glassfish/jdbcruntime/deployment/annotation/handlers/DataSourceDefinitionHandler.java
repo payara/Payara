@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.*;
@@ -47,10 +46,16 @@ import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.annotation.sql.DataSourceDefinition;
@@ -59,7 +64,6 @@ import jakarta.interceptor.AroundTimeout;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.Interceptors;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -76,28 +80,27 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
     @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-        DataSourceDefinition dataSourceDefnAn =
-                (DataSourceDefinition)ainfo.getAnnotation();
-        return processAnnotation(dataSourceDefnAn, ainfo, rcContexts);
+        return processAnnotation(ainfo.getAnnotation(), ainfo, rcContexts);
     }
 
-    protected HandlerProcessingResult processAnnotation(DataSourceDefinition dataSourceDefnAn, AnnotationInfo aiInfo,
+    protected HandlerProcessingResult processAnnotation(AnnotationInstance dataSourceDefnAn, AnnotationInfo aiInfo,
                                                         ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-        Class annotatedClass = (Class)aiInfo.getAnnotatedElement();
-        Annotation[] annotations = annotatedClass.getAnnotations();
+        IndexView index = aiInfo.getIndex();
+        ClassInfo annotatedClass = aiInfo.getAnnotatedElement().asClass();
+        List<AnnotationInstance> annotations = ClassHierarchy.classAnnotations(index, annotatedClass);
         boolean warClass = isAWebComponentClass(annotations);
         boolean ejbClass = isAEjbComponentClass(annotations);
 
         for(ResourceContainerContext context : rcContexts){
-                if (!canProcessAnnotation(annotatedClass, ejbClass, warClass, context)){
+                if (!canProcessAnnotation(index, annotatedClass, ejbClass, warClass, context)){
                     return getDefaultProcessedResult();
                 }
 
             Set<ResourceDescriptor> dsdDescs = context.getResourceDescriptors(JavaEEResourceType.DSD);
-            DataSourceDefinitionDescriptor desc = createDescriptor(dataSourceDefnAn);
+            DataSourceDefinitionDescriptor desc = createDescriptor(index, dataSourceDefnAn);
             if(isDefinitionAlreadyPresent(dsdDescs, desc)){
-                merge(dsdDescs, dataSourceDefnAn);
+                merge(dsdDescs, index, dataSourceDefnAn);
             }else{
                 dsdDescs.add(desc);
             }
@@ -112,14 +115,16 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
      * This method helps to overcome the issue, partially.<br>
      * Checks whether both the annotated class and the context are either ejb or web.
      *
+     * @param index resolves the annotations of the class's methods
      * @param annotatedClass annotated-class
      * @param ejbClass indicates whether the class is an ejb-class
      * @param warClass indicates whether the class is an web-class
      * @param context resource-container-context
      * @return boolean indicates whether the annotation can be processed.
      */
-    private boolean canProcessAnnotation(Class annotatedClass, boolean ejbClass, boolean warClass,
+    private boolean canProcessAnnotation(IndexView index, ClassInfo annotatedClass, boolean ejbClass, boolean warClass,
                                          ResourceContainerContext context) {
+        String annotatedClassName = annotatedClass.name().toString();
         if (ejbClass) {
             if (!(context instanceof EjbBundleContext ||
                     context instanceof EjbContext ||
@@ -134,11 +139,11 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
         } else if (context instanceof EjbBundleContext) {
             EjbBundleContext ejbContext = (EjbBundleContext) context;
             EjbBundleDescriptor ejbBundleDescriptor = ejbContext.getDescriptor();
-            EjbDescriptor[] ejbDescriptor = ejbBundleDescriptor.getEjbByClassName(annotatedClass.getName());
+            EjbDescriptor[] ejbDescriptor = ejbBundleDescriptor.getEjbByClassName(annotatedClassName);
             if (ejbDescriptor == null || ejbDescriptor.length == 0) {
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Ignoring @DataSourceDefinition annotation processing as the class " +
-                            "[ " + annotatedClass + " ] is" +
+                            "[ " + annotatedClassName + " ] is" +
                             "not an EJB class and the context is EJBContext");
                 }
                 return false;
@@ -159,38 +164,35 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
             for(RootDeploymentDescriptor desc : extDesc){
                 if(desc instanceof EjbBundleDescriptor){
                     EjbBundleDescriptor ejbBundleDesc = (EjbBundleDescriptor)desc;
-                    EjbDescriptor[] ejbDescs = ejbBundleDesc.getEjbByClassName(annotatedClass.getName());
+                    EjbDescriptor[] ejbDescs = ejbBundleDesc.getEjbByClassName(annotatedClassName);
                     if(ejbDescs != null && ejbDescs.length > 0){
                         if (logger.isLoggable(Level.FINEST)) {
                             logger.log(Level.FINEST, "Ignoring @DataSourceDefinition annotation processing as the class " +
-                                    "[ " + annotatedClass + " ] is" +
+                                    "[ " + annotatedClassName + " ] is" +
                                     "not an Web class and the context is WebContext");
                         }
                         return false;
-                    }else if(ejbBundleDesc.getInterceptorByClassName(annotatedClass.getName()) != null){
+                    }else if(ejbBundleDesc.getInterceptorByClassName(annotatedClassName) != null){
                             if (logger.isLoggable(Level.FINEST)) {
                                 logger.log(Level.FINEST, "Ignoring @DataSourceDefinition annotation processing " +
                                         "as the class " +
-                                        "[ " + annotatedClass + " ] is" +
+                                        "[ " + annotatedClassName + " ] is" +
                                         "not an Web class and the context is WebContext");
                             }
                             return false;
                     }else{
-                        Method[] methods = annotatedClass.getDeclaredMethods();
-                        for(Method method : methods){
-                            Annotation annotations[] = method.getAnnotations();
-                            for(Annotation annotation : annotations){
-                                if(annotation.annotationType().equals(AroundInvoke.class) ||
-                                        annotation.annotationType().equals(AroundTimeout.class) ||
-                                        annotation.annotationType().equals(Interceptors.class)) {
-                                    if (logger.isLoggable(Level.FINEST)) {
-                                        logger.log(Level.FINEST, "Ignoring @DataSourceDefinition annotation processing " +
-                                                "as the class " +
-                                                "[ " + annotatedClass + " ] is" +
-                                                "not an Web class, an interceptor and the context is WebContext");
-                                    }
-                                    return false;
+                        for (MethodInfo method : annotatedClass.methods()) {
+                            if (!method.isConstructor()
+                                    && (ClassHierarchy.annotation(index, method, AroundInvoke.class) != null
+                                    || ClassHierarchy.annotation(index, method, AroundTimeout.class) != null
+                                    || ClassHierarchy.annotation(index, method, Interceptors.class) != null)) {
+                                if (logger.isLoggable(Level.FINEST)) {
+                                    logger.log(Level.FINEST, "Ignoring @DataSourceDefinition annotation processing " +
+                                            "as the class " +
+                                            "[ " + annotatedClassName + " ] is" +
+                                            "not an Web class, an interceptor and the context is WebContext");
                                 }
+                                return false;
                             }
                         }
                     }
@@ -230,19 +232,20 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
     }
 
 
-    private void merge(Set<ResourceDescriptor> dsdDescs, DataSourceDefinition defn) {
+    private void merge(Set<ResourceDescriptor> dsdDescs, IndexView index, AnnotationInstance defn) {
 
         for (ResourceDescriptor orgdesc : dsdDescs) {
             DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)orgdesc;
-            if (desc.getName().equals(defn.name())) {
+            if (desc.getName().equals(AnnotationValues.string(index, defn, "name"))) {
 
                 if (desc.getClassName() == null) {
-                    desc.setClassName(TranslatedConfigView.expandValue(defn.className()));
+                    desc.setClassName(TranslatedConfigView.expandValue(AnnotationValues.string(index, defn, "className")));
                 }
 
                 if (desc.getDescription() == null) {
-                    if (defn.description() != null && !defn.description().equals("")) {
-                        desc.setDescription(TranslatedConfigView.expandValue(defn.description()));
+                    String description = AnnotationValues.string(index, defn, "description");
+                    if (!description.equals("")) {
+                        desc.setDescription(TranslatedConfigView.expandValue(description));
                     }
                 }
 
@@ -255,22 +258,25 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
                 //try only when URL is not set
                 if (!desc.isServerNameSet() && desc.getUrl() == null) {
                     //localhost is the default value (even in the descriptor)
-                    if (defn.serverName() != null && !defn.serverName().equals("localhost")) {
-                        desc.setServerName(TranslatedConfigView.expandValue(defn.serverName()));
+                    String serverName = AnnotationValues.string(index, defn, "serverName");
+                    if (!serverName.equals("localhost")) {
+                        desc.setServerName(TranslatedConfigView.expandValue(serverName));
                     }
                 }
 
                 //try only when URL is not set
                 if (desc.getPortNumber() == -1 && desc.getUrl() == null) {
-                    if (defn.portNumber() != -1) {
-                        desc.setPortNumber(defn.portNumber());
+                    int portNumber = AnnotationValues.integer(index, defn, "portNumber");
+                    if (portNumber != -1) {
+                        desc.setPortNumber(portNumber);
                     }
                 }
 
                 //try only when URL is not set
                 if (desc.getDatabaseName() == null && desc.getUrl() == null) {
-                    if (defn.databaseName() != null && !defn.databaseName().equals("")) {
-                        desc.setDatabaseName(TranslatedConfigView.expandValue(defn.databaseName()));
+                    String databaseName = AnnotationValues.string(index, defn, "databaseName");
+                    if (!databaseName.equals("")) {
+                        desc.setDatabaseName(TranslatedConfigView.expandValue(databaseName));
                     }
                 }
 
@@ -278,88 +284,88 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
                 if (desc.getUrl() == null &&
                         !(desc.getPortNumber() != -1 && desc.getServerName() != null &&
                                 (desc.getDatabaseName() != null))) {
-                    if (defn.url() != null && !defn.url().equals("")) {
-                        desc.setUrl(TranslatedConfigView.expandValue(defn.url()));
+                    String url = AnnotationValues.string(index, defn, "url");
+                    if (!url.equals("")) {
+                        desc.setUrl(TranslatedConfigView.expandValue(url));
                     }
 
                 }
 
                 if (desc.getUser() == null) {
-                    if (defn.user() != null && !defn.user().equals("")) {
-                        desc.setUser(TranslatedConfigView.expandValue(defn.user()));
+                    String user = AnnotationValues.string(index, defn, "user");
+                    if (!user.equals("")) {
+                        desc.setUser(TranslatedConfigView.expandValue(user));
                     }
                 }
 
                 if (desc.getPassword() == null) {
-                    if (defn.password() != null /*ALLOW EMPTY PASSWORDS && !defn.password().equals("")*/) {
-                        desc.setPassword(TranslatedConfigView.expandValue(defn.password()));
-                    }
+                    // allow empty passwords
+                    desc.setPassword(TranslatedConfigView.expandValue(AnnotationValues.string(index, defn, "password")));
                 }
 
                 if (desc.getIsolationLevel() == -1) {
-                    if (defn.isolationLevel() != -1) {
-                        desc.setIsolationLevel(String.valueOf(defn.isolationLevel()));
+                    int isolationLevel = AnnotationValues.integer(index, defn, "isolationLevel");
+                    if (isolationLevel != -1) {
+                        desc.setIsolationLevel(String.valueOf(isolationLevel));
                     }
                 }
 
                 if (!desc.isTransactionSet()) {
-                    if (defn.transactional()) {
-                        desc.setTransactional(true);
-                    } else {
-                        desc.setTransactional(false);
-                    }
+                    desc.setTransactional(AnnotationValues.bool(index, defn, "transactional"));
                 }
 
                 if (desc.getMinPoolSize() == -1) {
-                    if (defn.minPoolSize() != -1) {
-                        desc.setMinPoolSize(defn.minPoolSize());
+                    int minPoolSize = AnnotationValues.integer(index, defn, "minPoolSize");
+                    if (minPoolSize != -1) {
+                        desc.setMinPoolSize(minPoolSize);
                     }
                 }
 
                 if (desc.getMaxPoolSize() == -1) {
-                    if (defn.maxPoolSize() != -1) {
-                        desc.setMaxPoolSize(defn.maxPoolSize());
+                    int maxPoolSize = AnnotationValues.integer(index, defn, "maxPoolSize");
+                    if (maxPoolSize != -1) {
+                        desc.setMaxPoolSize(maxPoolSize);
                     }
                 }
 
                 if (desc.getInitialPoolSize() == -1) {
-                    if (defn.initialPoolSize() != -1) {
-                        desc.setInitialPoolSize(defn.initialPoolSize());
+                    int initialPoolSize = AnnotationValues.integer(index, defn, "initialPoolSize");
+                    if (initialPoolSize != -1) {
+                        desc.setInitialPoolSize(initialPoolSize);
                     }
                 }
 
                 if (desc.getMaxIdleTime() == -1) {
-                    if (defn.maxIdleTime() != -1) {
-                        desc.setMaxIdleTime(String.valueOf(defn.maxIdleTime()));
+                    int maxIdleTime = AnnotationValues.integer(index, defn, "maxIdleTime");
+                    if (maxIdleTime != -1) {
+                        desc.setMaxIdleTime(String.valueOf(maxIdleTime));
                     }
                 }
 
                 if (desc.getMaxStatements() == -1) {
-                    if (defn.maxStatements() != -1) {
-                        desc.setMaxStatements(defn.maxStatements());
+                    int maxStatements = AnnotationValues.integer(index, defn, "maxStatements");
+                    if (maxStatements != -1) {
+                        desc.setMaxStatements(maxStatements);
                     }
                 }
 
                 if (!desc.isLoginTimeoutSet()) {
-                    if (defn.loginTimeout() != 0) {
-                        desc.setLoginTimeout(String.valueOf(defn.loginTimeout()));
+                    int loginTimeout = AnnotationValues.integer(index, defn, "loginTimeout");
+                    if (loginTimeout != 0) {
+                        desc.setLoginTimeout(String.valueOf(loginTimeout));
                     }
                 }
 
                 Properties properties = desc.getProperties();
-                String[] defnProperties = defn.properties();
-
-                if (defnProperties.length > 0) {
-                    for (String property : defnProperties) {
-                        int index = property.indexOf('=');
-                        // found "=" and not at start or end of string
-                        if (index > -1 && index != 0 && index < property.length() - 1) {
-                            String name = property.substring(0, index);
-                            String value = property.substring(index + 1);
-                            //add to properties only when not already present
-                            if (properties.get(name) == null) {
-                                properties.put(name, TranslatedConfigView.expandValue(value));
-                            }
+                for (String property : AnnotationValues.strings(index, defn, "properties")) {
+                    int separator = property.indexOf('=');
+                    // found "=" and not at start or end of string
+                    if (separator > -1 && separator != 0 && separator < property.length() - 1) {
+                        String name = property.substring(0, separator);
+                        String value = property.substring(separator + 1);
+                        //add to properties only when not already present
+                        if (properties.get(name) == null) {
+                            properties.put(name, TranslatedConfigView.expandValue(value));
                         }
                     }
                 }
@@ -370,94 +376,96 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
     }
 
     //Not private as accessed by tests
-    DataSourceDefinitionDescriptor createDescriptor(DataSourceDefinition defn) {
+    DataSourceDefinitionDescriptor createDescriptor(IndexView index, AnnotationInstance defn) {
 
         DataSourceDefinitionDescriptor desc = new DataSourceDefinitionDescriptor();
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
-        desc.setName(TranslatedConfigView.expandValue(defn.name()));
-        desc.setClassName(TranslatedConfigView.expandValue(defn.className()));
+        desc.setName(TranslatedConfigView.expandValue(AnnotationValues.string(index, defn, "name")));
+        desc.setClassName(TranslatedConfigView.expandValue(AnnotationValues.string(index, defn, "className")));
 
-        if (defn.description() != null && !defn.description().equals("")) {
-            desc.setDescription(TranslatedConfigView.expandValue(defn.description()));
+        String description = AnnotationValues.string(index, defn, "description");
+        if (!description.equals("")) {
+            desc.setDescription(TranslatedConfigView.expandValue(description));
         }
 
-        if (defn.serverName() != null && !defn.serverName().equals("localhost")) {
-            desc.setServerName(TranslatedConfigView.expandValue(defn.serverName()));
+        String serverName = AnnotationValues.string(index, defn, "serverName");
+        if (!serverName.equals("localhost")) {
+            desc.setServerName(TranslatedConfigView.expandValue(serverName));
         }
 
-        if (defn.portNumber() != -1) {
-            desc.setPortNumber(defn.portNumber());
+        int portNumber = AnnotationValues.integer(index, defn, "portNumber");
+        if (portNumber != -1) {
+            desc.setPortNumber(portNumber);
         }
 
 
-        if (defn.databaseName() != null && !defn.databaseName().equals("")) {
-            desc.setDatabaseName(TranslatedConfigView.expandValue(defn.databaseName()));
+        String databaseName = AnnotationValues.string(index, defn, "databaseName");
+        if (!databaseName.equals("")) {
+            desc.setDatabaseName(TranslatedConfigView.expandValue(databaseName));
         }
 
         if (desc.getPortNumber() != -1 && desc.getDatabaseName() != null && desc.getServerName() != null) {
             //standard properties are set, ignore URL
         } else {
-            if (defn.url() != null && !defn.url().equals("")) {
-                desc.setUrl(TranslatedConfigView.expandValue(defn.url()));
+            String url = AnnotationValues.string(index, defn, "url");
+            if (!url.equals("")) {
+                desc.setUrl(TranslatedConfigView.expandValue(url));
                 desc.setServerName(null); //To prevent serverName overriding the URL, always use the URL if the standard properties are not set
             }
         }
 
-        if (defn.user() != null && !defn.user().equals("")) {
-            desc.setUser(TranslatedConfigView.expandValue(defn.user()));
+        String user = AnnotationValues.string(index, defn, "user");
+        if (!user.equals("")) {
+            desc.setUser(TranslatedConfigView.expandValue(user));
         }
 
-        if (defn.password() != null /*ALLOW EMPTY PASSWORDS && !defn.password().equals("")*/) {
-            desc.setPassword(TranslatedConfigView.expandValue(defn.password()));
+        // allow empty passwords
+        desc.setPassword(TranslatedConfigView.expandValue(AnnotationValues.string(index, defn, "password")));
+
+        int isolationLevel = AnnotationValues.integer(index, defn, "isolationLevel");
+        if (isolationLevel != -1) {
+            desc.setIsolationLevel(TranslatedConfigView.expandValue(String.valueOf(isolationLevel)));
         }
 
-        if (defn.isolationLevel() != -1) {
-            desc.setIsolationLevel(TranslatedConfigView.expandValue(String.valueOf(defn.isolationLevel())));
+        desc.setTransactional(AnnotationValues.bool(index, defn, "transactional"));
+
+        int minPoolSize = AnnotationValues.integer(index, defn, "minPoolSize");
+        if (minPoolSize != -1) {
+            desc.setMinPoolSize(minPoolSize);
         }
 
-        if (defn.transactional()) {
-            desc.setTransactional(true);
-        } else {
-            desc.setTransactional(false);
+        int maxPoolSize = AnnotationValues.integer(index, defn, "maxPoolSize");
+        if (maxPoolSize != -1) {
+            desc.setMaxPoolSize(maxPoolSize);
+        }
+        int initialPoolSize = AnnotationValues.integer(index, defn, "initialPoolSize");
+        if (initialPoolSize != -1) {
+            desc.setInitialPoolSize(initialPoolSize);
+        }
+        int maxIdleTime = AnnotationValues.integer(index, defn, "maxIdleTime");
+        if (maxIdleTime != -1) {
+            desc.setMaxIdleTime(String.valueOf(maxIdleTime));
         }
 
-        if (defn.minPoolSize() != -1) {
-            desc.setMinPoolSize(defn.minPoolSize());
+        int maxStatements = AnnotationValues.integer(index, defn, "maxStatements");
+        if (maxStatements != -1) {
+            desc.setMaxStatements(maxStatements);
         }
 
-        if (defn.maxPoolSize() != -1) {
-            desc.setMaxPoolSize(defn.maxPoolSize());
-        }
-        if (defn.initialPoolSize() != -1) {
-            desc.setInitialPoolSize(defn.initialPoolSize());
-        }
-        if (defn.maxIdleTime() != -1) {
-            desc.setMaxIdleTime(String.valueOf(defn.maxIdleTime()));
+        int loginTimeout = AnnotationValues.integer(index, defn, "loginTimeout");
+        if (loginTimeout != 0) {
+            desc.setLoginTimeout(String.valueOf(loginTimeout));
         }
 
-        if (defn.maxStatements() != -1) {
-            desc.setMaxStatements(defn.maxStatements());
-        }
-
-        if (defn.loginTimeout() != 0) {
-            desc.setLoginTimeout(String.valueOf(defn.loginTimeout()));
-        }
-
-        if (defn.properties() != null) {
-            Properties properties = desc.getProperties();
-
-            String[] defnProperties = defn.properties();
-            if (defnProperties.length > 0) {
-                for (String property : defnProperties) {
-                    int index = property.indexOf('=');
-                    // found "=" and not at start or end of string
-                    if (index > -1 && index != 0 && index < property.length() - 1) {
-                        String name = property.substring(0, index);
-                        String value = property.substring(index + 1);
-                        properties.put(name.trim(), TranslatedConfigView.expandValue(value.trim()));
-                    }
-                }
+        Properties properties = desc.getProperties();
+        for (String property : AnnotationValues.strings(index, defn, "properties")) {
+            int separator = property.indexOf('=');
+            // found "=" and not at start or end of string
+            if (separator > -1 && separator != 0 && separator < property.length() - 1) {
+                String name = property.substring(0, separator);
+                String value = property.substring(separator + 1);
+                properties.put(name.trim(), TranslatedConfigView.expandValue(value.trim()));
             }
         }
 

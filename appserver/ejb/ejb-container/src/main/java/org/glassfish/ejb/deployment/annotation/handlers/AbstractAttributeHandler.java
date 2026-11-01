@@ -37,13 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
-import java.util.logging.Level;
 
 import com.sun.enterprise.deployment.annotation.context.ComponentContext;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
@@ -56,28 +51,19 @@ import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.ClassInfo;
+
+import java.lang.annotation.ElementType;
+import java.util.logging.Level;
 
 /**
  * This is an abstract class encapsulate generic behaviour of annotation
- * handler applying on Ejb Class.  It will get the corresponding
- * EjbDescriptors associated to the annotation on the given Ejb Class
- * and then pass it to underlying processAnnotation method.
- * Concrete subclass handlers need to implement the following:
- *     public Class&lt;? extends Annotation&gt; getAnnotationType();
- *     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
- *             EjbContext[] ejbContexts) throws AnnotationProcessorException;
- * It may also need to override the following:
- * a) if other annotations need to be processed prior to given annotation:
- *     public Class&lt;? extends Annotation&gt;[] getTypeDependencies();
- * b) if the given annotation can be processed while processing another
- *    annotation
- *     protected boolean isDelegatee();
- * c) if we need to process for interceptor
- *     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
- *             EjbInterceptorContext ejbInterceptorContext)
- *             throws AnnotationProcessorException;
- * d) indicate the annotation support type inheritance
- *     protected boolean supportTypeIneritance();
+ * handler applying on Ejb Class. It will get the corresponding EjbDescriptors
+ * associated to the annotation on the given Ejb Class and then pass it to
+ * underlying subclass to process. We will only process
+ * annotations that are not on the business interface,
+ * not on the super class of the component and not on
+ * the dummy ejb descriptor.
  *
  * @author Shing Wai Chan
  */
@@ -85,24 +71,22 @@ public abstract class AbstractAttributeHandler extends AbstractHandler {
 
     protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractAttributeHandler.class);
-    
+
     /**
      * Process Annotation with given EjbContexts.
      * @param ainfo
      * @param ejbContexts
      * @return HandlerProcessingResult
-     * @exception AnnotationProcessorException
      */
     protected abstract HandlerProcessingResult processAnnotation(
             AnnotationInfo ainfo, EjbContext[] ejbContexts)
             throws AnnotationProcessorException;
 
     /**
-     * Process Annotation with given InteceptorContext.
+     * Process Annotation with given EjbInterceptorContext.
      * @param ainfo
      * @param ejbInterceptorContext
      * @return HandlerProcessingResult
-     * @exception AnnotationProcessorException
      */
     protected HandlerProcessingResult processAnnotation(
             AnnotationInfo ainfo, EjbInterceptorContext ejbInterceptorContext)
@@ -118,18 +102,14 @@ public abstract class AbstractAttributeHandler extends AbstractHandler {
      * one returned by @see getAnnotationType(). All information
      * pertinent to the annotation and its context is encapsulated
      * in the passed AnnotationInfo instance.
-     * This is a method in interface AnnotationHandler.
      *
      * @param ainfo the annotation information
      */
-    public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo) 
-            throws AnnotationProcessorException {
-        
-        AnnotatedElement ae = ainfo.getAnnotatedElement();
-        Annotation annotation = ainfo.getAnnotation();
+    @Override
+    public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo) throws AnnotationProcessorException {
 
         if (logger.isLoggable(Level.FINER)) {
-            logger.finer("@process annotation " + annotation + " in " + ae);
+            logger.finer("@process annotation " + ainfo.getAnnotation() + " in " + ainfo.getAnnotatedElement());
         }
 
         AnnotatedElementHandler aeHandler = ainfo.getProcessingContext().getHandler();
@@ -153,10 +133,10 @@ public abstract class AbstractAttributeHandler extends AbstractHandler {
                 ElementType.TYPE.equals(ainfo.getElementType()) &&
                 aeHandler instanceof ComponentContext) {
             ComponentContext context = (ComponentContext)aeHandler;
-            Class clazz = (Class)ainfo.getAnnotatedElement();
-            if (!clazz.getName().equals(context.getComponentClassName())) {
+            ClassInfo clazz = ainfo.getAnnotatedElement().asClass();
+            if (!clazz.name().toString().equals(context.getComponentClassName())) {
                 if (logger.isLoggable(Level.WARNING)) {
-                    log(Level.WARNING, ainfo, 
+                    log(Level.WARNING, ainfo,
                         localStrings.getLocalString(
                         "enterprise.deployment.annotation.handlers.typeinhernotsupp",
                         "The annotation symbol inheritance is not supported."));
@@ -164,7 +144,7 @@ public abstract class AbstractAttributeHandler extends AbstractHandler {
                 return getDefaultProcessedResult();
             }
         }
-                
+
         EjbContext[] ejbContexts = null;
         EjbInterceptorContext ejbInterceptorContext = null;
         if (aeHandler instanceof EjbContext) {
@@ -178,8 +158,7 @@ public abstract class AbstractAttributeHandler extends AbstractHandler {
             return getInvalidAnnotatedElementHandlerResult(aeHandler, ainfo);
         }
 
-        HandlerProcessingResult procResult = null;
-
+        HandlerProcessingResult procResult;
         if (ejbInterceptorContext != null) {
             procResult = processAnnotation(ainfo, ejbInterceptorContext);
         } else {
@@ -187,14 +166,14 @@ public abstract class AbstractAttributeHandler extends AbstractHandler {
         }
 
         if (logger.isLoggable(Level.FINER)) {
-            logger.finer("New annotation for " + annotation);
+            logger.finer("New annotation for " + ainfo.getAnnotation());
         }
         return procResult;
     }
 
     /**
-     * This indicates whether the annotation can be processed by delegation
-     * from the another annotation.
+     * This indicates whether the annotation type should be processed for
+     * type level in super-class.
      */
     protected boolean isDelegatee() {
         return false;

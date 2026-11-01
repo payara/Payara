@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,18 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.MethodPermission;
-import org.glassfish.apf.AnnotationHandlerFor;
-import org.jvnet.hk2.annotations.Service;
-
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.jvnet.hk2.annotations.Service;
+
 import java.lang.annotation.Annotation;
 
 /**
@@ -60,23 +61,15 @@ import java.lang.annotation.Annotation;
 @Service
 @AnnotationHandlerFor(PermitAll.class)
 public class PermitAllHandler extends AbstractAuthAnnotationHandler {
-    
+
     public PermitAllHandler() {
     }
-    
-    @Override
-    protected void processEjbMethodSecurity(Annotation authAnnoation,
-            MethodDescriptor md, EjbDescriptor ejbDesc) {
 
-        ejbDesc.addPermissionedMethod(
-                MethodPermission.getUncheckedMethodPermission(), md);
+    @Override
+    protected void processEjbMethodSecurity(AnnotationInfo ainfo, MethodDescriptor md, EjbDescriptor ejbDesc) {
+        ejbDesc.addPermissionedMethod(MethodPermission.getUncheckedMethodPermission(), md);
     }
 
-    /**
-     * @return an array of annotation types this annotation handler would
-     * require to be processed (if present) before it processes it's own
-     * annotation type.
-     */
     @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();

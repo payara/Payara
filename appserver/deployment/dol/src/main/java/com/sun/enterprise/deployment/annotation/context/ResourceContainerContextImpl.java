@@ -40,7 +40,10 @@
  * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.context;
+
+import org.jboss.jandex.ClassInfo;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.*;
@@ -498,7 +501,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
      */
     @Override
     public HandlerChainContainer[] 
-            getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
+            getHandlerChainContainers(boolean serviceSideHandlerChain, ClassInfo declaringClass) {
         // by default return null; appropriate contextx should override this
         return null;
     }

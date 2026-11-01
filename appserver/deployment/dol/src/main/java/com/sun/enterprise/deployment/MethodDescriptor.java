@@ -37,13 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.MethodInfo;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -156,6 +158,22 @@ public final class MethodDescriptor extends Descriptor {
         this.parameterClassNames = getParameterClassNamesFor(method, paramTypes);
         this.javaParameterClassNames = getJavaFormatClassNamesFor(paramTypes);
         this.className = method.getDeclaringClass().getName();
+    }
+
+    /**
+     * Constructs a method descriptor for the method as read from the class index, without loading the class.
+     */
+    public MethodDescriptor(MethodInfo method, String methodIntf) {
+        this(method);
+        isExact = true;
+        this.setEjbClassSymbol(methodIntf);
+    }
+
+    public MethodDescriptor(MethodInfo method) {
+        super(method.name(), "");
+        this.parameterClassNames = ClassHierarchy.sourceParameterNames(method);
+        this.javaParameterClassNames = ClassHierarchy.javaParameterNames(method);
+        this.className = method.declaringClass().name().toString();
     }
 
     public MethodDescriptor() {

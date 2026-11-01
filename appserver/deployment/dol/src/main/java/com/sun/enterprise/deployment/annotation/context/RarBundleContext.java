@@ -38,12 +38,13 @@
  * holder.
  */
 
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.context;
 
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 
 import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
+import org.jboss.jandex.AnnotationTarget;
 
 import org.glassfish.apf.context.AnnotationContext;
 import org.glassfish.apf.ProcessingContext;
@@ -67,11 +68,11 @@ public class RarBundleContext extends AnnotationContext {
         return super.getProcessingContext();    
     }
 
-    public void startElement(ElementType type, AnnotatedElement element) throws AnnotationProcessorException {
+    public void startElement(ElementType type, AnnotationTarget element) throws AnnotationProcessorException {
         getProcessingContext().pushHandler(this);
     }
 
-    public void endElement(ElementType type, AnnotatedElement element) throws AnnotationProcessorException {
+    public void endElement(ElementType type, AnnotationTarget element) throws AnnotationProcessorException {
         getProcessingContext().popHandler();        
     }
 }
