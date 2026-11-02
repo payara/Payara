@@ -424,10 +424,10 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
         }
         
         /*
-         * If the request has an admin token then it can be a remote request
+         * If the request has a valid admin token then it can be a remote request
          * from an instance start-up (for example).  Accept it.
          */
-        if (cbh.tkn() != null) {
+        if (cbh.tkn() instanceof String token && authTokenManager.findToken(token) != null) {
             return;
         }
         rejectRemoteAdminIfDisabled(cbh.getRemoteHost());
