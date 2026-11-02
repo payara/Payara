@@ -84,7 +84,8 @@
         <stage.dir>${project.build.directory}/${stage.dir.name}/${install.dir.name}</stage.dir>
         <temp.dir>${stage.dir}</temp.dir>
         <temp.modules.dir>${temp.dir}/modules</temp.modules.dir>
-        <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
+        <zip.excludes>**\/META-INF,META-INF\/*,**/.gitattributes,**/pkg_proto.py</zip.excludes>
+        <glassfishbuild-maven-plugin.assemblyInputDirectory>${project.build.directory}/${stage.dir.name}</glassfishbuild-maven-plugin.assemblyInputDirectory>
     </properties>
 
     <modules>
@@ -225,18 +226,18 @@
                             <goals>
                                 <goal>single</goal>
                             </goals>
+                            <configuration>
+                                <descriptors>
+                                    <descriptor>${basedir}/src/main/assembly/${project.artifactId}.xml</descriptor>
+                                </descriptors>
+                                <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
+                                <finalName>${stage.dir.name}</finalName>
+                                <attach>false</attach>
+                                <appendAssemblyId>false</appendAssemblyId>
+                                <useProjectArtifact>false</useProjectArtifact>
+                            </configuration>
                         </execution>
                     </executions>
-                    <configuration>
-                        <descriptors>
-                            <descriptor>${basedir}/src/main/assembly/${project.artifactId}.xml</descriptor>
-                        </descriptors>
-                        <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
-                        <finalName>${stage.dir.name}</finalName>
-                        <attach>false</attach>
-                        <appendAssemblyId>false</appendAssemblyId>
-                        <useProjectArtifact>false</useProjectArtifact>
-                    </configuration>
                 </plugin>
                 
                 
@@ -351,16 +352,6 @@
                 </executions>
             </plugin>
             
-            <!-- 
-                17. The second core step of the packager: zip all dependencies into the final .zip file
-             -->
-            <plugin>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>glassfishbuild-maven-plugin</artifactId>
-                <configuration>
-                    <dir>${project.build.directory}/${stage.dir.name}</dir>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     

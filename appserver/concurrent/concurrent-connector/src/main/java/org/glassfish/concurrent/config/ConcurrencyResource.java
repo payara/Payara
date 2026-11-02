@@ -51,7 +51,7 @@ import java.util.List;
  */
 
 @Configured
-public interface ConcurrencyResource extends PropertyBag  {
+public interface ConcurrencyResource extends PropertyBag, ConfigBeanProxy {
 
     /**
      * Gets the value of the contextInfoEnabled property.

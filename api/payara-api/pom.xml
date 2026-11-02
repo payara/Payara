@@ -119,6 +119,10 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
+                        <!-- the root pluginManagement adds a Class-Path of dependency jars, which an API jar must not have -->
+                        <manifest>
+                            <addClasspath>false</addClasspath>
+                        </manifest>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>

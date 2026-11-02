@@ -65,6 +65,11 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
+                    <!-- Inherited from the distributions parent, which is only for glassfish-distribution modules -->
+                    <execution>
+                        <id>stage-distribution</id>
+                        <phase>none</phase>
+                    </execution>
                     <execution>
                         <id>assemble-client-distribution</id>
                         <phase>package</phase>
@@ -89,6 +94,10 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>unpack-fragments</id>
+                        <phase>none</phase>
+                    </execution>
 
                     <!--
                         This execution extracts the contents of the lib/appclient

@@ -60,6 +60,8 @@
         <deploy.skip>false</deploy.skip>
         <stage.dir.name>stage</stage.dir.name>
         <stage.dir>${project.build.directory}/${stage.dir.name}</stage.dir>
+        <glassfishbuild-maven-plugin.assemblyInputDirectory>${stage.dir}</glassfishbuild-maven-plugin.assemblyInputDirectory>
+        <asadmin.executable>${stage.dir}/${install.dir.name}/bin/asadmin${file.executable.suffix}</asadmin.executable>
         <temp.dir>${project.build.directory}/dependency</temp.dir>
         <include.group.ids>fish.payara.server.internal.packager,fish.payara.server.internal.registration</include.group.ids>
         <template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar</template.jar>
@@ -84,54 +86,69 @@
                         <includeGroupIds>${include.group.ids}</includeGroupIds>
                         <stripVersion>true</stripVersion>
                         <silent>true</silent>
+                        <excludes>**/pkg_proto.py,**/.gitattributes</excludes>
                     </configuration>
+                    <executions>
+                        <execution>
+                            <id>unpack-fragments</id>
+                            <phase>generate-resources</phase>
+                            <goals>
+                                <goal>unpack-dependencies</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <configuration>
-                        <descriptors>
-                            <descriptor>src/main/assembly/${project.artifactId}.xml</descriptor>
-                        </descriptors>
-                        <finalName>${stage.dir.name}</finalName>
                         <attach>false</attach>
                         <appendAssemblyId>false</appendAssemblyId>
                         <useProjectArtifact>false</useProjectArtifact>
                     </configuration>
+                    <executions>
+                        <!-- Stages the unpacked fragments into target/stage -->
+                        <execution>
+                            <id>stage-distribution</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                            <configuration>
+                                <descriptors>
+                                    <descriptor>src/main/assembly/${project.artifactId}.xml</descriptor>
+                                </descriptors>
+                                <finalName>${stage.dir.name}</finalName>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
-
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>glassfishbuild-maven-plugin</artifactId>
                     <executions>
+                        <!-- Fragments are unpacked by maven-dependency-plugin, as before -->
                         <execution>
-                            <id>default-zip</id>
-                            <phase>package</phase>
-                            <configuration>
-                                <duplicate>preserve</duplicate>
-                                <filesets>
-                                    <fileset>
-                                        <dir>${stage.dir}</dir>
-                                        <fileMode>755</fileMode>
-                                        <includes>**/bin/*</includes>
-                                        <includes>**/bin/*.bat</includes>
-                                        <includes>**/lib/nadmin*</includes>
-                                    </fileset>
-                                    <fileset>
-                                        <dir>${stage.dir}</dir>
-                                        <excludes>**/bin/*</excludes>
-                                        <excludes>**/bin/*.bat</excludes>
-                                        <excludes>**/lib/nadmin*</excludes>
-                                    </fileset>
-                                </filesets>
-                            </configuration>
+                            <id>default-featuresets-dependencies</id>
+                            <phase>none</phase>
                         </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <executions>
                         <execution>
                             <id>create-glassfish-domain</id>
-                            <phase>process-resources</phase>
+                            <phase>process-classes</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
                             <configuration>
-                                <executable>${stage.dir}/${install.dir.name}/bin/asadmin</executable>
+                                <executable>${asadmin.executable}</executable>
+                                <workingDirectory>${project.build.directory}</workingDirectory>
                                 <commandlineArgs>${create-gf-domain.args}</commandlineArgs>
                             </configuration>
                         </execution>

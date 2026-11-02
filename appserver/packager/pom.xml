@@ -169,8 +169,9 @@
         <stage.dir>${project.build.directory}/${stage.dir.name}/${install.dir.name}</stage.dir>
         <temp.dir>${stage.dir}</temp.dir>        
         <temp.modules.dir>${temp.dir}/glassfish/modules</temp.modules.dir>
-        <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
-        <pkg_proto.py>src/main/resources/pkg_proto.py</pkg_proto.py>
+        <zip.excludes>**\/META-INF,META-INF\/*,**/.gitattributes,**/pkg_proto.py</zip.excludes>
+        <!-- Fragments zip the staged tree, one level above the install dir -->
+        <glassfishbuild-maven-plugin.assemblyInputDirectory>${project.build.directory}/${stage.dir.name}</glassfishbuild-maven-plugin.assemblyInputDirectory>
     </properties>
     
     <build>
@@ -409,62 +410,22 @@
                             <goals>
                                 <goal>single</goal>
                             </goals>
+                            <configuration>
+                                <descriptors>
+                                    <descriptor>${basedir}/src/main/assembly/${project.artifactId}.xml</descriptor>
+                                </descriptors>
+                                <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
+                                <finalName>${stage.dir.name}</finalName>
+                                <attach>false</attach>
+                                <appendAssemblyId>false</appendAssemblyId>
+                                <useProjectArtifact>false</useProjectArtifact>
+                            </configuration>
                         </execution>
                     </executions>
-                    <configuration>
-                        <descriptors>
-                            <descriptor>${basedir}/src/main/assembly/${project.artifactId}.xml</descriptor>
-                        </descriptors>
-                        <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
-                        <finalName>${stage.dir.name}</finalName>
-                        <attach>false</attach>
-                        <appendAssemblyId>false</appendAssemblyId>
-                        <useProjectArtifact>false</useProjectArtifact>
-                    </configuration>
                 </plugin>
                 
                 
                 <!-- 4 & 17. Use our own build helper to execute Python (4) and create the zipped version of all dependencies (17) -->
-                <plugin>
-                    <groupId>org.glassfish.build</groupId>
-                    <artifactId>glassfishbuild-maven-plugin</artifactId>
-                    <executions>
-                         
-                         <!-- Run the pkg_proto.py scripts. Activated via the "ips" profile that every module has -->
-                         <execution>
-                            <id>process-step5</id>
-                            <phase>process-resources</phase>
-                            <configuration>
-                                <executable>${python}</executable>
-                                <workingDir>${basedir}</workingDir>
-                                <commandlineArgs>${uc.toolkit.dir}/pkg/bin/makepkgs.py -s ${repo.url} -b ${stage.dir} ${pkg_proto.py}</commandlineArgs>
-                            </configuration>
-                        </execution>
-                    
-                        <!-- The second core step of the packager: zip all dependencies into the final .zip file -->
-                        <execution>
-                            <id>default-zip</id>
-                            <phase>package</phase>
-                            <configuration>
-                                <duplicate>preserve</duplicate>
-                                <filesets>
-                                    <fileset>
-                                        <dir>${stage.dir}/..</dir>
-                                        <fileMode>755</fileMode>
-                                        <includes>**/bin/*</includes>
-                                        <includes>**/bin/*.bat</includes>
-                                        <includes>**/lib/nadmin*</includes>
-                                        <excludes>**/pkg_proto.py</excludes>
-                                    </fileset>
-                                    <fileset>
-                                        <dir>${stage.dir}/..</dir>
-                                        <excludes>**/pkg_proto.py</excludes>
-                                    </fileset>
-                                </filesets>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
                 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
