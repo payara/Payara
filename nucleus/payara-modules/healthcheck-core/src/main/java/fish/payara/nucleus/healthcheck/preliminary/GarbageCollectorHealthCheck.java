@@ -57,7 +57,7 @@ import static fish.payara.internal.notification.TimeUtil.prettyPrintDuration;
 
 /**
  * -XX:+UseSerialGC                           --> <YOUNG_COPY, OLD_MARK_SWEEP_COMPACT>
- * -XX:+UseG1GC                               --> <YOUNG_G1GC, OLD_G1GC>
+ * -XX:+UseG1GC                               --> <YOUNG_G1GC, OLD_G1GC, CONCURRENT_G1GC>
  * -XX:+UseParallelGC                         --> <YOUNG_PS_SCAVENGE, OLD_PS_MARKSWEEP>
  * -XX:+UseParNewGC                           --> <YOUNG_PARNEW, OLD_MARK_SWEEP_COMPACT>
  * -XX:+UseConcMarkSweepGC -XX:+UseParNewGC   --> <YOUNG_PARNEW, OLD_CONCURRENTMARKSWEEP>
@@ -72,7 +72,7 @@ public class GarbageCollectorHealthCheck
 
     private final GcUsage youngHealthCheck = new GcUsage();
     private final GcUsage oldHealthCheck = new GcUsage();
-    private final Map<String, GcUsage> collect = new ConcurrentHashMap<>();
+    private final GcUsage concurrentHealthCheck = new GcUsage();
 
     @PostConstruct
     void postConstruct() {
@@ -91,8 +91,12 @@ public class GarbageCollectorHealthCheck
 
     @Override
     protected HealthCheckResult doCheckInternal() {
+        return doCheck(ManagementFactory.getGarbageCollectorMXBeans());
+    }
+
+    HealthCheckResult doCheck(java.util.List<GarbageCollectorMXBean> gcBeans) {
         HealthCheckResult result = new HealthCheckResult();
-        for (GarbageCollectorMXBean gcBean : ManagementFactory.getGarbageCollectorMXBeans()) {
+        for (GarbageCollectorMXBean gcBean : gcBeans) {
             if (isYoungGenerationGC(gcBean)) {
                 result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(youngHealthCheck.percentage(gcBean)),
                         youngHealthCheck.getNumberOfGcs() + " times Young GC (" + gcBean.getName() + ") collecting for "
@@ -101,6 +105,10 @@ public class GarbageCollectorHealthCheck
                 result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(oldHealthCheck.percentage(gcBean)),
                         oldHealthCheck.getNumberOfGcs() + " times Old GC (" + gcBean.getName() + ") after "
                                 + prettyPrintDuration(oldHealthCheck.getTimeSpendDoingGc())));
+            } else if (isConcurrentGC(gcBean)) {
+                result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(concurrentHealthCheck.percentage(gcBean)),
+                        concurrentHealthCheck.getNumberOfGcs() + " times Concurrent GC (" + gcBean.getName() + ") collecting for "
+                                + prettyPrintDuration(concurrentHealthCheck.getTimeSpendDoingGc())));
             } else {
                 result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR, "Could not identify " +
                         "GarbageCollectorMXBean with name: " + gcBean.getName()));
@@ -110,7 +118,7 @@ public class GarbageCollectorHealthCheck
         return result;
     }
 
-    private static final class GcUsage {
+    static final class GcUsage {
 
         private volatile long timeLastChecked;
         private volatile long lastCollectionCount;
@@ -149,7 +157,7 @@ public class GarbageCollectorHealthCheck
         }
     }
 
-    private static boolean isOldGenerationGC(GarbageCollectorMXBean gcBean) {
+    static boolean isOldGenerationGC(GarbageCollectorMXBean gcBean) {
         String name = gcBean.getName();
         return OLD_PS_MARKSWEEP.equals(name) ||
                 OLD_G1GC.equals(name) ||
@@ -157,11 +165,16 @@ public class GarbageCollectorHealthCheck
                 OLD_CONCURRENTMARKSWEEP.equals(name);
     }
 
-    private static boolean isYoungGenerationGC(GarbageCollectorMXBean gcBean) {
+    static boolean isYoungGenerationGC(GarbageCollectorMXBean gcBean) {
         String name = gcBean.getName();
         return YOUNG_PS_SCAVENGE.equals(name) ||
                 YOUNG_G1GC.equals(name) ||
                 YOUNG_COPY.equals(name) ||
                 YOUNG_PARNEW.equals(name);
+    }
+
+    static boolean isConcurrentGC(GarbageCollectorMXBean gcBean) {
+        String name = gcBean.getName();
+        return CONCURRENT_G1GC.equals(name);
     }
 }
