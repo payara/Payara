@@ -151,12 +151,15 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     private AuthenticationService authService;
 
     @Inject
+    private AuthenticationAttemptTrackerFactory attemptTrackerFactory;
+
     private AuthenticationAttemptTracker attemptTracker;
 
     @Override
     public synchronized void postConstruct() {
         secureAdmin = domain.getSecureAdmin();
-        
+        attemptTracker = attemptTrackerFactory.getDefault();
+
         // Ensure that the admin password is set as required
         if (as.usesFileRealm()) {
             try {
