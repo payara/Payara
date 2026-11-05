@@ -50,6 +50,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.glassfish.hk2.utilities.CleanerFactory;
 
@@ -412,8 +413,19 @@ public abstract class PayloadFilesManager {
     private File resolveOutputFile(final Part part, final String name) throws IOException {
         final File candidate = new File(getOutputFileURI(part, name));
         if (isConfined()) {
-            final Path targetDirPath = getTargetDir().toPath().toAbsolutePath().normalize();
-            final Path candidatePath = candidate.toPath().toAbsolutePath().normalize();
+            /*
+             * Compare real (symlink-resolved) paths, not merely normalized
+             * ones: normalize() only collapses "." and ".." segments and
+             * does not follow symlinks, so a symlink sitting anywhere under
+             * the target directory and pointing outside it could otherwise
+             * defeat a purely lexical comparison. The candidate file itself
+             * (and possibly some of its parent directories) does not exist
+             * yet, so toRealPath() is applied to the nearest existing
+             * ancestor and the remaining, not-yet-created segments are
+             * appended back on top of that resolved path.
+             */
+            final Path targetDirPath = getTargetDir().toPath().toRealPath();
+            final Path candidatePath = toRealOrNearestExistingAncestorPath(candidate.toPath());
             if (!candidatePath.startsWith(targetDirPath)) {
                 throw new IOException(strings.getLocalString(
                         "payload.partOutsideTargetDir",
@@ -422,6 +434,30 @@ public abstract class PayloadFilesManager {
             }
         }
         return candidate;
+    }
+
+    /**
+     * Resolves {@code path} to its real, symlink-free form as far as the
+     * filesystem allows: the nearest ancestor that already exists is
+     * resolved with {@link Path#toRealPath}, and any trailing segments that
+     * do not exist yet (because they are about to be created) are appended,
+     * normalized, on top of that real path.
+     */
+    private static Path toRealOrNearestExistingAncestorPath(final Path path) throws IOException {
+        Path absolutePath = path.toAbsolutePath();
+        Path existingAncestor = absolutePath;
+        Path remainder = null;
+        while (existingAncestor != null && !Files.exists(existingAncestor)) {
+            final Path segment = existingAncestor.getFileName();
+            remainder = (remainder == null) ? segment : segment.resolve(remainder);
+            existingAncestor = existingAncestor.getParent();
+        }
+        if (existingAncestor == null) {
+            // Should not normally happen (a filesystem root always exists), but fail safe.
+            return absolutePath.normalize();
+        }
+        final Path realAncestor = existingAncestor.toRealPath();
+        return (remainder == null) ? realAncestor : realAncestor.resolve(remainder).normalize();
     }
 
     private File removeFile(final Payload.Part part) throws IOException {
