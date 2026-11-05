@@ -62,12 +62,14 @@ import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeforeShutdown;
 import jakarta.enterprise.inject.spi.DefinitionException;
 import jakarta.enterprise.inject.spi.Extension;
 import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
 import jakarta.enterprise.inject.spi.ProcessManagedBean;
-import jakarta.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
+import jakarta.enterprise.inject.spi.WithAnnotations;
 import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
 import jakarta.validation.executable.ExecutableValidator;
 
 import java.lang.reflect.Method;
@@ -79,6 +81,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
@@ -96,6 +99,7 @@ public class AgenticAIExtension implements Extension {
 
     private final List<Class<?>> agentClasses = new ArrayList<>();
     private boolean appProvidesLlm = false;
+    private ValidatorFactory validatorFactory;
 
     /**
      * Discovers and prepares each {@code @Agent} type during bean discovery.
@@ -106,11 +110,16 @@ public class AgenticAIExtension implements Extension {
      * the engine's synthetic observer becomes the single entry point, which
      * keeps the workflow context active across the whole run and avoids invoking
      * the trigger twice.
+     * <p>
+     * The observer is restricted with {@link WithAnnotations} so the container
+     * only notifies it for {@code @Agent} types; without the restriction a
+     * {@code ProcessAnnotatedType} event would be fired for every class of every
+     * deployed application, which is a significant deployment-time cost.
      *
      * @param processAnnotatedType the type being processed during bean discovery
      * @param <X>                  the annotated type's Java type
      */
-    <X> void processAgent(@Observes ProcessAnnotatedType<X> processAnnotatedType) {
+    <X> void processAgent(@Observes @WithAnnotations(Agent.class) ProcessAnnotatedType<X> processAnnotatedType) {
         var annotatedType = processAnnotatedType.getAnnotatedType();
         if (!annotatedType.isAnnotationPresent(Agent.class)) {
             return;
@@ -161,35 +170,82 @@ public class AgenticAIExtension implements Extension {
      * skipped (reserved for future programmatic triggering).
      * <p>
      * Finally, when the application supplies no {@link LargeLanguageModel} of its
-     * own (see {@link #watchForLlm}), a default {@code @Dependent} LLM backed by a
-     * no-op backend is registered so injection points resolve without ambiguity.
+     * own (see {@link #watchForLlm}), a default {@code @Dependent} LLM is
+     * registered so injection points resolve without ambiguity. Its backend (and
+     * the MicroProfile Config lookup that selects it) is resolved lazily on first
+     * use, so applications that never inject an LLM pay nothing for it.
+     * <p>
+     * The workflow engine and its Bean Validation support are only created when
+     * at least one {@code @Agent} was discovered, so applications without agents
+     * incur no deployment-time cost beyond registering the context and the
+     * default LLM bean.
      */
     void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
         WorkflowScopeContext workflowScopeContext = new WorkflowScopeContext();
         afterBeanDiscovery.addContext(workflowScopeContext);
 
-        WorkflowScopeManager workflowScopeManager = new WorkflowScopeManager(workflowScopeContext);
-        WorkflowEngine workflowEngine = new WorkflowEngine(beanManager, workflowScopeManager, resolveExecutableValidator());
+        if (!agentClasses.isEmpty()) {
+            WorkflowScopeManager workflowScopeManager = new WorkflowScopeManager(workflowScopeContext);
+            WorkflowEngine workflowEngine = new WorkflowEngine(beanManager, workflowScopeManager, resolveExecutableValidator());
 
-        for (Class<?> agentClass : agentClasses) {
-            AgentMetadata agentMetadata = buildMetadata(agentClass);
-            Class<?> eventType = agentMetadata.getTriggerEventType();
-            if (eventType == null) {
-                continue;
+            for (Class<?> agentClass : agentClasses) {
+                AgentMetadata agentMetadata = buildMetadata(agentClass);
+                Class<?> eventType = agentMetadata.getTriggerEventType();
+                if (eventType == null) {
+                    continue;
+                }
+                afterBeanDiscovery.addObserverMethod()
+                        .beanClass(agentClass)
+                        .observedType(eventType)
+                        .notifyWith(eventContext -> workflowEngine.execute(agentMetadata, eventContext.getEvent()));
             }
-            afterBeanDiscovery.addObserverMethod()
-                    .beanClass(agentClass)
-                    .observedType(eventType)
-                    .notifyWith(eventContext -> workflowEngine.execute(agentMetadata, eventContext.getEvent()));
         }
 
         if (!appProvidesLlm) {
-            LlmBackend backend = LlmBackendFactory.create(ConfigProvider.getConfig());
+            Supplier<LlmBackend> backend = lazyBackend(Thread.currentThread().getContextClassLoader());
             afterBeanDiscovery.addBean()
                     .types(LargeLanguageModel.class, Object.class)
                     .scope(Dependent.class)
-                    .createWith(creationalContext -> new LargeLanguageModelImpl(backend));
+                    .createWith(creationalContext -> new LargeLanguageModelImpl(backend.get()));
         }
+    }
+
+    /**
+     * Releases the {@link ValidatorFactory} created for agent parameter
+     * validation, if any, when the application is undeployed.
+     */
+    void beforeShutdown(@Observes BeforeShutdown beforeShutdown) {
+        if (validatorFactory != null) {
+            validatorFactory.close();
+            validatorFactory = null;
+        }
+    }
+
+    /**
+     * Returns a memoizing supplier that resolves the configured {@link LlmBackend}
+     * on first request. The application's class loader is captured at bean
+     * discovery time so MicroProfile Config resolves against the right
+     * application regardless of which thread first requests the backend.
+     */
+    private static Supplier<LlmBackend> lazyBackend(ClassLoader applicationClassLoader) {
+        return new Supplier<>() {
+            private volatile LlmBackend backend;
+
+            @Override
+            public LlmBackend get() {
+                LlmBackend result = backend;
+                if (result == null) {
+                    synchronized (this) {
+                        result = backend;
+                        if (result == null) {
+                            result = LlmBackendFactory.create(ConfigProvider.getConfig(applicationClassLoader));
+                            backend = result;
+                        }
+                    }
+                }
+                return result;
+            }
+        };
     }
 
     /**
@@ -264,10 +320,12 @@ public class AgenticAIExtension implements Extension {
      * Builds the {@link ExecutableValidator} used to validate phase-method
      * parameters. Returns {@code null} when no Bean Validation provider is
      * available, in which case the engine simply skips parameter validation.
+     * The underlying factory is retained so it can be closed on shutdown.
      */
     private ExecutableValidator resolveExecutableValidator() {
         try {
-            return Validation.buildDefaultValidatorFactory().getValidator().forExecutables();
+            validatorFactory = Validation.buildDefaultValidatorFactory();
+            return validatorFactory.getValidator().forExecutables();
         } catch (RuntimeException e) {
             return null;
         }
