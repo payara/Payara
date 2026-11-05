@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2024 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,9 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.replicatedmap.ReplicatedMap;
 
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import fish.payara.nucleus.events.HazelcastEvents;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 import java.util.UUID;
 
 /**
@@ -75,7 +78,7 @@ import java.util.UUID;
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class ClusteredConfig extends MembershipAdapter {
+public class ClusteredConfig extends MembershipAdapter implements EventListener {
 
     /**
      * Map name prefix used for cluster configuration as accessed using
@@ -85,6 +88,9 @@ public class ClusteredConfig extends MembershipAdapter {
 
     @Inject
     private HazelcastCore hzCore;
+
+    @Inject
+    private Events events;
 
     private UUID membershipListenerRegistrationId;
 
@@ -97,9 +103,14 @@ public class ClusteredConfig extends MembershipAdapter {
 
     @PostConstruct
     public void postConstruct() {
-        HazelcastInstance hzInstance = hzCore.getInstance();
-        if (hzInstance != null) {
-            membershipListenerRegistrationId = hzInstance.getCluster().addMembershipListener(this);
+        // the membership listener is registered once Hazelcast has booted instead of forcing the boot here
+        events.register(this);
+    }
+
+    @Override
+    public void event(Event event) {
+        if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
+            membershipListenerRegistrationId = hzCore.getInstance().getCluster().addMembershipListener(this);
         }
     }
 

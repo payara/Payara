@@ -87,6 +87,11 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "54327")
     String getMulticastPort();
     public void setMulticastPort(String value);
+
+    /** seconds a member waits for a multicast answer before it starts its own data grid, Hazelcast's default is 2 */
+    @Attribute(defaultValue = "2")
+    String getMulticastTimeoutSeconds();
+    public void setMulticastTimeoutSeconds(String value);
     
     @Attribute(defaultValue = "127.0.0.1:5900")
     String getTcpipMembers();
