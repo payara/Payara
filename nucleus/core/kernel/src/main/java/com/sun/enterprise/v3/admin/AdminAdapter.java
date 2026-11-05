@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
@@ -566,7 +566,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                         "Attempt to create directories for {0} failed; no further information is available. Continuing.",
                         extractLocation.getAbsolutePath()));
                 }
-                PayloadFilesManager.Perm permFileManager = new PayloadFilesManager.Perm(extractLocation, null, aalogger);
+                PayloadFilesManager.Perm permFileManager = new PayloadFilesManager.Perm(extractLocation, null, aalogger, true);
                 permFileManager.processParts(inboundPayload);
                 parameters.add("path", extractLocation.toString());
                 parameters.remove("upload");
