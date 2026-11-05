@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
@@ -50,11 +50,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import org.glassfish.hk2.utilities.CleanerFactory;
 
 import java.lang.ref.Cleaner;
 import java.net.URI;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -128,6 +128,19 @@ public abstract class PayloadFilesManager {
         return targetDir;
     }
 
+    /**
+     * Indicates whether this manager must confine every resolved output file
+     * to {@link #getTargetDir()}, rejecting any part (file-xfer, file-remove
+     * or file-replace) whose resolved location would fall outside it -
+     * including one that uses an absolute or escaping file-xfer-root.
+     * Subclasses that only ever write into a server-controlled, disposable
+     * location should return true; subclasses used for a trusted,
+     * caller-directed destination should return false (the default).
+     */
+    protected boolean isConfined() {
+        return false;
+    }
+
     protected URI getParentURI(Part part) {
             /*
              * parentURI and parentFile start as the target extraction directory for this
@@ -188,6 +201,21 @@ public abstract class PayloadFilesManager {
      * against the targetDir plus file-xfer-root URI to derive the URI for the output file.
      */
     public static class Perm extends PayloadFilesManager {
+
+        private boolean confined = false;
+
+        /**
+         * Creates a Perm manager that still writes permanently but refuses to
+         * write, remove or replace anything outside targetDir, even if a part
+         * specifies an absolute or escaping file-xfer-root. Use this constructor
+         * when the inbound payload comes from an untrusted source (e.g. an HTTP
+         * request body) - as opposed to the other constructors, which assume a
+         * trusted, caller-directed destination.
+         */
+        public Perm(final File targetDir, final ActionReport report, final Logger logger, final boolean confined) {
+            this(targetDir, report, logger, null);
+            this.confined = confined;
+        }
 
         /**
          * Creates a new PayloadFilesManager for dealing with permanent files that
@@ -257,6 +285,11 @@ public abstract class PayloadFilesManager {
 
         public Perm(final ActionReportHandler reportHandler) {
             this(null, Logger.getLogger(Perm.class.getName()), reportHandler);
+        }
+
+        @Override
+        protected boolean isConfined() {
+            return confined;
         }
 
         @Override
@@ -346,6 +379,11 @@ public abstract class PayloadFilesManager {
         }
 
         @Override
+        protected boolean isConfined() {
+            return true;
+        }
+
+        @Override
         protected void postExtract(File extractedFile) {
             FileUtils.deleteOnExit(extractedFile);
         }
@@ -371,6 +409,21 @@ public abstract class PayloadFilesManager {
         return getParentURI(part).resolve(name);
     }
 
+    private File resolveOutputFile(final Part part, final String name) throws IOException {
+        final File candidate = new File(getOutputFileURI(part, name));
+        if (isConfined()) {
+            final Path targetDirPath = getTargetDir().toPath().toAbsolutePath().normalize();
+            final Path candidatePath = candidate.toPath().toAbsolutePath().normalize();
+            if (!candidatePath.startsWith(targetDirPath)) {
+                throw new IOException(strings.getLocalString(
+                        "payload.partOutsideTargetDir",
+                        "Rejecting part {0}: resolved location {1} is outside the allowed directory {2}",
+                        name, candidatePath, targetDirPath));
+            }
+        }
+        return candidate;
+    }
+
     private File removeFile(final Payload.Part part) throws IOException {
         final File result = removeFileWithoutConsumingPartBody(part);
         consumePartBody(part);
@@ -379,7 +432,7 @@ public abstract class PayloadFilesManager {
 
     private File removeFileWithoutConsumingPartBody(final Payload.Part part) throws IOException {
         final boolean isFine = logger.isLoggable(Level.FINE);
-        File targetFile = new File(getOutputFileURI(part, part.getName()));
+        File targetFile = resolveOutputFile(part, part.getName());
         if (targetFile.exists()) {
             final boolean isRemovalRecursive = targetFile.isDirectory() && part.isRecursive();
             if (isRemovalRecursive ?
@@ -456,7 +509,7 @@ public abstract class PayloadFilesManager {
 
 
         try {
-            File extractedFile = new File(getOutputFileURI(part, outputName));
+            File extractedFile = resolveOutputFile(part, outputName);
 
             /*
              * Create the required directory tree under the target directory.
