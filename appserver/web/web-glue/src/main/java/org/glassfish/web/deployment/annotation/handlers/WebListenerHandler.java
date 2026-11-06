@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.web.deployment.annotation.handlers;
 
@@ -49,7 +50,10 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.internal.deployment.ClassHierarchy;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.servlet.ServletContextListener;
@@ -60,7 +64,6 @@ import jakarta.servlet.annotation.WebListener;
 import jakarta.servlet.http.HttpSessionAttributeListener;
 import jakarta.servlet.http.HttpSessionIdListener;
 import jakarta.servlet.http.HttpSessionListener;
-import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 
 /**
@@ -99,26 +102,26 @@ public class WebListenerHandler extends AbstractWebHandler {
             AnnotationInfo ainfo, WebBundleDescriptor webBundleDesc)
             throws AnnotationProcessorException {
 
-        Class listenerClass = (Class)ainfo.getAnnotatedElement();
-        if (!(ServletContextListener.class.isAssignableFrom(listenerClass) ||
-                ServletContextAttributeListener.class.isAssignableFrom(listenerClass) ||
-                ServletRequestListener.class.isAssignableFrom(listenerClass) ||
-                ServletRequestAttributeListener.class.isAssignableFrom(listenerClass) ||
-                HttpSessionListener.class.isAssignableFrom(listenerClass) ||
-                HttpSessionAttributeListener.class.isAssignableFrom(listenerClass) ||
-                HttpSessionIdListener.class.isAssignableFrom(listenerClass))) {
+        IndexView index = ainfo.getIndex();
+        ClassInfo listenerClass = ainfo.getAnnotatedElement().asClass();
+        if (!(ClassHierarchy.isSubtype(index, listenerClass, ServletContextListener.class) ||
+                ClassHierarchy.isSubtype(index, listenerClass, ServletContextAttributeListener.class) ||
+                ClassHierarchy.isSubtype(index, listenerClass, ServletRequestListener.class) ||
+                ClassHierarchy.isSubtype(index, listenerClass, ServletRequestAttributeListener.class) ||
+                ClassHierarchy.isSubtype(index, listenerClass, HttpSessionListener.class) ||
+                ClassHierarchy.isSubtype(index, listenerClass, HttpSessionAttributeListener.class) ||
+                ClassHierarchy.isSubtype(index, listenerClass, HttpSessionIdListener.class))) {
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(
                 "web.deployment.annotation.handlers.needtoimpllistenerinterface",
                 "The Class {0} having annotation jakarta.servlet.annotation.WebListener need to implement one of the following interfaces: jakarta.servlet.ServletContextLisener, jakarta.servlet.ServletContextAttributeListener, jakarta.servlet.ServletRequestListener, jakarta.servletServletRequestAttributeListener, jakarta.servlet.http.HttpSessionListener, jakarta.servlet.http.HttpSessionAttributeListener, jakarta.servlet.http.HttpSessionIdListener.",
-                listenerClass.getName()));
+                listenerClass.name().toString()));
             return getDefaultFailedResult();
         }
 
-        WebListener listenerAn = (WebListener)ainfo.getAnnotation();
         AppListenerDescriptor appListener =
-            new AppListenerDescriptorImpl(listenerClass.getName());
-        appListener.setDescription(listenerAn.value());
+            new AppListenerDescriptorImpl(listenerClass.name().toString());
+        appListener.setDescription(ainfo.stringValue("value"));
         webBundleDesc.addAppListenerDescriptor(appListener);
         return getDefaultProcessedResult();
     }

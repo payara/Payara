@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.*;
@@ -46,18 +46,23 @@ import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.AroundTimeout;
 import jakarta.interceptor.Interceptors;
 import jakarta.jms.JMSDestinationDefinition;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -71,28 +76,27 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-        JMSDestinationDefinition jmsDestinationDefnAn =
-                (JMSDestinationDefinition)ainfo.getAnnotation();
-        return processAnnotation(jmsDestinationDefnAn, ainfo, rcContexts);
+        return processAnnotation(ainfo.getAnnotation(), ainfo, rcContexts);
     }
 
-    protected HandlerProcessingResult processAnnotation(JMSDestinationDefinition jmsDestinationDefnAn, AnnotationInfo aiInfo,
+    protected HandlerProcessingResult processAnnotation(AnnotationInstance jmsDestinationDefnAn, AnnotationInfo aiInfo,
                                                         ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-        Class<?> annotatedClass = (Class<?>)aiInfo.getAnnotatedElement();
-        Annotation[] annotations = annotatedClass.getAnnotations();
+        IndexView index = aiInfo.getIndex();
+        ClassInfo annotatedClass = aiInfo.getAnnotatedElement().asClass();
+        List<AnnotationInstance> annotations = ClassHierarchy.classAnnotations(index, annotatedClass);
         boolean warClass = isAWebComponentClass(annotations);
         boolean ejbClass = isAEjbComponentClass(annotations);
 
         for (ResourceContainerContext context : rcContexts) {
-            if (!canProcessAnnotation(annotatedClass, ejbClass, warClass, context)) {
+            if (!canProcessAnnotation(index, annotatedClass, ejbClass, warClass, context)) {
                 return getDefaultProcessedResult();
             }
 
             Set<ResourceDescriptor> jmsddDescs = context.getResourceDescriptors(JavaEEResourceType.JMSDD);
-            JMSDestinationDefinitionDescriptor desc = createDescriptor(jmsDestinationDefnAn);
+            JMSDestinationDefinitionDescriptor desc = createDescriptor(index, jmsDestinationDefnAn);
             if (isDefinitionAlreadyPresent(jmsddDescs, desc)) {
-                merge(jmsddDescs, jmsDestinationDefnAn);
+                merge(jmsddDescs, index, jmsDestinationDefnAn);
             } else {
                 context.addResourceDescriptor(desc);
             }
@@ -107,14 +111,16 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
      * This method helps to overcome the issue, partially.<br>
      * Checks whether both the annotated class and the context are either ejb or web.
      *
+     * @param index resolves the annotations of the class's methods
      * @param annotatedClass annotated-class
      * @param ejbClass indicates whether the class is an ejb-class
      * @param warClass indicates whether the class is an web-class
      * @param context resource-container-context
      * @return boolean indicates whether the annotation can be processed.
      */
-    private boolean canProcessAnnotation(Class<?> annotatedClass, boolean ejbClass, boolean warClass,
+    private boolean canProcessAnnotation(IndexView index, ClassInfo annotatedClass, boolean ejbClass, boolean warClass,
                                          ResourceContainerContext context) {
+        String annotatedClassName = annotatedClass.name().toString();
         if (ejbClass) {
             if (!(context instanceof EjbBundleContext ||
                     context instanceof EjbContext ||
@@ -129,11 +135,11 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
         } else if (context instanceof EjbBundleContext) {
             EjbBundleContext ejbContext = (EjbBundleContext) context;
             EjbBundleDescriptor ejbBundleDescriptor = ejbContext.getDescriptor();
-            EjbDescriptor[] ejbDescriptor = ejbBundleDescriptor.getEjbByClassName(annotatedClass.getName());
+            EjbDescriptor[] ejbDescriptor = ejbBundleDescriptor.getEjbByClassName(annotatedClassName);
             if (ejbDescriptor == null || ejbDescriptor.length == 0) {
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing as the class " +
-                            "[ " + annotatedClass + " ] is " +
+                            "[ " + annotatedClassName + " ] is " +
                             "not an EJB class and the context is EJBContext");
                 }
                 return false;
@@ -154,38 +160,35 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
             for (RootDeploymentDescriptor desc : extDesc) {
                 if (desc instanceof EjbBundleDescriptor) {
                     EjbBundleDescriptor ejbBundleDesc = (EjbBundleDescriptor)desc;
-                    EjbDescriptor[] ejbDescs = ejbBundleDesc.getEjbByClassName(annotatedClass.getName());
+                    EjbDescriptor[] ejbDescs = ejbBundleDesc.getEjbByClassName(annotatedClassName);
                     if (ejbDescs != null && ejbDescs.length > 0) {
                         if (logger.isLoggable(Level.FINEST)) {
                             logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing as the class " +
-                                    "[ " + annotatedClass + " ] is " +
+                                    "[ " + annotatedClassName + " ] is " +
                                     "not an Web class and the context is WebContext");
                         }
                         return false;
-                    } else if (ejbBundleDesc.getInterceptorByClassName(annotatedClass.getName()) != null) {
+                    } else if (ejbBundleDesc.getInterceptorByClassName(annotatedClassName) != null) {
                             if (logger.isLoggable(Level.FINEST)) {
                                 logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing " +
                                         "as the class " +
-                                        "[ " + annotatedClass + " ] is " +
+                                        "[ " + annotatedClassName + " ] is " +
                                         "not an Web class and the context is WebContext");
                             }
                             return false;
                     } else {
-                        Method[] methods = annotatedClass.getDeclaredMethods();
-                        for (Method method : methods) {
-                            Annotation annotations[] = method.getAnnotations();
-                            for (Annotation annotation : annotations) {
-                                if (annotation.annotationType().equals(AroundInvoke.class) ||
-                                        annotation.annotationType().equals(AroundTimeout.class) ||
-                                        annotation.annotationType().equals(Interceptors.class)) {
-                                    if (logger.isLoggable(Level.FINEST)) {
-                                        logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing " +
-                                                "as the class " +
-                                                "[ " + annotatedClass + " ] is " +
-                                                "not an Web class, an interceptor and the context is WebContext");
-                                    }
-                                    return false;
+                        for (MethodInfo method : annotatedClass.methods()) {
+                            if (!method.isConstructor()
+                                    && (ClassHierarchy.annotation(index, method, AroundInvoke.class) != null
+                                    || ClassHierarchy.annotation(index, method, AroundTimeout.class) != null
+                                    || ClassHierarchy.annotation(index, method, Interceptors.class) != null)) {
+                                if (logger.isLoggable(Level.FINEST)) {
+                                    logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing " +
+                                            "as the class " +
+                                            "[ " + annotatedClassName + " ] is " +
+                                            "not an Web class, an interceptor and the context is WebContext");
                                 }
+                                return false;
                             }
                         }
                     }
@@ -205,55 +208,55 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
         return false;
     }
 
-    private void merge(Set<ResourceDescriptor> jmsddDescs, JMSDestinationDefinition defn) {
+    private void merge(Set<ResourceDescriptor> jmsddDescs, IndexView index, AnnotationInstance defn) {
 
         for (ResourceDescriptor descriptor : jmsddDescs) {
             if (descriptor instanceof JMSDestinationDefinitionDescriptor) {
             JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor)descriptor;
-                if (desc.getName().equals(defn.name())) {
-    
+                if (desc.getName().equals(AnnotationValues.string(index, defn, "name"))) {
+
                     if (desc.getInterfaceName() == null) {
-                        desc.setInterfaceName(defn.interfaceName());
+                        desc.setInterfaceName(AnnotationValues.string(index, defn, "interfaceName"));
                     }
-    
+
                     if (desc.getClassName() == null) {
-                        if (isValid(defn.className())) {
-                            desc.setClassName(defn.className());
+                        String className = AnnotationValues.string(index, defn, "className");
+                        if (isValid(className)) {
+                            desc.setClassName(className);
                         }
                     }
-    
+
                     if (desc.getDescription() == null) {
-                        if (isValid(defn.description())) {
-                            desc.setDescription(defn.description());
+                        String description = AnnotationValues.string(index, defn, "description");
+                        if (isValid(description)) {
+                            desc.setDescription(description);
                         }
                     }
-    
+
                     if (desc.getResourceAdapter() == null) {
-                        if (isValid(defn.resourceAdapter())) {
-                            desc.setResourceAdapter(defn.resourceAdapter());
+                        String resourceAdapter = AnnotationValues.string(index, defn, "resourceAdapter");
+                        if (isValid(resourceAdapter)) {
+                            desc.setResourceAdapter(resourceAdapter);
                         }
                     }
-    
+
                     if (desc.getDestinationName() == null) {
-                        if (isValid(defn.destinationName())) {
-                            desc.setDestinationName(defn.destinationName());
+                        String destinationName = AnnotationValues.string(index, defn, "destinationName");
+                        if (isValid(destinationName)) {
+                            desc.setDestinationName(destinationName);
                         }
                     }
-    
+
                     Properties properties = desc.getProperties();
-                    String[] defnProperties = defn.properties();
-    
-                    if (defnProperties.length > 0) {
-                        for (String property : defnProperties) {
-                            int index = property.indexOf('=');
-                            // found "=" and not at start or end of string
-                            if (index > 0 && index < property.length() - 1) {
-                                String name = property.substring(0, index).trim();
-                                String value = property.substring(index + 1).trim();
-                                //add to properties only when not already present
-                                if (properties.get(name) == null) {
-                                    properties.put(name, value);
-                                }
+                    for (String property : AnnotationValues.strings(index, defn, "properties")) {
+                        int separator = property.indexOf('=');
+                        // found "=" and not at start or end of string
+                        if (separator > 0 && separator < property.length() - 1) {
+                            String name = property.substring(0, separator).trim();
+                            String value = property.substring(separator + 1).trim();
+                            //add to properties only when not already present
+                            if (properties.get(name) == null) {
+                                properties.put(name, value);
                             }
                         }
                     }
@@ -264,44 +267,42 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
 
     }
 
-    private JMSDestinationDefinitionDescriptor createDescriptor(JMSDestinationDefinition defn) {
+    private JMSDestinationDefinitionDescriptor createDescriptor(IndexView index, AnnotationInstance defn) {
 
         JMSDestinationDefinitionDescriptor desc = new JMSDestinationDefinitionDescriptor();
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
-        desc.setName(defn.name());
-        desc.setInterfaceName(defn.interfaceName());
+        desc.setName(AnnotationValues.string(index, defn, "name"));
+        desc.setInterfaceName(AnnotationValues.string(index, defn, "interfaceName"));
 
-        if (isValid(defn.className())) {
-            desc.setClassName(defn.className());
+        String className = AnnotationValues.string(index, defn, "className");
+        if (isValid(className)) {
+            desc.setClassName(className);
         }
 
-        if (isValid(defn.description())) {
-            desc.setDescription(defn.description());
+        String description = AnnotationValues.string(index, defn, "description");
+        if (isValid(description)) {
+            desc.setDescription(description);
         }
 
-        if (isValid(defn.resourceAdapter())) {
-            desc.setResourceAdapter(defn.resourceAdapter());
+        String resourceAdapter = AnnotationValues.string(index, defn, "resourceAdapter");
+        if (isValid(resourceAdapter)) {
+            desc.setResourceAdapter(resourceAdapter);
         }
 
-        if (isValid(defn.destinationName())) {
-            desc.setDestinationName(defn.destinationName());
+        String destinationName = AnnotationValues.string(index, defn, "destinationName");
+        if (isValid(destinationName)) {
+            desc.setDestinationName(destinationName);
         }
 
-        if (defn.properties() != null) {
-            Properties properties = desc.getProperties();
-
-            String[] defnProperties = defn.properties();
-            if (defnProperties.length > 0) {
-                for (String property : defnProperties) {
-                    int index = property.indexOf('=');
-                    // found "=" and not at start or end of string
-                    if (index > 0 && index < property.length() - 1) {
-                        String name = property.substring(0, index).trim();
-                        String value = property.substring(index + 1).trim();
-                        properties.put(name, value);
-                    }
-                }
+        Properties properties = desc.getProperties();
+        for (String property : AnnotationValues.strings(index, defn, "properties")) {
+            int separator = property.indexOf('=');
+            // found "=" and not at start or end of string
+            if (separator > 0 && separator < property.length() - 1) {
+                String name = property.substring(0, separator).trim();
+                String value = property.substring(separator + 1).trim();
+                properties.put(name, value);
             }
         }
 
@@ -309,6 +310,6 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
     }
 
     private boolean isValid(String s) {
-        return (s != null) && !s.equals("");
+        return !s.isEmpty();
     }
 }

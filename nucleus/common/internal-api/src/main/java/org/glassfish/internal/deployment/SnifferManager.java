@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jvnet.hk2.annotations.Contract;
 
 import java.util.Collection;
@@ -89,5 +88,5 @@ public interface SnifferManager {
      */
     public Collection<Sniffer> getSniffers(DeploymentContext context);
 
-    public Collection<Sniffer> getSniffers(DeploymentContext context, List<URI> uris, Types types);
+    public Collection<Sniffer> getSniffers(DeploymentContext context, List<URI> uris);
 }

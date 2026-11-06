@@ -260,6 +260,11 @@
             <artifactId>tiger-types</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>jandex</artifactId>
+            <version>${jandex.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.logging.Level;
@@ -62,15 +63,9 @@ public class ManagedScheduledExecutorDefinitionListHandler extends AbstractResou
                                                         ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
         logger.log(Level.INFO, "Entering ManagedScheduledExecutorDefinitionListHandler.processAnnotation");
-        ManagedScheduledExecutorDefinition.List managedScheduleExecutorDefinitionList =
-                (ManagedScheduledExecutorDefinition.List) annotationInfo.getAnnotation();
-        ManagedScheduledExecutorDefinition[] definitions =
-                managedScheduleExecutorDefinitionList.value();
-        if (definitions != null) {
-            for (ManagedScheduledExecutorDefinition definition : definitions) {
-                ManagedScheduledExecutorDefinitionHandler handler = new ManagedScheduledExecutorDefinitionHandler();
-                handler.processAnnotation(definition, resourceContainerContexts);
-            }
+        for (AnnotationInstance definition : annotationInfo.nestedArrayValue("value")) {
+            ManagedScheduledExecutorDefinitionHandler handler = new ManagedScheduledExecutorDefinitionHandler();
+            handler.processAnnotation(annotationInfo.getIndex(), definition, resourceContainerContexts);
         }
         return getDefaultProcessedResult();
     }

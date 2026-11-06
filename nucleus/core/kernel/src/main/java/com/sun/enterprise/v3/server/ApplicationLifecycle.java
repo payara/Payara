@@ -87,7 +87,6 @@ import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.ParsingContext;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.hk2.classmodel.reflect.util.CommonModelRegistry;
 import org.glassfish.hk2.classmodel.reflect.util.ResourceLocator;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
@@ -102,6 +101,7 @@ import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.internal.deployment.analysis.DeploymentSpan;
 import org.glassfish.internal.deployment.analysis.SpanSequence;
 import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
@@ -147,7 +147,6 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.toMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.net.URISyntaxException;
 import org.glassfish.hk2.classmodel.reflect.util.ParsingConfig;
 import org.glassfish.hk2.utilities.BuilderHelper;
 
@@ -206,6 +205,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Inject
     private HotDeployService hotDeployService;
+
+    @Inject
+    JandexIndexer jandexIndexer;
 
     protected Logger logger = KernelLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
@@ -395,9 +397,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             span.start(DeploymentTracing.AppStage.CLASS_SCANNING);
 
-            Types types = null;
             if (handler.requiresAnnotationScanning(context.getSource())) {
-                types = getDeployableTypes(context);
+                jandexIndexer.index(context);
             }
 
             span.finish();
@@ -658,36 +659,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return appInfo;
     }
 
-    @Override
-    @SuppressWarnings("squid:S2095")
-    public Types getDeployableTypes(DeploymentContext context) throws IOException {
-        synchronized (context) {
-            Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
-            if (types != null) {
-                return types;
-            }
-            StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
-            Boolean skipScanExternalLibProp = Boolean.valueOf(context.getAppProps().getProperty(DeploymentProperties.SKIP_SCAN_EXTERNAL_LIB));
-
-            Parser parser = getDeployableParser(context.getSource(), skipScanExternalLibProp, false, tracing,
-                    context.getLogger(), context);
-            ParsingContext parsingContext = parser.getContext();
-            context.addTransientAppMetaData(Types.class.getName(), parsingContext.getTypes());
-            context.addTransientAppMetaData(Parser.class.getName(), parser);
-            return parsingContext.getTypes();
-        }
-    }
-
-    public Parser getDeployableParser(ReadableArchive source, boolean skipScanExternalLibProp,
-                                      boolean modelUnAnnotatedMembers, StructuredDeploymentTracing tracing,
-                                      Logger logger, DeploymentContext deploymentContext) throws IOException {
-        Parser parser = new Parser(createBuilder(modelUnAnnotatedMembers, logger).build());
-        try(ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, source)) {
-            DeploymentSpan mainScanSpan = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, source.getName());
-            return processParsing(skipScanExternalLibProp, tracing, parser, scannerAdapter, mainScanSpan, deploymentContext);
-        }
-    }
-
+    /**
+     * Parses an archive with the HK2 class-model parser. Deployment itself uses the {@link JandexIndexer};
+     * this remains for MicroProfile OpenAPI, whose model is built on the HK2 class model.
+     */
     public Parser getDeployableParser(ReadableArchive source, boolean skipScanExternalLibProp,
                                       boolean modelUnAnnotatedMembers, StructuredDeploymentTracing tracing, Logger logger)
             throws java.io.IOException {
@@ -719,30 +694,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             scannerAdapter.close();
             return parser;
         } catch (InterruptedException e) {
-            throw new IOException(e);
-        }
-    }
-
-    public Parser processParsing(boolean skipScanExternalLibProp,
-                                 StructuredDeploymentTracing tracing, Parser parser,
-                                 ReadableArchiveScannerAdapter scannerAdapter, DeploymentSpan mainScanSpan,
-                                 DeploymentContext deploymentContext)
-            throws IOException {
-        try {
-            parser.parse(scannerAdapter, () -> mainScanSpan.close());
-            List<ReadableArchive> externalLibraries = getExternalLibraries(skipScanExternalLibProp, deploymentContext);
-            for (ReadableArchive externalLibArchive : externalLibraries) {
-                DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, externalLibArchive.getName());
-                try (ReadableArchiveScannerAdapter libAdapter = new ReadableArchiveScannerAdapter(parser, externalLibArchive)) {
-                    parser.parse(libAdapter, () -> span.close());
-                }
-            }
-            parser.awaitTermination();
-            for(ReadableArchive externalLibArchive: externalLibraries) {
-                externalLibArchive.close();
-            }
-            return parser;
-        } catch (InterruptedException | java.net.URISyntaxException e) {
             throw new IOException(e);
         }
     }
@@ -809,28 +760,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         List<URI> externalLibs = DeploymentUtils.getExternalLibraries(source);
         for (URI externalLib : externalLibs) {
-            externalLibArchives.add(archiveFactory.openArchive(new File(externalLib.getPath())));
-        }
-
-        return externalLibArchives;
-    }
-
-    private List<ReadableArchive> getExternalLibraries(Boolean skipScanExternalLibProp,
-                                                       DeploymentContext deploymentContext)
-            throws IOException, URISyntaxException {
-        List<ReadableArchive> externalLibArchives = new ArrayList<>();
-
-        if (skipScanExternalLibProp) {
-            // if we skip scanning external libraries, we should just
-            // return an empty list here
-            return Collections.emptyList();
-        }
-
-        for(URI externalLib : DeploymentUtils.getExternalLibraries(deploymentContext.getSource())) {
-            externalLibArchives.add(archiveFactory.openArchive(new File(externalLib.getPath())));
-        }
-
-        for (URI externalLib : deploymentContext.getAppLibs()) {
             externalLibArchives.add(archiveFactory.openArchive(new File(externalLib.getPath())));
         }
 

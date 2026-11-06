@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.webservices.connector.annotation.handlers;
 
@@ -44,12 +45,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.xml.ws.WebServiceRefs;
-import jakarta.xml.ws.WebServiceRef;
 
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
 
 import org.jvnet.hk2.annotations.Service;
 
@@ -67,12 +68,10 @@ public class WebServiceRefsHandler extends WebServiceRefHandler {
     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 
-        WebServiceRefs wsRefsAnnotation = (WebServiceRefs) ainfo.getAnnotation();
-        
-        WebServiceRef[] wsRefAnnotations = wsRefsAnnotation.value();
+        AnnotationInstance[] wsRefAnnotations = ainfo.nestedArrayValue("value");
         List<HandlerProcessingResult> results = new ArrayList<HandlerProcessingResult>();
 
-        for(WebServiceRef wsRef : wsRefAnnotations) {
+        for(AnnotationInstance wsRef : wsRefAnnotations) {
             results.add(processAWsRef(ainfo, wsRef));
         }
         HandlerProcessingResult finalResult = null;

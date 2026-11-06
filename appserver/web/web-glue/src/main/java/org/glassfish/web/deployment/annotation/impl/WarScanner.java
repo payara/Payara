@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.annotation.impl;
 
@@ -49,7 +49,6 @@ import com.sun.enterprise.deployment.web.ServletFilter;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.web.deployment.descriptor.*;
 import jakarta.inject.Inject;
@@ -96,7 +95,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
      */
     @Override
     public void process(ReadableArchive readableArchive, WebBundleDescriptor webBundleDesc,
-            ClassLoader classLoader, Parser parser) throws IOException {
+            ClassLoader classLoader) throws IOException {
 
         WebFragmentDescriptor webFragmentDesc = new WebFragmentDescriptor();
         if (webBundleDesc instanceof WebFragmentDescriptor) {
@@ -108,7 +107,6 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
             this.archiveFile = new File(readableArchive.getURI());
         }
         this.classLoader = classLoader;
-        setParser(parser);
 
         if (AnnotationUtils.getLogger().isLoggable(Level.FINE)) {
             AnnotationUtils.getLogger().log(Level.FINE, "archiveFile is {0}", archiveFile);

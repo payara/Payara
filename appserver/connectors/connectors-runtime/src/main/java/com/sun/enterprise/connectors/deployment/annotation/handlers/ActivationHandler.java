@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
@@ -54,6 +55,7 @@ import java.util.logging.Level;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.apf.*;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
+import org.jboss.jandex.ClassInfo;
 
 
 /**
@@ -68,13 +70,13 @@ public class ActivationHandler extends AbstractHandler {
     
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
-        Activation activation = (Activation) element.getAnnotation();
         if (aeHandler instanceof RarBundleContext) {
             RarBundleContext rarContext = (RarBundleContext) aeHandler;
             ConnectorDescriptor desc = rarContext.getDescriptor();
 
             //process annotation only if message-listeners are provided
-            if (activation.messageListeners().length > 0) {
+            String[] messageListeners = element.classArrayValue("messageListeners");
+            if (messageListeners.length > 0) {
                 //initialize inbound if it was not done already
                 if (!desc.getInBoundDefined()) {
                     desc.setInboundResourceAdapter(new InboundResourceAdapter());
@@ -83,16 +85,16 @@ public class ActivationHandler extends AbstractHandler {
                 InboundResourceAdapter ira = desc.getInboundResourceAdapter();
                 
                 //get the activation-spec implementation class-name
-                Class c = (Class) element.getAnnotatedElement();
-                String activationSpecClass = c.getName();
+                ClassInfo c = element.getAnnotatedElement().asClass();
+                String activationSpecClass = c.name().toString();
 
                 //process all message-listeners, ensure that no duplicate message-listener-types are found
-                for (Class mlClass : activation.messageListeners()) {
+                for (String mlClass : messageListeners) {
                     MessageListener ml = new MessageListener();
                     ml.setActivationSpecClass(activationSpecClass);
-                    ml.setMessageListenerType(mlClass.getName());
+                    ml.setMessageListenerType(mlClass);
 
-                    if (!ira.hasMessageListenerType(mlClass.getName())) {
+                    if (!ira.hasMessageListenerType(mlClass)) {
                         ira.addMessageListener(ml);
                     }// else {
                         // ignore the duplicates
@@ -126,8 +128,7 @@ public class ActivationHandler extends AbstractHandler {
         HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
         result.addResult(getAnnotationType(), ResultType.FAILED);
         if (doLog) {
-            Class c = (Class) element.getAnnotatedElement();
-            String className = c.getName();
+            String className = element.getDeclaringClass().name().toString();
             Object args[] = new Object[]{
                 element.getAnnotation(),
                 className,

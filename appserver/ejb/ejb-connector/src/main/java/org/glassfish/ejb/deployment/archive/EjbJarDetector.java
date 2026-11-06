@@ -39,6 +39,7 @@
  */
 
 
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.archive;
 
 import org.glassfish.api.deployment.archive.ArchiveDetector;
@@ -46,7 +47,7 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.deployment.common.GenericAnnotationDetector;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import jakarta.inject.Inject;
@@ -74,6 +75,8 @@ public class EjbJarDetector implements ArchiveDetector {
     @Inject
     private EjbSniffer sniffer;
     @Inject
+    private JandexIndexer jandexIndexer;
+    @Inject
     private EjbType archiveType;
     @Inject
     private ServiceLocator baseServiceLocator;
@@ -98,10 +101,7 @@ public class EjbJarDetector implements ArchiveDetector {
                 return true;
             }
 
-            GenericAnnotationDetector detector =
-                new GenericAnnotationDetector(sniffer.getAnnotationTypes());
-
-            return detector.hasAnnotationInArchive(archive);
+            return jandexIndexer.hasAnnotations(archive, sniffer.getAnnotationTypes());
         }catch(IOException ioe){
             //ignore
         }

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -116,11 +116,6 @@ public class RootBeanDeploymentArchive extends BeanDeploymentArchiveImpl {
 
     @Override
     public Collection<String> getBeanClasses() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<Class<?>> getBeanClassObjects() {
         return Collections.emptyList();
     }
 

@@ -36,10 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
-
+// Portions Copyright [2017-2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.connector.module;
 
@@ -48,7 +46,7 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import com.sun.enterprise.deployment.deploy.shared.Util;
-import org.glassfish.deployment.common.GenericAnnotationDetector;
+import org.glassfish.internal.deployment.JandexIndexer;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -73,7 +71,7 @@ public class RarDetector implements ArchiveDetector {
     /**
      * Connector annotations for JCA 1.7
      */
-    private static final Class[] connectorAnnotations = new Class[]{
+    private static final Class<?>[] connectorAnnotations = new Class<?>[]{
             jakarta.resource.spi.Connector.class,
             jakarta.resource.spi.Activation.class,
             jakarta.resource.spi.ConnectionDefinition.class,
@@ -89,6 +87,8 @@ public class RarDetector implements ArchiveDetector {
     private ConnectorSniffer sniffer;
     @Inject
     private ServiceLocator services;
+    @Inject
+    private JandexIndexer jandexIndexer;
 
     private ArchiveHandler archiveHandler; // lazy initialisation
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
@@ -136,9 +136,7 @@ public class RarDetector implements ArchiveDetector {
             //ignore
         }
         if (!handles) {
-            GenericAnnotationDetector detector =
-                    new GenericAnnotationDetector(connectorAnnotations);
-            handles = detector.hasAnnotationInArchive(archive);
+            handles = jandexIndexer.hasAnnotations(archive, connectorAnnotations);
         }
         return handles;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,24 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
-
+// Portions Copyright [2016-2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
 
 import fish.payara.cluster.Clustered;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import jakarta.ejb.DependsOn;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
-
 
 /**
  * This handler is responsible for handling the jakarta.ejb.Singleton
@@ -65,34 +66,30 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(Singleton.class)
 public class SingletonHandler extends AbstractEjbHandler {
 
-
     public SingletonHandler() {}
 
     /**
      * Return the name attribute of given annotation.
-     * @param annotation
+     * @param ainfo the annotation
      * @return name
      */
-    protected String getAnnotatedName(Annotation annotation) {
-        Singleton slAn = (Singleton) annotation;
-        return slAn.name();
+    @Override
+    protected String getAnnotatedName(AnnotationInfo ainfo) {
+        return ainfo.stringValue("name");
     }
 
     /**
      * Check if the given EjbDescriptor matches the given Annotation.
      * @param ejbDesc
-     * @param annotation
+     * @param ainfo
      * @return boolean check for validity of EjbDescriptor
      */
-    protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc,
-            Annotation annotation) {
+    @Override
+    protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc, AnnotationInfo ainfo) {
         boolean isValid = EjbSessionDescriptor.TYPE.equals(ejbDesc.getType());
 
         if( isValid ) {
             EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejbDesc;
-            // Only check specific session-bean type if it's set in the descriptor.
-            // Otherwise it was probably populated with a sparse ejb-jar.xml and
-            // we'll set the type later.
             if( sessionDesc.isSessionTypeSet() && !sessionDesc.isSingleton() ) {
                 isValid = false;
             }
@@ -107,17 +104,17 @@ public class SingletonHandler extends AbstractEjbHandler {
      * @param ainfo
      * @return a new EjbDescriptor
      */
-    protected EjbDescriptor createEjbDescriptor(String elementName,
-            AnnotationInfo ainfo) throws AnnotationProcessorException {
+    @Override
+    protected EjbDescriptor createEjbDescriptor(String elementName, AnnotationInfo ainfo)
+            throws AnnotationProcessorException {
 
-        AnnotatedElement ae = ainfo.getAnnotatedElement();
-        Class ejbClass = (Class)ae;
+        ClassInfo ejbClass = ainfo.getAnnotatedElement().asClass();
         EjbSessionDescriptor newDescriptor = new EjbSessionDescriptor();
         newDescriptor.setName(elementName);
-        newDescriptor.setEjbClassName(ejbClass.getName());
+        newDescriptor.setEjbClassName(ejbClass.name().toString());
         newDescriptor.setSessionType(EjbSessionDescriptor.SINGLETON);
 
-        doSingletonSpecificProcessing(newDescriptor, ejbClass);
+        doSingletonSpecificProcessing(newDescriptor, ejbClass, ainfo.getIndex());
 
         return newDescriptor;
     }
@@ -130,48 +127,44 @@ public class SingletonHandler extends AbstractEjbHandler {
      * @param ainfo
      * @return HandlerProcessingResult
      */
-    protected HandlerProcessingResult setEjbDescriptorInfo(
-            EjbDescriptor ejbDesc, AnnotationInfo ainfo)
+    @Override
+    protected HandlerProcessingResult setEjbDescriptorInfo(EjbDescriptor ejbDesc, AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 
         EjbSessionDescriptor ejbSingletonDescriptor = (EjbSessionDescriptor) ejbDesc;
 
-        Class ejbClass = (Class) ainfo.getAnnotatedElement();
-        Singleton singleton = (Singleton) ainfo.getAnnotation();
+        ClassInfo ejbClass = ainfo.getAnnotatedElement().asClass();
 
         // set session bean type in case it wasn't set in a sparse ejb-jar.xml.
         if( !ejbSingletonDescriptor.isSessionTypeSet() ) {
             ejbSingletonDescriptor.setSessionType(EjbSessionDescriptor.SINGLETON);
         }
 
-        doDescriptionProcessing(singleton.description(), ejbDesc);
-        doMappedNameProcessing(singleton.mappedName(), ejbDesc);
+        doDescriptionProcessing(ainfo.stringValue("description"), ejbDesc);
+        doMappedNameProcessing(ainfo.stringValue("mappedName"), ejbDesc);
 
-        doSingletonSpecificProcessing(ejbSingletonDescriptor, ejbClass);
+        doSingletonSpecificProcessing(ejbSingletonDescriptor, ejbClass, ainfo.getIndex());
 
         return setBusinessAndHomeInterfaces(ejbDesc, ainfo);
     }
 
-    private void doSingletonSpecificProcessing(EjbSessionDescriptor desc, Class<?> ejbClass) throws AnnotationProcessorException {
-        Class<?> clz = ejbClass;
+    private void doSingletonSpecificProcessing(EjbSessionDescriptor desc, ClassInfo ejbClass, IndexView index) {
 
-        Startup st = clz.getAnnotation(Startup.class);
-        if (st != null) {
-            // Only set if not explicitly set in .xml
+        if (ClassHierarchy.annotation(index, ejbClass, Startup.class) != null) {
             desc.setInitOnStartupIfNotAlreadySet(true);
         }
 
-        DependsOn dep = clz.getAnnotation(DependsOn.class);
+        AnnotationInstance dep = ClassHierarchy.annotation(index, ejbClass, DependsOn.class);
         if (dep != null) {
-            desc.setDependsOnIfNotSet(dep.value());
+            desc.setDependsOnIfNotSet(AnnotationValues.strings(index, dep, "value"));
         }
 
-        Clustered clusteredAnnotation = clz.getAnnotation(Clustered.class);
+        AnnotationInstance clusteredAnnotation = ClassHierarchy.annotation(index, ejbClass, Clustered.class);
         if(clusteredAnnotation != null) {
             desc.setClustered(true);
-            desc.setClusteredKeyValue(clusteredAnnotation.keyName());
-            desc.setDontCallPostConstructOnAttach(!clusteredAnnotation.callPostConstructOnAttach());
-            desc.setDontCallPreDestroyOnDetach(!clusteredAnnotation.callPreDestroyOnDetach());
+            desc.setClusteredKeyValue(AnnotationValues.string(index, clusteredAnnotation, "keyName"));
+            desc.setDontCallPostConstructOnAttach(!AnnotationValues.bool(index, clusteredAnnotation, "callPostConstructOnAttach"));
+            desc.setDontCallPreDestroyOnDetach(!AnnotationValues.bool(index, clusteredAnnotation, "callPreDestroyOnDetach"));
         }
     }
 }

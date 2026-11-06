@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
@@ -50,13 +50,15 @@ import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.apf.*;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.resource.spi.AuthenticationMechanism;
 import jakarta.resource.spi.Connector;
-import jakarta.resource.spi.SecurityPermission;
 import jakarta.resource.spi.TransactionSupport;
-import jakarta.resource.spi.work.WorkContext;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +77,6 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
 
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
-        Connector connector = (Connector) element.getAnnotation();
 
         List<Class<? extends Annotation>> list = new ArrayList<Class<? extends Annotation>>();
         list.add(getAnnotationType());
@@ -87,18 +88,18 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
         if (aeHandler instanceof RarBundleContext) {
             RarBundleContext rarContext = (RarBundleContext) aeHandler;
             ConnectorDescriptor desc = rarContext.getDescriptor();
-            Class annotatedClass = (Class)element.getAnnotatedElement();
+            ClassInfo annotatedClass = element.getAnnotatedElement().asClass();
             if(desc.getResourceAdapterClass().equals("")){
                 desc.addConnectorAnnotation(element);
                 return getSuccessfulProcessedResult(list);
-            }else if(!isResourceAdapterClass(annotatedClass)){
+            }else if(!isResourceAdapterClass(element.getIndex(), annotatedClass)){
                 desc.addConnectorAnnotation(element);
                 return getSuccessfulProcessedResult(list);
-            }else if(!desc.getResourceAdapterClass().equals(annotatedClass.getName())){
+            }else if(!desc.getResourceAdapterClass().equals(annotatedClass.name().toString())){
                 desc.addConnectorAnnotation(element);
                 return getSuccessfulProcessedResult(list);
             }else{
-                processDescriptor(annotatedClass, connector, desc);
+                processDescriptor(annotatedClass, element, desc);
                 desc.setValidConnectorAnnotationProcessed(true);
             }
         } else {
@@ -108,41 +109,53 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
         return getSuccessfulProcessedResult(list);
     }
 
-    public static void processDescriptor(Class annotatedClass, Connector connector, ConnectorDescriptor desc) {
+    /**
+     * @param annotatedClass the class carrying the {@code @Connector} annotation
+     * @param connector the annotation, resolved in the index of the deployment it was found in
+     */
+    public static void processDescriptor(ClassInfo annotatedClass, AnnotationInfo connector, ConnectorDescriptor desc) {
         //TODO don't use deprecated methods
 
         //TODO For *all annotations* need to ignore "default" or unspecified attributes
         //TODO make sure that the annotation defined defaults are the defaults of DD and DOL
 
+        IndexView index = connector.getIndex();
 
-        if (desc.getDescription().equals("") && connector.description().length > 0) {
-            desc.setDescription(convertStringArrayToStringBuilder(connector.description()));
+        String[] description = connector.stringArrayValue("description");
+        if (desc.getDescription().equals("") && description.length > 0) {
+            desc.setDescription(convertStringArrayToStringBuilder(description));
         }
 
-        if (desc.getDisplayName().equals("") && connector.displayName().length > 0) {
-            desc.setDisplayName(convertStringArrayToStringBuilder(connector.displayName()));
+        String[] displayName = connector.stringArrayValue("displayName");
+        if (desc.getDisplayName().equals("") && displayName.length > 0) {
+            desc.setDisplayName(convertStringArrayToStringBuilder(displayName));
         }
 
+        String[] smallIcon = connector.stringArrayValue("smallIcon");
         if ((desc.getSmallIconUri() == null || desc.getSmallIconUri().equals(""))
-                && connector.smallIcon().length > 0) {
-            desc.setSmallIconUri(convertStringArrayToStringBuilder(connector.smallIcon()));
+                && smallIcon.length > 0) {
+            desc.setSmallIconUri(convertStringArrayToStringBuilder(smallIcon));
         }
 
+        String[] largeIcon = connector.stringArrayValue("largeIcon");
         if ((desc.getLargeIconUri() == null || desc.getLargeIconUri().equals(""))
-                && connector.largeIcon().length > 0) {
-            desc.setLargeIconUri(convertStringArrayToStringBuilder(connector.largeIcon()));
+                && largeIcon.length > 0) {
+            desc.setLargeIconUri(convertStringArrayToStringBuilder(largeIcon));
         }
 
-        if (desc.getVendorName().equals("") && !connector.vendorName().equals("")) {
-            desc.setVendorName(connector.vendorName());
+        String vendorName = connector.stringValue("vendorName");
+        if (desc.getVendorName().equals("") && !vendorName.equals("")) {
+            desc.setVendorName(vendorName);
         }
 
-        if (desc.getEisType().equals("") && !connector.eisType().equals("")) {
-            desc.setEisType(connector.eisType());
+        String eisType = connector.stringValue("eisType");
+        if (desc.getEisType().equals("") && !eisType.equals("")) {
+            desc.setEisType(eisType);
         }
 
-        if (desc.getVersion().equals("") && !connector.version().equals("")) {
-            desc.setVersion(connector.version());
+        String version = connector.stringValue("version");
+        if (desc.getVersion().equals("") && !version.equals("")) {
+            desc.setVersion(version);
         }
 
 /*
@@ -155,18 +168,18 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
             // We will be able to detect whether license description is specified in annotation
             // or not, but "license required" can't be detected. Hence taking the annotated values *always*
             // if DD does not have an equivalent
-            String[] licenseDescriptor = connector.licenseDescription();
-            boolean licenseRequired = connector.licenseRequired();
+            String[] licenseDescriptor = connector.stringArrayValue("licenseDescription");
+            boolean licenseRequired = connector.booleanValue("licenseRequired");
             LicenseDescriptor ld = new LicenseDescriptor();
             ld.setDescription(convertStringArrayToStringBuilder(licenseDescriptor));
             ld.setLicenseRequired(licenseRequired);
             desc.setLicenseDescriptor(ld);
         }
 
-        AuthenticationMechanism[] auths = connector.authMechanisms();
-        if (auths != null && auths.length > 0) {
-            for (AuthenticationMechanism auth : auths) {
-                String authMechString = auth.authMechanism();
+        AnnotationInstance[] auths = connector.nestedArrayValue("authMechanisms");
+        if (auths.length > 0) {
+            for (AnnotationInstance auth : auths) {
+                String authMechString = AnnotationValues.string(index, auth, "authMechanism");
                 int authMechInt = AuthMechanism.getAuthMechInt(authMechString);
 
                 // check whether the same auth-mechanism is defined in DD also,
@@ -178,7 +191,7 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
 
                 for (Object o : ddAuthMechanisms) {
                     AuthMechanism ddAuthMechanism = (AuthMechanism) o;
-                    if (ddAuthMechanism.getAuthMechType().equals(auth.authMechanism())) {
+                    if (ddAuthMechanism.getAuthMechType().equals(authMechString)) {
                         ignore = true;
                         break;
                     }
@@ -186,22 +199,26 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
 
                 // if it was not specified in DD, add it to connector-descriptor
                 if (!ignore) {
-                    String credentialInterfaceName = ora.getCredentialInterfaceName(auth.credentialInterface());
+                    AuthenticationMechanism.CredentialInterface credentialInterface = AnnotationValues.enumValue(
+                            index, auth, "credentialInterface", AuthenticationMechanism.CredentialInterface.class);
+                    String credentialInterfaceName = OutboundResourceAdapter.getCredentialInterfaceName(credentialInterface);
                     //XXX: Siva: For now use the first provided description
-                    String description = "";
-                    if(auth.description().length > 0){
-                        description = auth.description()[0];
+                    String[] authDescription = AnnotationValues.strings(index, auth, "description");
+                    String firstDesc = "";
+                    if(authDescription.length > 0){
+                        firstDesc = authDescription[0];
                     }
-                    AuthMechanism authM = new AuthMechanism(description, authMechInt, credentialInterfaceName);
+                    AuthMechanism authM = new AuthMechanism(firstDesc, authMechInt, credentialInterfaceName);
                     ora.addAuthMechanism(authM);
                 }
             }
         }
 
         // merge DD and annotation entries of security-permission
-        SecurityPermission[] perms = connector.securityPermissions();
-        if (perms != null && perms.length > 0) {
-            for (SecurityPermission perm : perms) {
+        AnnotationInstance[] perms = connector.nestedArrayValue("securityPermissions");
+        if (perms.length > 0) {
+            for (AnnotationInstance perm : perms) {
+                String permissionSpec = AnnotationValues.string(index, perm, "permissionSpec");
                 boolean ignore = false;
                 // check whether the same permission is defined in DD also,
                 // though it does not make any functionality difference except possible
@@ -210,7 +227,7 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
                 for (Object o : ddSecurityPermissions) {
                     com.sun.enterprise.deployment.SecurityPermission ddSecurityPermission =
                             (com.sun.enterprise.deployment.SecurityPermission) o;
-                    if (ddSecurityPermission.getPermission().equals(perm.permissionSpec())) {
+                    if (ddSecurityPermission.getPermission().equals(permissionSpec)) {
                         ignore = true;
                         break;
                     }
@@ -220,10 +237,11 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
                 if (!ignore) {
                     com.sun.enterprise.deployment.SecurityPermission sp =
                             new com.sun.enterprise.deployment.SecurityPermission();
-                    sp.setPermission(perm.permissionSpec());
+                    sp.setPermission(permissionSpec);
                     //XXX: Siva for now use the first provided Description
+                    String[] permDescription = AnnotationValues.strings(index, perm, "description");
                     String firstDesc = "";
-                    if(perm.description().length > 0) firstDesc = perm.description()[0];
+                    if(permDescription.length > 0) firstDesc = permDescription[0];
                     sp.setDescription(firstDesc);
                     desc.addSecurityPermission(sp);
                 }
@@ -235,17 +253,20 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
         //result in outbound to be defined without any connection-definition which is an issue.
 
         //if reauth is false, we can ignore it as default value in dol is also false.
-        if(connector.reauthenticationSupport()){
+        boolean reauthenticationSupport = connector.booleanValue("reauthenticationSupport");
+        if(reauthenticationSupport){
             OutboundResourceAdapter ora = getOutbound(desc);
             if(!ora.isReauthenticationSupportSet()){
-                ora.setReauthenticationSupport(connector.reauthenticationSupport());
+                ora.setReauthenticationSupport(reauthenticationSupport);
             }
         }
         //if transaction-support is no-transaction, we can ignore it as default value in dol is also no-transaction.
-        if(!connector.transactionSupport().equals(TransactionSupport.TransactionSupportLevel.NoTransaction)){
+        TransactionSupport.TransactionSupportLevel transactionSupport =
+                connector.enumValue("transactionSupport", TransactionSupport.TransactionSupportLevel.class);
+        if(!transactionSupport.equals(TransactionSupport.TransactionSupportLevel.NoTransaction)){
             OutboundResourceAdapter ora = getOutbound(desc);
             if(!ora.isTransactionSupportSet()){
-                ora.setTransactionSupport(connector.transactionSupport().toString());
+                ora.setTransactionSupport(transactionSupport.toString());
             }
         }
 
@@ -256,22 +277,19 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
 
         //TODO need to check support and throw exception ?
 
-        Class<? extends WorkContext>[] requiredInflowContexts = connector.requiredWorkContexts();
-        if (requiredInflowContexts != null) {
-            for (Class<? extends WorkContext> ic : requiredInflowContexts) {
-                desc.addRequiredWorkContext(ic.getName());
-            }
+        for (String ic : connector.classArrayValue("requiredWorkContexts")) {
+            desc.addRequiredWorkContext(ic);
         }
 
         if (desc.getResourceAdapterClass().equals("")) {
-            if (isResourceAdapterClass(annotatedClass)) {
-                desc.setResourceAdapterClass(annotatedClass.getName());
+            if (isResourceAdapterClass(index, annotatedClass)) {
+                desc.setResourceAdapterClass(annotatedClass.name().toString());
             }
         }
     }
 
-    public static boolean isResourceAdapterClass(Class claz){
-        return jakarta.resource.spi.ResourceAdapter.class.isAssignableFrom(claz);
+    public static boolean isResourceAdapterClass(IndexView index, ClassInfo claz){
+        return ClassHierarchy.isSubtype(index, claz, jakarta.resource.spi.ResourceAdapter.class);
     }
 
     public static String convertStringArrayToStringBuilder(String[] stringArray) {
@@ -313,8 +331,7 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
         HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
         result.addResult(getAnnotationType(), ResultType.FAILED);
         if (doLog) {
-            Class c = (Class) element.getAnnotatedElement();
-            String className = c.getName();
+            String className = element.getDeclaringClass().name().toString();
             Object args[] = new Object[]{
                 element.getAnnotation(),
                 className,

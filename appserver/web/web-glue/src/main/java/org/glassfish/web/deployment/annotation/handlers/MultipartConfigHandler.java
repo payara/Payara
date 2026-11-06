@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.web.deployment.annotation.handlers;
 
@@ -44,11 +45,14 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import org.glassfish.web.deployment.descriptor.MultipartConfigDescriptor;
-import org.glassfish.apf.*;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.ResultType;
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.servlet.annotation.MultipartConfig;
-import jakarta.servlet.annotation.WebServlet;
 import java.lang.annotation.Annotation;
 
 /**
@@ -90,7 +94,6 @@ public class MultipartConfigHandler extends AbstractWebHandler {
             AnnotationInfo ainfo, WebComponentDescriptor webCompDesc)
             throws AnnotationProcessorException {
 
-        MultipartConfig multipartConfigAn = (MultipartConfig)ainfo.getAnnotation();
         com.sun.enterprise.deployment.web.MultipartConfig multipartConfig = webCompDesc.getMultipartConfig();
         if (multipartConfig == null) {
             multipartConfig = new MultipartConfigDescriptor();
@@ -98,16 +101,16 @@ public class MultipartConfigHandler extends AbstractWebHandler {
         }
 
         if (multipartConfig.getLocation() == null) {
-            multipartConfig.setLocation(multipartConfigAn.location());
+            multipartConfig.setLocation(ainfo.stringValue("location"));
         }
         if (multipartConfig.getMaxFileSize() == null) {
-            multipartConfig.setMaxFileSize(multipartConfigAn.maxFileSize());
+            multipartConfig.setMaxFileSize(ainfo.longValue("maxFileSize"));
         }
         if (multipartConfig.getMaxRequestSize() == null) {
-            multipartConfig.setMaxRequestSize(multipartConfigAn.maxRequestSize());
+            multipartConfig.setMaxRequestSize(ainfo.longValue("maxRequestSize"));
         }
         if (multipartConfig.getFileSizeThreshold() == null) {
-            multipartConfig.setFileSizeThreshold(multipartConfigAn.fileSizeThreshold());
+            multipartConfig.setFileSizeThreshold(ainfo.intValue("fileSizeThreshold"));
         }
 
         return getDefaultProcessedResult();

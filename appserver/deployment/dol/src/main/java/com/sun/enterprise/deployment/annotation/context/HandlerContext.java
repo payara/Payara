@@ -38,7 +38,10 @@
  * holder.
  */
 
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.context;
+
+import org.jboss.jandex.ClassInfo;
 
 import com.sun.enterprise.deployment.types.HandlerChainContainer;
 
@@ -49,6 +52,6 @@ import com.sun.enterprise.deployment.types.HandlerChainContainer;
  */
 public interface HandlerContext {
     
-    public HandlerChainContainer[] getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass);
+    public HandlerChainContainer[] getHandlerChainContainers(boolean serviceSideHandlerChain, ClassInfo declaringClass);
     
 }

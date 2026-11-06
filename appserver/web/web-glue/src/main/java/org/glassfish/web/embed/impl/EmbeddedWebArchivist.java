@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.web.embed.impl;
 
@@ -45,21 +46,21 @@ import org.glassfish.apf.ProcessingResult;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.classmodel.reflect.Parser;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.internal.embedded.*;
-import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.archivist.WebArchivist;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
 import java.io.File;
 import java.net.URL;
-import java.text.MessageFormat;
-import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 
@@ -69,46 +70,42 @@ import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 @Service @PerLookup
 public class EmbeddedWebArchivist extends WebArchivist {
 
-    private static final Logger _logger = LogFacade.getLogger();
+    private final ModuleScanner<Object> scanner = new ModuleScanner<Object>() {
 
-    private final ModuleScanner scanner = new ModuleScanner() {
-
-            final Set<Class> elements = new HashSet<Class>();
+            private Index index;
+            private IndexView view;
 
             @Override
-            public void process(ReadableArchive archiveFile, Object bundleDesc, ClassLoader classLoader, Parser parser)
+            public void process(ReadableArchive archiveFile, Object bundleDesc, ClassLoader classLoader)
                     throws IOException {
                 // in embedded mode, we don't scan archive, we just process all classes.
-                Enumeration<String> entries = archiveFile.entries();
-                while (entries.hasMoreElements()) {
-                    String entry = entries.nextElement();
-                    if (entry.endsWith(".class")) {
-                        try {
-                            elements.add(classLoader.loadClass(toClassName(entry)));
-                        } catch (ClassNotFoundException e) {
-                            deplLogger.log(Level.FINER,
-                                           MessageFormat.format(
-                                            _logger.getResourceBundle().getString(LogFacade.CANNOT_LOAD_CLASS), entry),
-                                    e);
-                        }
-                    }
-                }
-
+                this.classLoader = classLoader;
+                index = JandexIndexer.indexArchive(archiveFile, entry -> true);
             }
 
-            private String toClassName(String entryName) {
-                String name = entryName.substring("WEB-INF/classes/".length(), entryName.length()-".class".length());
-                return name.replaceAll("/",".");
-
-            }
-
+            @Override
             public void process(File archiveFile, Object bundleDesc, ClassLoader classLoader) throws IOException {
 
             }
 
             @Override
-            public Set getElements() {
-                return elements;
+            public Set<ClassInfo> getElements() {
+                return new HashSet<>(index.getKnownClasses());
+            }
+
+            @Override
+            public Set<ClassInfo> getElements(Set<String> classNames) {
+                return index.getKnownClasses().stream()
+                        .filter(classInfo -> classNames.contains(classInfo.name().toString()))
+                        .collect(Collectors.toSet());
+            }
+
+            @Override
+            public IndexView getIndex() {
+                if (view == null) {
+                    view = JandexIndexer.compositeIndex(List.of(new JandexIndexer.Index(index)), classLoader);
+                }
+                return view;
             }
 
     };

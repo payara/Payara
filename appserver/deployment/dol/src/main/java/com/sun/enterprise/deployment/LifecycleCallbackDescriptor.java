@@ -37,10 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment;
 
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 
 import java.lang.reflect.Method;
 
@@ -143,6 +149,41 @@ public class LifecycleCallbackDescriptor extends Descriptor {
         }
 
         return method;
+    }
+
+    /**
+     * Given an index, find the method corresponding to this lifecycle callback without loading
+     * its class: the same lookup as {@link #getLifecycleCallbackMethodObject(ClassLoader)}.
+     *
+     * @throws ClassNotFoundException if the index does not know the lifecycle class
+     * @throws NoSuchMethodException if no method matches
+     */
+    public MethodInfo getLifecycleCallbackMethod(IndexView index)
+        throws ClassNotFoundException, NoSuchMethodException {
+
+        if( getLifecycleCallbackClass() == null ) {
+            throw new IllegalArgumentException("no lifecycle class defined");
+        }
+
+        ClassInfo clazz = index.getClassByName(DotName.createSimple(getLifecycleCallbackClass()));
+        if (clazz == null) {
+            throw new ClassNotFoundException(getLifecycleCallbackClass());
+        }
+
+        // according to the ejb interceptors spec the around invoke and life cycle methods can be on the super class.
+        for (ClassInfo current : ClassHierarchy.hierarchy(index, clazz)) {
+            for (MethodInfo next : current.methods()) {
+                if( next.name().equals(lifecycleCallbackMethod) ) {
+                    if ( !requiresInvocationContextArgument
+                           || (next.parametersCount() == 1
+                               && "jakarta.interceptor.InvocationContext".equals(ClassHierarchy.javaName(next.parameterTypes().get(0))))) {
+                        return next;
+                    }
+                }
+            }
+        }
+
+        throw new NoSuchMethodException("no method matching " + lifecycleCallbackMethod);
     }
 
     public MetadataSource getMetadataSource() {

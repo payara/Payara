@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2022-2026] Payara Foundation and/or its affiliates
 package org.glassfish.webservices;
 
 import com.sun.enterprise.deployment.*;
@@ -64,7 +64,6 @@ import jakarta.xml.ws.WebServiceException;
 import jakarta.xml.ws.spi.WebServiceFeatureAnnotation;
 import java.io.*;
 import java.lang.reflect.*;
-import java.lang.annotation.Annotation;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Map;
@@ -555,11 +554,9 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
         if (rb != null) {
             wsFeatures.add(new RespectBindingFeature(rb.isEnabled()));
         }
-        Map<Class<? extends Annotation>, Annotation> otherAnnotations
-                = desc.getOtherAnnotations();
-        Iterator it = otherAnnotations.values().iterator();
-        while (it.hasNext()) {
-            wsFeatures.add(getWebServiceFeatureBean((Annotation) it.next()));
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        for (Map.Entry<String, Map<String, Object>> otherAnnotation : desc.getOtherAnnotations().entrySet()) {
+            wsFeatures.add(getWebServiceFeatureBean(otherAnnotation.getKey(), otherAnnotation.getValue(), loader));
         }
 
         return wsFeatures;
@@ -600,11 +597,22 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
         }
     }
 
-    private WebServiceFeature getWebServiceFeatureBean(Annotation a) {
-        WebServiceFeatureAnnotation wsfa = a.annotationType().getAnnotation(WebServiceFeatureAnnotation.class);
+    /**
+     * Builds the feature bean denoted by an annotation whose type carries
+     * {@code @WebServiceFeatureAnnotation}, from the attribute values the deployment recorded for it,
+     * through the bean constructor marked {@code @FeatureConstructor}.
+     */
+    private WebServiceFeature getWebServiceFeatureBean(String annotationTypeName, Map<String, Object> attributes,
+                                                       ClassLoader loader) {
+        Class<?> annotationType;
+        try {
+            annotationType = Class.forName(annotationTypeName, false, loader);
+        } catch (ClassNotFoundException e) {
+            throw new WebServiceException(e);
+        }
+        WebServiceFeatureAnnotation wsfa = annotationType.getAnnotation(WebServiceFeatureAnnotation.class);
 
         Class<? extends WebServiceFeature> beanClass = wsfa.bean();
-        WebServiceFeature bean;
 
         Constructor ftrCtr = null;
         String[] paramNames = null;
@@ -615,29 +623,50 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
                     ftrCtr = con;
                     paramNames = ftrCtrAnn.value();
                 } else {
-                    throw new WebServiceException(ModelerMessages.RUNTIME_MODELER_WSFEATURE_MORETHANONE_FTRCONSTRUCTOR(a, beanClass));
+                    throw new WebServiceException(ModelerMessages.RUNTIME_MODELER_WSFEATURE_MORETHANONE_FTRCONSTRUCTOR(annotationTypeName, beanClass));
                 }
             }
         }
         if (ftrCtr == null) {
-            throw new WebServiceException(ModelerMessages.RUNTIME_MODELER_WSFEATURE_NO_FTRCONSTRUCTOR(a, beanClass));
+            throw new WebServiceException(ModelerMessages.RUNTIME_MODELER_WSFEATURE_NO_FTRCONSTRUCTOR(annotationTypeName, beanClass));
         }
-        if (ftrCtr.getParameterTypes().length != paramNames.length) {
-            throw new WebServiceException(ModelerMessages.RUNTIME_MODELER_WSFEATURE_ILLEGAL_FTRCONSTRUCTOR(a, beanClass));
+        Class<?>[] paramTypes = ftrCtr.getParameterTypes();
+        if (paramTypes.length != paramNames.length) {
+            throw new WebServiceException(ModelerMessages.RUNTIME_MODELER_WSFEATURE_ILLEGAL_FTRCONSTRUCTOR(annotationTypeName, beanClass));
         }
 
         try {
             Object[] params = new Object[paramNames.length];
             for (int i = 0; i < paramNames.length; i++) {
-                Method m = a.annotationType().getDeclaredMethod(paramNames[i]);
-                params[i] = m.invoke(a);
+                params[i] = toParameter(attributes.get(paramNames[i]), paramTypes[i], loader);
             }
-            bean = (WebServiceFeature) ftrCtr.newInstance(params);
+            return (WebServiceFeature) ftrCtr.newInstance(params);
         } catch (Exception e) {
             throw new WebServiceException(e);
         }
+    }
 
-        return bean;
+    /**
+     * @return a recorded attribute value converted to the constructor parameter type: enum constants
+     * and classes were recorded by name, arrays element by element
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static Object toParameter(Object value, Class<?> type, ClassLoader loader) throws ClassNotFoundException {
+        if (type.isEnum()) {
+            return Enum.valueOf((Class<? extends Enum>) type, (String) value);
+        }
+        if (type == Class.class) {
+            return Class.forName((String) value, false, loader);
+        }
+        if (type.isArray()) {
+            Object[] values = (Object[]) value;
+            Object array = Array.newInstance(type.getComponentType(), values.length);
+            for (int i = 0; i < values.length; i++) {
+                Array.set(array, i, toParameter(values[i], type.getComponentType(), loader));
+            }
+            return array;
+        }
+        return value;
     }
 
 }
