@@ -1,7 +1,7 @@
 #
 #    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-#    Copyright (c) 2023-2024 Payara Foundation and/or its affiliates. All rights reserved.
+#    Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
 #
 #    The contents of this file are subject to the terms of either the GNU
 #    General Public License Version 2 only ("GPL") or the Common Development
@@ -86,5 +86,19 @@ RUN true \
 
 COPY --chown=payara:payara maven/artifacts/@docker.payara.rootDirectoryName@ ${PAYARA_DIR}
 COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}
+
+# Remove the eMudhra (emSign) root CAs from the Payara keystores. This only affects the Payara
+# keystores in this image. Fails the build if any remain.
+RUN set -e; \
+    for KS in $(find ${PAYARA_DIR}/glassfish -type f \( -name 'cacerts.p12' -o -name 'cacerts.jks' \)); do \
+      keytool -list -v -keystore "${KS}" -storepass changeit \
+        | awk -F': ' '/^Alias name:/{a=$2} /^Owner:/ && /[Ee][Mm]udhra/{print a}' \
+        | while IFS= read -r ALIAS; do \
+            keytool -delete -alias "${ALIAS}" -keystore "${KS}" -storepass changeit; \
+          done; \
+      if keytool -list -v -keystore "${KS}" -storepass changeit | grep -qi mudhra; then \
+        echo "eMudhra CA still present in ${KS}" >&2; exit 1; \
+      fi; \
+    done
 
 ENTRYPOINT "${SCRIPT_DIR}/entrypoint.sh"
