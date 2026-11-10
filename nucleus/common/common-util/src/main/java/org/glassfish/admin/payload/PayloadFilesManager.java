@@ -428,24 +428,31 @@ public abstract class PayloadFilesManager {
     private File resolveOutputFile(final Part part, final String name) throws IOException {
         final File candidate = new File(getOutputFileURI(part, name));
         if (isConfined()) {
-            /*
-             * Compare resolved (symlink-aware) paths rather than merely
-             * normalized ones. The candidate file (and possibly some of its
-             * parent directories) does not exist yet, so toRealPath() is
-             * applied to the nearest existing ancestor and the remaining,
-             * not-yet-created segments are appended back on top of that
-             * resolved path.
-             */
-            final Path targetDirPath = getTargetDir().toPath().toRealPath();
-            final Path candidatePath = toRealOrNearestExistingAncestorPath(candidate.toPath());
-            if (!candidatePath.startsWith(targetDirPath)) {
-                throw new IOException(strings.getLocalString(
-                        "payload.partOutsideTargetDir",
-                        "Rejecting part {0}: resolved location {1} is outside the allowed directory {2}",
-                        name, candidatePath, targetDirPath));
-            }
+            verifyWithinTargetDir(candidate, name);
         }
         return candidate;
+    }
+
+    /**
+     * Verifies that {@code candidate} resolves to a location inside
+     * {@link #getTargetDir()}, throwing an {@link IOException} naming the
+     * offending part if it would escape.
+     * <p>
+     * Compares resolved (symlink-aware) paths rather than merely normalized
+     * ones. The candidate file (and possibly some of its parent directories)
+     * does not exist yet, so toRealPath() is applied to the nearest existing
+     * ancestor and the remaining, not-yet-created segments are appended back
+     * on top of that resolved path.
+     */
+    private void verifyWithinTargetDir(final File candidate, final String name) throws IOException {
+        final Path targetDirPath = getTargetDir().toPath().toRealPath();
+        final Path candidatePath = toRealOrNearestExistingAncestorPath(candidate.toPath());
+        if (!candidatePath.startsWith(targetDirPath)) {
+            throw new IOException(strings.getLocalString(
+                    "payload.partOutsideTargetDir",
+                    "Rejecting part {0}: resolved location {1} is outside the allowed directory {2}",
+                    name, candidatePath, targetDirPath));
+        }
     }
 
     /**
