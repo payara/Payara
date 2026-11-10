@@ -1322,6 +1322,46 @@ public class PayloadFilesManagerTest {
     }
 
     @Test
+    public void testTempRejectsFileReplacementOutsideTargetDir() throws Exception {
+        final File victimDir = File.createTempFile("fish14853-replace-victim-dir", "");
+        victimDir.delete();
+        victimDir.mkdir();
+        final File victim = new File(victimDir, "do-not-overwrite.txt");
+        writeFile(victim, "must survive the confined file-replace attempt");
+        final byte[] originalContent = Files.readAllBytes(victim.toPath());
+
+        new CommonTempTest() {
+
+            @Override
+            protected void addParts(Outbound ob, PayloadFilesManager instance) throws Exception {
+                final Properties props = new Properties();
+                props.setProperty("data-request-type", "file-replace");
+                props.setProperty("file-xfer-root", victimDir.getAbsolutePath());
+                ob.addPart("application/octet-stream", victim.getName(), props, "replacement content");
+            }
+
+            @Override
+            protected void checkResults(Inbound ib, PayloadFilesManager instance) throws Exception {
+                try {
+                    instance.processParts(ib);
+                    fail("Expected an IOException rejecting a file-replace part targeting an absolute file-xfer-root");
+                } catch (IOException expected) {
+                    // expected
+                }
+                assertTrue("Victim file outside the target directory must not have been deleted", victim.exists());
+                assertArrayEquals("Victim file outside the target directory must not have been overwritten",
+                        originalContent, Files.readAllBytes(victim.toPath()));
+            }
+
+            @Override
+            protected void doCleanup() {
+                PayloadFilesManagerTest.cleanup(victimDir);
+            }
+
+        }.run("testTempRejectsFileReplacementOutsideTargetDir");
+    }
+
+    @Test
     public void testConfinedPermRejectsAbsoluteFileXferRoot() throws Exception {
         final File targetDir = File.createTempFile("fish14853-confined-tgt", "");
         targetDir.delete();
