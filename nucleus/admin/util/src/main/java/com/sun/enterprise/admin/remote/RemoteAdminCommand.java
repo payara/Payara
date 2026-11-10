@@ -658,8 +658,14 @@ public class RemoteAdminCommand {
                 if (inboundPayload == null)
                     throw new IOException(
                         STRINGS.get("NoPayloadSupport", responseContentType));
+                /*
+                 * Unconfined: the DAS echoes back, as file-xfer-root, local
+                 * paths the user asked for (e.g. deploy --retrieve <dir>,
+                 * generate-client --outputDir <dir>), which need not be under
+                 * fileOutputDir.
+                 */
                 PayloadFilesManager downloadedFilesMgr =
-                    new PayloadFilesManager.Perm(fileOutputDir, null, logger,
+                    PayloadFilesManager.Perm.unconfined(fileOutputDir, null, logger,
                         new PayloadFilesManager.ActionReportHandler() {
                             @Override
                             public void handleReport(InputStream reportStream)

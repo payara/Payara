@@ -566,7 +566,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                         "Attempt to create directories for {0} failed; no further information is available. Continuing.",
                         extractLocation.getAbsolutePath()));
                 }
-                PayloadFilesManager.Perm permFileManager = new PayloadFilesManager.Perm(extractLocation, null, aalogger, true);
+                PayloadFilesManager.Perm permFileManager = new PayloadFilesManager.Perm(extractLocation, null, aalogger);
                 permFileManager.processParts(inboundPayload);
                 parameters.add("path", extractLocation.toString());
                 parameters.remove("upload");

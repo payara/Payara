@@ -1416,9 +1416,9 @@ public class PayloadFilesManagerTest {
     }
 
     /**
-     * Confirms the FISH-14853 fix does not change behavior for the existing,
-     * non-confined Perm use (e.g. asadmin's own deploy --retrieve), which
-     * legitimately relies on an absolute file-xfer-root.
+     * Confirms the explicit FISH-14853 opt-out, Perm.unconfined, keeps the
+     * original behavior for asadmin's own client-side downloads (e.g.
+     * deploy --retrieve), which legitimately rely on an absolute file-xfer-root.
      */
     @Test
     public void testUnconfinedPermStillHonoursAbsoluteFileXferRoot() throws Exception {
@@ -1593,17 +1593,19 @@ public class PayloadFilesManagerTest {
         protected File myTargetDir;
 
         protected CommonPermTest init(final File targetDir) {
-            return init(targetDir, false);
+            return init(targetDir, true);
         }
 
         /**
-         * @param confined if true, builds a Perm manager that rejects any
-         * part resolving outside targetDir (FISH-14853); existing callers
-         * use the one-arg {@link #init(File)}, which defaults to false and
-         * preserves the original, unconfined behavior.
+         * @param confined if true (the default for {@link #init(File)}), builds
+         * a regular Perm manager, which rejects any part resolving outside
+         * targetDir (FISH-14853); if false, builds one with
+         * {@link PayloadFilesManager.Perm#unconfined}, which does not.
          */
         protected CommonPermTest init(final File targetDir, final boolean confined) {
-            permInstance = new PayloadFilesManager.Perm(targetDir, null, debugLogger(), confined);
+            permInstance = confined
+                    ? new PayloadFilesManager.Perm(targetDir, null, debugLogger())
+                    : PayloadFilesManager.Perm.unconfined(targetDir, null, debugLogger(), null);
             myTargetDir = targetDir;
 //            System.err.println("** Perm creating " + permInstance.getTargetDir().getAbsolutePath());
             return this;

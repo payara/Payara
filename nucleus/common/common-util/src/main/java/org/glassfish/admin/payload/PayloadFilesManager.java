@@ -131,13 +131,16 @@ public abstract class PayloadFilesManager {
 
     /**
      * Indicates whether this manager must confine every resolved output file
-     * to {@link #getTargetDir()}. Subclasses that only ever write into a
-     * server-controlled, disposable location should return true; subclasses
-     * used for a trusted, caller-directed destination should return false
-     * (the default).
+     * to {@link #getTargetDir()}, rejecting any part (file-xfer, file-remove
+     * or file-replace) whose resolved location would fall outside it -
+     * including one that uses an absolute or escaping file-xfer-root.
+     * Managers are confined by default; only a manager explicitly created for
+     * a trusted, caller-directed destination (see
+     * {@link Perm#unconfined(File, ActionReport, Logger, ActionReportHandler)})
+     * returns false.
      */
     protected boolean isConfined() {
-        return false;
+        return true;
     }
 
     protected URI getParentURI(Part part) {
@@ -198,17 +201,42 @@ public abstract class PayloadFilesManager {
      * targetDir and the file-xfer-root setting.  If the output name is
      * relative then it will be resolved
      * against the targetDir plus file-xfer-root URI to derive the URI for the output file.
+     * <p>
+     * Whatever the file-xfer-root or output name, a Perm manager created by
+     * any of the constructors is confined: it rejects any part whose resolved
+     * location falls outside the targetDir. Only a manager created with
+     * {@link #unconfined(File, ActionReport, Logger, ActionReportHandler)}
+     * honours locations outside the targetDir.
      */
     public static class Perm extends PayloadFilesManager {
 
-        private boolean confined = false;
+        private final boolean confined;
 
         /**
-         * Creates a Perm manager with containment enabled or disabled as
-         * given; see {@link #isConfined()}.
+         * Creates a Perm manager that honours a part's absolute or escaping
+         * file-xfer-root (or output name), and so may write, remove or replace
+         * files anywhere the process can. Use this only when the inbound
+         * payload comes from a trusted source that is directing files to a
+         * location the caller itself requested - for example the asadmin
+         * client receiving the files of {@code deploy --retrieve <dir>} from
+         * the DAS it has authenticated to. Never use it for a payload received
+         * from an untrusted source such as an HTTP request body.
+         * @param targetDir directory against which relative locations are resolved; the caller's current directory if null
+         * @param report result report to which extraction results will be appended
+         * @param logger logger to receive messages
+         * @param reportHandler handler to invoke for each ActionReport in the payload
+         * @return an unconfined Perm manager
          */
-        public Perm(final File targetDir, final ActionReport report, final Logger logger, final boolean confined) {
-            this(targetDir, report, logger, null);
+        public static Perm unconfined(final File targetDir, final ActionReport report,
+                final Logger logger, final ActionReportHandler reportHandler) {
+            return new Perm(targetDir, report, logger, reportHandler, false);
+        }
+
+        private Perm(final File targetDir, final ActionReport report,
+                final Logger logger, final ActionReportHandler reportHandler, final boolean confined) {
+            super(targetDir != null ? targetDir :
+                    new File(System.getProperty("user.dir")),
+                    report, logger, reportHandler);
             this.confined = confined;
         }
 
@@ -233,9 +261,7 @@ public abstract class PayloadFilesManager {
          */
         public Perm(final File targetDir, final ActionReport report,
                 final Logger logger, final ActionReportHandler reportHandler) {
-            super(targetDir != null ? targetDir :
-		    new File(System.getProperty("user.dir")),
-		    report, logger, reportHandler);
+            this(targetDir, report, logger, reportHandler, true);
         }
 
         /**
@@ -258,7 +284,7 @@ public abstract class PayloadFilesManager {
          */
         public Perm(final ActionReport report, final Logger logger,
                 final ActionReportHandler reportHandler) {
-            super(new File(System.getProperty("user.dir")), report, logger, reportHandler);
+            this(null, report, logger, reportHandler, true);
         }
 
         /**
@@ -371,11 +397,6 @@ public abstract class PayloadFilesManager {
          */
         public void cleanup() {
             this.cleanable.clean();
-        }
-
-        @Override
-        protected boolean isConfined() {
-            return true;
         }
 
         @Override
