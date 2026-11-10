@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,6 +71,7 @@ import org.glassfish.api.admin.Payload.Outbound;
 import org.glassfish.api.admin.Payload.Part;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -1195,6 +1197,56 @@ public class PayloadFilesManagerTest {
             }
 
         }.run("testTempRejectsPartOutsideTargetDir");
+    }
+
+    /**
+     * Confirms resolveOutputFile compares real (symlink-resolved) paths
+     * rather than merely normalized ones.
+     */
+    @Test
+    public void testTempRejectsSymlinkOutsideTargetDir() throws Exception {
+        final PayloadFilesManager.Temp instance = new PayloadFilesManager.Temp(Logger.getAnonymousLogger());
+        final File outsideDir = File.createTempFile("fish14853-symlink-outside", "");
+        outsideDir.delete();
+        outsideDir.mkdir();
+
+        try {
+            final File linkFile = new File(instance.getTargetDir(), "evil-link");
+            try {
+                Files.createSymbolicLink(linkFile.toPath(), outsideDir.toPath());
+            } catch (UnsupportedOperationException | IOException e) {
+                Assume.assumeNoException("Symlinks are not creatable in this test environment", e);
+            }
+
+            final Properties props = fileXferProps();
+            final Payload.Outbound ob = PayloadImpl.Outbound.newInstance();
+            ob.addPart("application/octet-stream", "evil-link/fish-14853-escaped.txt", props,
+                    "must not land outside the target directory via the symlink");
+
+            final File tempZipFile = File.createTempFile("testzip", ".zip");
+            try {
+                final OutputStream os = new BufferedOutputStream(new FileOutputStream(tempZipFile));
+                ob.writeTo(os);
+                os.close();
+
+                final Payload.Inbound ib = PayloadImpl.Inbound.newInstance(
+                        "application/zip", new BufferedInputStream(new FileInputStream(tempZipFile)));
+                try {
+                    instance.processParts(ib);
+                    fail("Expected an IOException rejecting a part that escapes the target directory via a symlink");
+                } catch (IOException expected) {
+                    // expected
+                }
+            } finally {
+                tempZipFile.delete();
+            }
+
+            assertFalse("File must not have been written outside the target directory via the symlink",
+                    new File(outsideDir, "fish-14853-escaped.txt").exists());
+        } finally {
+            instance.cleanup();
+            PayloadFilesManagerTest.cleanup(outsideDir);
+        }
     }
 
     @Test
