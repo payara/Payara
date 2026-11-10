@@ -1177,6 +1177,10 @@ public class PayloadFilesManagerTest {
 
     @Test
     public void testTempRejectsRelativeTraversalOutsideTargetDir() throws Exception {
+        // Temp stages into java.io.tmpdir/xfer-NNN/, so "../../" lands in the parent of java.io.tmpdir
+        final File escaped = new File(new File(System.getProperty("java.io.tmpdir")).getCanonicalFile().getParentFile(),
+                "fish-14853-should-not-exist.txt");
+
         new CommonTempTest() {
 
             @Override
@@ -1194,6 +1198,12 @@ public class PayloadFilesManagerTest {
                     assertTrue("Unexpected exception message: " + expected.getMessage(),
                             expected.getMessage() != null && expected.getMessage().contains("outside"));
                 }
+                assertFalse("File must not have been written outside the target directory", escaped.exists());
+            }
+
+            @Override
+            protected void doCleanup() {
+                PayloadFilesManagerTest.cleanup(escaped);
             }
 
         }.run("testTempRejectsRelativeTraversalOutsideTargetDir");
