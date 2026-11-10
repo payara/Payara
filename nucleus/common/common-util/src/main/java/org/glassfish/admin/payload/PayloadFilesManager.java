@@ -459,7 +459,13 @@ public abstract class PayloadFilesManager {
 
     private File removeFileWithoutConsumingPartBody(final Payload.Part part) throws IOException {
         final boolean isFine = logger.isLoggable(Level.FINE);
-        File targetFile = resolveOutputFile(part, part.getName());
+        final File targetFile;
+        try {
+            targetFile = resolveOutputFile(part, part.getName());
+        } catch (IOException e) {
+            reportDeletionFailure(part.getName(), e);
+            throw e;
+        }
         if (targetFile.exists()) {
             final boolean isRemovalRecursive = targetFile.isDirectory() && part.isRecursive();
             if (isRemovalRecursive ?
