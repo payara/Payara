@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2026] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.logviewer.backend;
 
@@ -109,6 +109,39 @@ public class LogFilter {
 
     private static final boolean DEBUG = false;
 
+    static String sanitizeLogFileName(String logFileName) {
+        if (logFileName == null) {
+            return null;
+        }
+        String name = logFileName.trim();
+        if (name.isEmpty()
+                || name.equals(".")
+                || name.equals("..")
+                || name.indexOf('/') >= 0
+                || name.indexOf('\\') >= 0
+                || name.indexOf('\0') >= 0) {
+            return null;
+        }
+        return name;
+    }
+
+    static File resolveLogFileInDirectory(File logDirectory, String logFileName) {
+        String name = sanitizeLogFileName(logFileName);
+        if (name == null || logDirectory == null) {
+            return null;
+        }
+        try {
+            File baseDirectory = logDirectory.getCanonicalFile();
+            File candidate = new File(baseDirectory, name).getCanonicalFile();
+            if (baseDirectory.equals(candidate.getParentFile())) {
+                return candidate;
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, "Unable to resolve log file name " + name, e);
+        }
+        return null;
+    }
+
     /**
      * The public method that Log Viewer Front End will be calling on.
      * The query will be run on records starting from the fromRecord.
@@ -162,20 +195,17 @@ public class LogFilter {
         }
 
 
-        if ((logFileName != null)
-                && (logFileName.length() != 0)) {
-            logFileName = logFileDetailsForServer.substring(0, logFileDetailsForServer.lastIndexOf(File.separator)) + File.separator +
-                    logFileName.trim();
-            if (new File(logFileName).exists()) {
-                logFile = getLogFile(logFileName);
-            } else {
-                logFileName = logFileDetailsForServer;
-                logFile = getLogFile(logFileName);
-            }
+        // Only accept a file residing directly in the server log directory.
+        // Anything else (including path traversal attempts) falls back to the
+        // current server log file, as was already done for unknown names.
+        File requestedLogFile = resolveLogFileInDirectory(
+                new File(logFileDetailsForServer).getParentFile(), logFileName);
+        if (requestedLogFile != null && requestedLogFile.isFile()) {
+            logFileName = requestedLogFile.getPath();
         } else {
             logFileName = logFileDetailsForServer;
-            logFile = getLogFile(logFileName);
         }
+        logFile = getLogFile(logFileName);
         boolean forwd = (forward == null) ? true : forward.booleanValue();
         boolean nxt = (next == null) ? true : next.booleanValue();
         long reqCount = (requestedCount == null) ?
@@ -391,20 +421,11 @@ public class LogFilter {
 
                 }
 
-                instanceLogFile = new File(loggingDir + File.separator + logFileName);
-
-                // verifying loggingFile presents or not if not then changing logFileName value to server.log. It means wrong name is coming
-                // from GUI to back end code.
-                if (!instanceLogFile.exists()) {
+                // Only accept a file residing directly in the instance log directory. If the name is invalid
+                // or the file does not exist (wrong name coming from GUI to back end code) use server.log.
+                instanceLogFile = resolveLogFileInDirectory(new File(loggingDir), logFileName);
+                if (instanceLogFile == null || !instanceLogFile.isFile()) {
                     instanceLogFile = new File(loggingDir + File.separator + "server.log");
-                } else if (!instanceLogFile.exists()) {
-                    // this code is used when user changes the attributes value(com.sun.enterprise.server.logging.GFFileHandler.file) in
-                    // logging.properties file to something else.
-                    loggingDir = instanceLogFileName.substring(0, instanceLogFileName.lastIndexOf(File.separator));
-                    instanceLogFile = new File(loggingDir + File.separator + logFileName);
-                    if (!instanceLogFile.exists()) {
-                        instanceLogFile = new File(instanceLogFileName);
-                    }
                 }
 
             } else {

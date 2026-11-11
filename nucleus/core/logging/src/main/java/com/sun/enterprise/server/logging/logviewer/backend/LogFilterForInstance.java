@@ -117,9 +117,12 @@ public class LogFilterForInstance {
                     logger.fine("[LogFilter] noFileFound=true, fallback loggingDir=" + loggingDir);
                 }
 
-                String loggingFile = loggingDir + "/" + logFileName;
+                // Only a bare file name within the remote logging directory is accepted, anything
+                // else (e.g. path traversal attempts) falls back to server.log
+                String safeLogFileName = LogFilter.sanitizeLogFileName(logFileName);
+                String loggingFile = loggingDir + "/" + (safeLogFileName == null ? "server.log" : safeLogFileName);
                 logger.fine("[LogFilter] checking loggingFile=" + loggingFile);
-                if (!sftpClient.exists(loggingFile)) {
+                if (safeLogFileName == null || !sftpClient.exists(loggingFile)) {
                     loggingFile = loggingDir + "/server.log";
                     logger.fine("[LogFilter] original not found, trying server.log: " + loggingFile);
                 }
