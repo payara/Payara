@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -142,8 +142,6 @@ public class RestartInstanceCommand implements AdminCommand {
     @Inject
     private PayaraExecutorService executor;
 
-    private static final long WAIT_TIME_MS = 600000; // 10 minutes
-
     @Override
     public void execute(AdminCommandContext ctx) {
         try {
@@ -175,7 +173,9 @@ public class RestartInstanceCommand implements AdminCommand {
                 logger.log(Level.FINE, "Restart-instance old-pid = {0}", oldPid);
             callInstance();
             checkForRestart();
-            pollForLife(instance, executor, timeout);
+            if (!isError() && !pollForLife(instance, executor, timeout)) {
+                setError(Strings.get("restart.instance.timeout", instanceName));
+            }
             synchronizeInstance();
             
             if (!isError()) {
@@ -192,6 +192,9 @@ public class RestartInstanceCommand implements AdminCommand {
     }
 
     private void synchronizeInstance() {
+        if (isError()) {
+            return;
+        }
 
         NodeUtils nodeUtils = new NodeUtils(habitat, logger);
         ArrayList<String> command = new ArrayList<>();
@@ -347,23 +350,33 @@ public class RestartInstanceCommand implements AdminCommand {
         if (isError()) {
             return;
         }
-        try {
-            String newpid = getPid();
-            // when the next statement is true -- the server has restarted.
-            if (StringUtils.ok(newpid) && !newpid.equals(oldPid)) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("Restarted instance pid = " + newpid);
-                }
-                try {
+        // expect the pid to change, loop until it does
+        long deadline = System.currentTimeMillis() + timeout * 1000L;
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                String newpid = getPid();
+                // when the next statement is true -- the server has restarted.
+                if (StringUtils.ok(newpid) && !newpid.equals(oldPid)) {
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.fine("Restarted instance pid = " + newpid);
+                    }
                     Thread.sleep(delay);
-                } catch (InterruptedException ie) {
+                    return;
                 }
-                return;
+            } catch (CommandException e) {
+                // ignore.  This is normal!
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                break;
             }
-        } catch (Exception e) {
-            // ignore.  This is normal!
+            try {
+                Thread.sleep(500); // don't busy wait
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
-        setError(Strings.get("restart.instance.racError", instanceName, "instance pid is the same"));
+        setError(Strings.get("restart.instance.timeout", instanceName));
     }
 
     private RemoteRestAdminCommand createRac(String cmdName) throws CommandException {
