@@ -328,7 +328,7 @@ public abstract class PayloadFilesManager {
                 }
                 if ( ! entry.getKey().setLastModified(entry.getValue())) {
                     logger.log(Level.WARNING, strings.getLocalString(
-                            "payload.setLatModifiedFailed",
+                            "payload.setLastModifiedFailed",
                             "Attempt to set lastModified for {0} failed; no further information is available.  Continuing.",
                             entry.getKey().getAbsoluteFile()));
                 }
@@ -638,7 +638,7 @@ public abstract class PayloadFilesManager {
 
             if ( ! extractedFile.setLastModified(lastModified)) {
                 logger.log(Level.WARNING, strings.getLocalString(
-                        "payload.setLatModifiedFailed",
+                        "payload.setLastModifiedFailed",
                         "Attempt to set lastModified for {0} failed; no further information is available.  Continuing.",
                         extractedFile.getAbsolutePath()));
             }
