@@ -57,14 +57,14 @@
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/security-service/auth-realm/#{Name}/list-users?target=#{pageSession.encodedConfigName}",
             method="get", result="#{requestScope.listUsersResult}");
         setPageSessionAttribute(key="listOfRows", value="#{requestScope.listUsersResult.data.extraProperties.users}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-service/jmx-connector/system.json", method="get", result="#{requestScope.result}");
-        setPageSessionAttribute(key="AuthRealmName" value="#{requestScope.result.entity['authRealmName']}");
-        if ("#{pageSession.Name}=#{pageSession.authRealm}"){
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-service.json", method="get", result="#{requestScope.result}");
+        setPageSessionAttribute(key="AuthRealmName" value="#{requestScope.result.data.extraProperties.entity.authRealmName}");
+        if ("#{pageSession.Name}=#{pageSession.AuthRealmName}"){
             setPageSessionAttribute(key="tableTitle", value="$resource{i18nc.manageAdminUsers.TableTitle}")
             setPageSessionAttribute(key="helpKey", value="$resource{help_common.manageAdminUsers}" )
             
         }
-        if ("!(#{pageSession.Name}=#{pageSession.authRealm})"){
+        if ("!(#{pageSession.Name}=#{pageSession.AuthRealmName})"){
             setPageSessionAttribute(key="tableTitle", value="$resource{i18nc.manageUsers.TableTitle}")
             setPageSessionAttribute(key="helpKey", value="$resource{help_common.manageUsers}" )
         }

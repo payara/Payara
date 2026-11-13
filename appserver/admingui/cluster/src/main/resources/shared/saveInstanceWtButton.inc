@@ -51,8 +51,18 @@
             getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
             gf.saveInstanceWeight(rows="#{requestScope.selectedRows}" );
             setAttribute(key="selectedRows" value="${selectedRows}");
-            gf.isClusterName(clusterName="#{pageSession.clusterName}" );
-            
+            // This button is shared by the cluster, deployment-group and standalone instance
+            // pages. Confirm the instances' parent still exists before reporting success, but
+            // only for the parent this page actually has: a deployment-group or standalone page
+            // carries no clusterName, and calling gf.isClusterName with an empty name raises a
+            // misleading "Cannot find specified Cluster Resource" error.
+            if ("!(#{pageSession.clusterName} = #{null})") {
+                gf.isClusterName(clusterName="#{pageSession.clusterName}" );
+            }
+            if ("!(#{pageSession.dgName} = #{null})") {
+                gf.isDGName(dgName="#{pageSession.dgName}" );
+            }
+
             prepareSuccessfulMsg();
             gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
 

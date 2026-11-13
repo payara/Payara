@@ -40,18 +40,23 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>7.2026.10-SNAPSHOT</version>
+        <version>7.2026.12-SNAPSHOT</version>
     </parent>
     <artifactId>mq</artifactId>
     <name>MQ Package</name>
     <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the MQ package</description>
+
+    <properties>
+        <zip.excludes>mq/examples/**,mq/javadoc/**</zip.excludes>
+    </properties>
 
     <build>
         <plugins>

@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2026.10-SNAPSHOT</version>
+    <version>7.2026.12-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -209,7 +209,7 @@
         <maven.compiler.plugin.version>3.16.0</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
         <maven.jar.plugin.version>3.5.1</maven.jar.plugin.version>
-        <maven.surefire.plugin.version>3.6.0</maven.surefire.plugin.version>
+        <maven.surefire.plugin.version>3.6.1</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.5.0</maven.resources.plugin.version>
         <maven.release.plugin.version>3.3.1</maven.release.plugin.version>
         <maven.dependency.plugin.version>3.11.0</maven.dependency.plugin.version>
@@ -220,10 +220,10 @@
         <maven.javadoc.plugin.version>3.8.0</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.2.0</maven.install.plugin.version>
         <maven.bundle.plugin.version>6.2.0</maven.bundle.plugin.version>
-        <maven.failsafe.plugin.version>3.6.0</maven.failsafe.plugin.version>
+        <maven.failsafe.plugin.version>3.6.1</maven.failsafe.plugin.version>
         <maven.exec.plugin.version>3.6.4</maven.exec.plugin.version>
         <maven.site.plugin.version>3.22.0</maven.site.plugin.version>
-        <maven.enforcer.plugin.version>3.6.3</maven.enforcer.plugin.version>
+        <maven.enforcer.plugin.version>3.7.0</maven.enforcer.plugin.version>
         <maven.build.helper.plugin.version>3.6.2</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.8.0</maven.flatten.plugin.version>
         <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
@@ -243,26 +243,26 @@
         <!-- BOM-referenced versions -->
         <osgi-resource-locator.version>3.0.0</osgi-resource-locator.version>
         <snakeyaml.version>2.7</snakeyaml.version>
-        <mojarra.version>4.1.16.payara-p1</mojarra.version>
+        <mojarra.version>4.1.18.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <jakarta.mvc.version>3.0.1</jakarta.mvc.version>
         <krazo.version>4.0.1.payara-p1</krazo.version>
         <yasson.version>3.0.5</yasson.version>
-        <eclipselink.version>5.0.1.payara-p1</eclipselink.version>
+        <eclipselink.version>5.0.1.payara-p3</eclipselink.version>
         <eclipselink.asm.version>9.10.0</eclipselink.asm.version>
-        <openmq.version>6.8.0.payara-p3</openmq.version>
+        <openmq.version>6.9.0.payara-p1</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.4.payara-p1</webservices.version>
         <santuario.version>4.0.4</santuario.version>
-        <woodstox.version>7.2.2</woodstox.version>
+        <woodstox.version>7.3.0</woodstox.version>
         <woodstock-jsf.version>6.0.3.payara-p1</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>6.0.3.payara-p1</woodstock-jsf-suntheme.version>
         <woodstock-external.dojo.version>6.0.3</woodstock-external.dojo.version>
         <woodstock-external.prototype.version>6.0.3</woodstock-external.prototype.version>
         <angus-activation.version>2.0.3</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>4.4.5</jline.version>
+        <jline.version>4.5.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>7.1</microprofile-release.version>
         <payara-arquillian-container.version>4.0.alpha4</payara-arquillian-container.version>
@@ -272,7 +272,7 @@
         <jakarta.agentic-ai-api.version>1.0.0-M1</jakarta.agentic-ai-api.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
         <payara.security-connectors.version>4.1.0</payara.security-connectors.version>
-        <hk2.version>4.0.2</hk2.version>
+        <hk2.version>4.0.3</hk2.version>
         <osgi.version>8.0.0</osgi.version>
         <osgi.annotation.version>8.1.0</osgi.annotation.version>
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
@@ -280,15 +280,15 @@
         <osgi.dto.version>1.1.1</osgi.dto.version>
         <soteria.version>4.0.2</soteria.version>
         <cdi-api.version>4.1.0</cdi-api.version>
-        <grizzly.version>5.0.2</grizzly.version>
+        <grizzly.version>5.0.3</grizzly.version>
         <servlet-api.version>6.1.0</servlet-api.version>
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
         <expressly.version>6.0.0</expressly.version>
-        <microprofile-config.version>3.1.2</microprofile-config.version>
+        <microprofile-config.version>3.1.3</microprofile-config.version>
         <parsson.version>1.1.7.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
         <jaxb-api.version>4.0.5</jaxb-api.version>
-        <jackson.version>2.22.3</jackson.version>
+        <jackson.version>2.22.4</jackson.version>
         <jersey.version>4.0.2.payara-p2</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <jakarta.validation.osgi.version>3.1</jakarta.validation.osgi.version>
@@ -305,7 +305,7 @@
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
         <jakarta.interceptor-api.version>2.2.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.1</jakarta.inject.version>
-        <json.bind-api.version>3.0.3</json.bind-api.version>
+        <json.bind-api.version>3.0.4</json.bind-api.version>
         <jakarta-persistence-api.version>3.2.0</jakarta-persistence-api.version>
         <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
         <microprofile-fault-tolerance.version>4.1.2</microprofile-fault-tolerance.version>
@@ -320,13 +320,13 @@
         <exousia.version>3.0.1</exousia.version>
         <jsp-api.version>4.0.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
-        <hazelcast.version>5.7.0</hazelcast.version>
+        <hazelcast.version>5.7.0-payara-1</hazelcast.version>
         <jakartaee.api.version>11.0.0</jakartaee.api.version>
         <weld-api.version>6.0.Final</weld-api.version>
         <weld.version>6.0.4.Final</weld.version>
         <tyrus.version>2.2.2</tyrus.version>
-        <jsp-impl.version>4.0.0</jsp-impl.version>
-        <asm.version>9.10.1</asm.version>
+        <jsp-impl.version>4.0.4</jsp-impl.version>
+        <asm.version>9.11.1</asm.version>
         <websocket-api.version>2.2.0</websocket-api.version>
         <jax-rs-api.impl.version>4.0.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.2</jstl-api.version>
@@ -334,16 +334,16 @@
         <jaxws-api.version>4.0.3</jaxws-api.version>
         <jms-api.version>3.1.0</jms-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
-        <stax2-api.version>4.3.0</stax2-api.version>
+        <stax2-api.version>4.3.2</stax2-api.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
-        <epicyro.version>3.1.1</epicyro.version>
+        <epicyro.version>3.1.2</epicyro.version>
         <mail.version>2.1.5</mail.version>
         <angus.mail.version>2.0.5</angus.mail.version>
-        <opentelemetry.version>1.66.0</opentelemetry.version>
+        <opentelemetry.version>1.68.0</opentelemetry.version>
         <opentelemetry-semconv.version>1.44.0</opentelemetry-semconv.version>
-        <opentelemetry-instrumentation-annotations.version>2.31.1</opentelemetry-instrumentation-annotations.version>
-        <opentelemetry-instrumentation-annotation-support.version>2.31.1-alpha</opentelemetry-instrumentation-annotation-support.version>
+        <opentelemetry-instrumentation-annotations.version>2.33.1</opentelemetry-instrumentation-annotations.version>
+        <opentelemetry-instrumentation-annotation-support.version>2.33.1-alpha</opentelemetry-instrumentation-annotation-support.version>
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
         <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
         <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>

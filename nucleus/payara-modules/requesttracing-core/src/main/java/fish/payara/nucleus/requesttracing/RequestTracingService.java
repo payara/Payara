@@ -348,6 +348,9 @@ public class RequestTracingService implements EventListener, ConfigListener {
      * @return a unique identifier for the request trace
      */
     public RequestTraceSpan startTrace(String traceName) {
+        if (!isRequestTracingEnabled()) {
+            return null;
+        }
         return startTrace(new RequestTraceSpan(EventType.TRACE_START, traceName));
     }
 

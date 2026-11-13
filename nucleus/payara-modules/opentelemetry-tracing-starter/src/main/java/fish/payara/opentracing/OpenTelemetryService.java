@@ -76,6 +76,7 @@ import org.jvnet.hk2.annotations.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -121,6 +122,12 @@ public class OpenTelemetryService implements EventListener {
     private static final Tracer NOOP_TRACER = NOOP.getTracer("noop");
 
     /**
+     * Guards the once-per-JVM warning emitted when {@link #getCurrent} is called
+     * from a thread that carries no application invocation context.
+     */
+    private final AtomicBoolean noInvocationContextWarned = new AtomicBoolean(false);
+
+    /**
      * Check if OpenTelemetry SDK is active in current application context.
      * @return true if OpenTelemetry is enabled on runtime level or in currently invoking application.
      */
@@ -164,7 +171,17 @@ public class OpenTelemetryService implements EventListener {
     private <T> T getCurrent(Function<OpenTelemetrySdkHandle, T> getter, T fallback) {
         OpenTelemetrySdkHandle handle = runtimeHandle;
         if  (handle == null) {
-            var appName = requiredApplicationName();
+            var appName = currentApplication();
+            if (appName == null) {
+                if (noInvocationContextWarned.compareAndSet(false, true)) {
+                    logger.log(Level.WARNING,
+                            "OpenTelemetry SDK requested from a thread with no application invocation "
+                            + "context. Returning no-op. Callers must verify OpenTelemetry applicability "
+                            + "before requesting the current SDK. Capturing call stack for diagnosis:",
+                            new RuntimeException("Diagnostic stack trace — not a real exception"));
+                }
+                return fallback;
+            }
             handle = appTelemetries.get(appName);
         }
         if (handle == null) {

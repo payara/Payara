@@ -111,15 +111,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     @Inject
     private ServerEnvironment env;
 
-    @Inject
-    IterableProvider<Node> nodeList;
-
-    @Inject
-    private ModulesRegistry registry;
-
-    @Inject
-    private InstanceStateService instanceStateService;
-
     @Param(optional = true, defaultValue = "true")
     private Boolean force = true;
 
@@ -197,12 +188,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             report.setMessage(Strings.get("stop.instance.success",
                     instanceName));
         }
-
-        // Pro-actively mark the instance as NOT_RUNNING so that the next list-instances
-        // poll shows the correct state immediately without waiting for a TCP probe to
-        // time out. On Windows, closed ports produce no RST, so a probe-based check
-        // can take up to connectTimeout ms before returning NOT_RUNNING.
-        instanceStateService.setState(instanceName, InstanceState.StateType.NOT_RUNNING, true);
 
         if (kill) {
             // If we killed then stop-local-instance already waited for death

@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>7.2026.10-SNAPSHOT</version>
+        <version>7.2026.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>use-bundled-jsf-primefaces</artifactId>
@@ -53,7 +53,7 @@
     <packaging>war</packaging>
 
     <properties>
-        <primefaces.version>15.0.18</primefaces.version>
+        <primefaces.version>15.0.19</primefaces.version>
     </properties>
 
     <dependencies>
