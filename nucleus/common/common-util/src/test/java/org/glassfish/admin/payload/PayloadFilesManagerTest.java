@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,6 +71,7 @@ import org.glassfish.api.admin.Payload.Outbound;
 import org.glassfish.api.admin.Payload.Part;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -1166,6 +1168,247 @@ public class PayloadFilesManagerTest {
         }
     }
 
+    /*
+     * FISH-14853: PayloadFilesManager must refuse to write, remove or
+     * replace a file outside the manager's target directory, whether the
+     * escape comes from a relative traversal in the part name or from an
+     * absolute (or escaping) file-xfer-root part property.
+     */
+
+    @Test
+    public void testTempRejectsPartOutsideTargetDir() throws Exception {
+        new CommonTempTest() {
+
+            @Override
+            protected void addParts(Outbound ob, PayloadFilesManager instance) throws Exception {
+                ob.addPart("application/octet-stream", "../../fish-14853-should-not-exist.txt", fileXferProps(),
+                        "content that must never be written outside the staging directory");
+            }
+
+            @Override
+            protected void checkResults(Inbound ib, PayloadFilesManager instance) throws Exception {
+                try {
+                    instance.processParts(ib);
+                    fail("Expected an IOException rejecting a part that resolves outside the target directory");
+                } catch (IOException expected) {
+                    assertTrue("Unexpected exception message: " + expected.getMessage(),
+                            expected.getMessage() != null && expected.getMessage().contains("outside"));
+                }
+            }
+
+        }.run("testTempRejectsPartOutsideTargetDir");
+    }
+
+    /**
+     * Confirms resolveOutputFile compares real (symlink-resolved) paths
+     * rather than merely normalized ones.
+     */
+    @Test
+    public void testTempRejectsSymlinkOutsideTargetDir() throws Exception {
+        final PayloadFilesManager.Temp instance = new PayloadFilesManager.Temp(Logger.getAnonymousLogger());
+        final File outsideDir = File.createTempFile("fish14853-symlink-outside", "");
+        outsideDir.delete();
+        outsideDir.mkdir();
+
+        try {
+            final File linkFile = new File(instance.getTargetDir(), "evil-link");
+            try {
+                Files.createSymbolicLink(linkFile.toPath(), outsideDir.toPath());
+            } catch (UnsupportedOperationException | IOException e) {
+                Assume.assumeNoException("Symlinks are not creatable in this test environment", e);
+            }
+
+            final Properties props = fileXferProps();
+            final Payload.Outbound ob = PayloadImpl.Outbound.newInstance();
+            ob.addPart("application/octet-stream", "evil-link/fish-14853-escaped.txt", props,
+                    "must not land outside the target directory via the symlink");
+
+            final File tempZipFile = File.createTempFile("testzip", ".zip");
+            try {
+                final OutputStream os = new BufferedOutputStream(new FileOutputStream(tempZipFile));
+                ob.writeTo(os);
+                os.close();
+
+                final Payload.Inbound ib = PayloadImpl.Inbound.newInstance(
+                        "application/zip", new BufferedInputStream(new FileInputStream(tempZipFile)));
+                try {
+                    instance.processParts(ib);
+                    fail("Expected an IOException rejecting a part that escapes the target directory via a symlink");
+                } catch (IOException expected) {
+                    // expected
+                }
+            } finally {
+                tempZipFile.delete();
+            }
+
+            assertFalse("File must not have been written outside the target directory via the symlink",
+                    new File(outsideDir, "fish-14853-escaped.txt").exists());
+        } finally {
+            instance.cleanup();
+            PayloadFilesManagerTest.cleanup(outsideDir);
+        }
+    }
+
+    @Test
+    public void testTempRejectsAbsoluteFileXferRoot() throws Exception {
+        final File outsideDir = File.createTempFile("fish14853-outside", "");
+        outsideDir.delete();
+
+        new CommonTempTest() {
+
+            @Override
+            protected void addParts(Outbound ob, PayloadFilesManager instance) throws Exception {
+                final Properties props = fileXferProps();
+                props.setProperty("file-xfer-root", outsideDir.getAbsolutePath());
+                ob.addPart("application/octet-stream", "fish-14853-should-not-exist.txt", props,
+                        "content that must never be written outside the staging directory");
+            }
+
+            @Override
+            protected void checkResults(Inbound ib, PayloadFilesManager instance) throws Exception {
+                try {
+                    instance.processParts(ib);
+                    fail("Expected an IOException rejecting an absolute file-xfer-root");
+                } catch (IOException expected) {
+                    // expected
+                }
+                assertFalse("File must not have been written via an absolute file-xfer-root",
+                        new File(outsideDir, "fish-14853-should-not-exist.txt").exists());
+            }
+
+            @Override
+            protected void doCleanup() {
+                PayloadFilesManagerTest.cleanup(outsideDir);
+            }
+
+        }.run("testTempRejectsAbsoluteFileXferRoot");
+    }
+
+    @Test
+    public void testTempRejectsFileRemovalOutsideTargetDir() throws Exception {
+        final File victimDir = File.createTempFile("fish14853-victim-dir", "");
+        victimDir.delete();
+        victimDir.mkdir();
+        final File victim = new File(victimDir, "do-not-delete.txt");
+        writeFile(victim, "must survive the confined file-remove attempt");
+
+        new CommonTempTest() {
+
+            @Override
+            protected void addParts(Outbound ob, PayloadFilesManager instance) throws Exception {
+                final Properties props = new Properties();
+                props.setProperty("data-request-type", "file-remove");
+                props.setProperty("file-xfer-root", victimDir.getAbsolutePath());
+                ob.addPart("application/octet-stream", victim.getName(), props, "placeholder");
+            }
+
+            @Override
+            protected void checkResults(Inbound ib, PayloadFilesManager instance) throws Exception {
+                try {
+                    instance.processParts(ib);
+                    fail("Expected an IOException rejecting a file-remove part targeting an absolute file-xfer-root");
+                } catch (IOException expected) {
+                    // expected
+                }
+                assertTrue("Victim file outside the target directory must not have been deleted", victim.exists());
+            }
+
+            @Override
+            protected void doCleanup() {
+                PayloadFilesManagerTest.cleanup(victimDir);
+            }
+
+        }.run("testTempRejectsFileRemovalOutsideTargetDir");
+    }
+
+    @Test
+    public void testConfinedPermRejectsAbsoluteFileXferRoot() throws Exception {
+        final File targetDir = File.createTempFile("fish14853-confined-tgt", "");
+        targetDir.delete();
+        targetDir.mkdir();
+
+        final File outsideDir = File.createTempFile("fish14853-confined-outside", "");
+        outsideDir.delete();
+        outsideDir.mkdir();
+
+        try {
+            new CommonPermTest() {
+
+                @Override
+                protected void addParts(Outbound ob, PayloadFilesManager instance) throws Exception {
+                    final Properties props = fileXferProps();
+                    props.setProperty("file-xfer-root", outsideDir.getAbsolutePath());
+                    ob.addPart("application/octet-stream", "fish-14853-should-not-exist.txt", props,
+                            "content that must never escape a confined Perm manager");
+                }
+
+                @Override
+                protected void checkResults(Inbound ib, PayloadFilesManager instance) throws Exception {
+                    try {
+                        instance.processParts(ib);
+                        fail("Expected an IOException: a confined Perm manager must reject an absolute file-xfer-root");
+                    } catch (IOException expected) {
+                        // expected
+                    }
+                    assertFalse("File must not have been written outside the confined Perm's target directory",
+                            new File(outsideDir, "fish-14853-should-not-exist.txt").exists());
+                }
+
+                @Override
+                protected void cleanup() {
+                }
+
+            }.init(targetDir, true).run("testConfinedPermRejectsAbsoluteFileXferRoot");
+        } finally {
+            FileUtils.whack(targetDir);
+            FileUtils.whack(outsideDir);
+        }
+    }
+
+    /**
+     * Confirms the FISH-14853 fix does not change behavior for the existing,
+     * non-confined Perm use (e.g. asadmin's own deploy --retrieve), which
+     * legitimately relies on an absolute file-xfer-root.
+     */
+    @Test
+    public void testUnconfinedPermStillHonoursAbsoluteFileXferRoot() throws Exception {
+        final File targetDir = File.createTempFile("fish14853-unconfined-tgt", "");
+        targetDir.delete();
+        targetDir.mkdir();
+
+        final File outsideDir = File.createTempFile("fish14853-unconfined-outside", "");
+        outsideDir.delete();
+        outsideDir.mkdir();
+
+        try {
+            new CommonPermTest() {
+
+                @Override
+                protected void addParts(Outbound ob, PayloadFilesManager instance) throws Exception {
+                    final Properties props = fileXferProps();
+                    props.setProperty("file-xfer-root", outsideDir.getAbsolutePath());
+                    ob.addPart("application/octet-stream", "legitimate-retrieve.txt", props,
+                            "trusted client-directed content");
+                }
+
+                @Override
+                protected void checkResults(Inbound ib, PayloadFilesManager instance) throws Exception {
+                    instance.processParts(ib);
+                    assertTrue("A non-confined Perm manager must still honour an absolute file-xfer-root",
+                            new File(outsideDir, "legitimate-retrieve.txt").exists());
+                }
+
+                @Override
+                protected void cleanup() {
+                }
+
+            }.init(targetDir, false).run("testUnconfinedPermStillHonoursAbsoluteFileXferRoot");
+        } finally {
+            FileUtils.whack(targetDir);
+            FileUtils.whack(outsideDir);
+        }
+    }
+
     private static void cleanup(final File... files) {
         boolean ok = true;
         for (File f : files) {
@@ -1300,7 +1543,17 @@ public class PayloadFilesManagerTest {
         protected File myTargetDir;
 
         protected CommonPermTest init(final File targetDir) {
-            permInstance = new PayloadFilesManager.Perm(targetDir, null, debugLogger());
+            return init(targetDir, false);
+        }
+
+        /**
+         * @param confined if true, builds a Perm manager that rejects any
+         * part resolving outside targetDir (FISH-14853); existing callers
+         * use the one-arg {@link #init(File)}, which defaults to false and
+         * preserves the original, unconfined behavior.
+         */
+        protected CommonPermTest init(final File targetDir, final boolean confined) {
+            permInstance = new PayloadFilesManager.Perm(targetDir, null, debugLogger(), confined);
             myTargetDir = targetDir;
 //            System.err.println("** Perm creating " + permInstance.getTargetDir().getAbsolutePath());
             return this;

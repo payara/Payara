@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
@@ -50,11 +50,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.glassfish.hk2.utilities.CleanerFactory;
 
 import java.lang.ref.Cleaner;
 import java.net.URI;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -128,6 +129,17 @@ public abstract class PayloadFilesManager {
         return targetDir;
     }
 
+    /**
+     * Indicates whether this manager must confine every resolved output file
+     * to {@link #getTargetDir()}. Subclasses that only ever write into a
+     * server-controlled, disposable location should return true; subclasses
+     * used for a trusted, caller-directed destination should return false
+     * (the default).
+     */
+    protected boolean isConfined() {
+        return false;
+    }
+
     protected URI getParentURI(Part part) {
             /*
              * parentURI and parentFile start as the target extraction directory for this
@@ -188,6 +200,17 @@ public abstract class PayloadFilesManager {
      * against the targetDir plus file-xfer-root URI to derive the URI for the output file.
      */
     public static class Perm extends PayloadFilesManager {
+
+        private boolean confined = false;
+
+        /**
+         * Creates a Perm manager with containment enabled or disabled as
+         * given; see {@link #isConfined()}.
+         */
+        public Perm(final File targetDir, final ActionReport report, final Logger logger, final boolean confined) {
+            this(targetDir, report, logger, null);
+            this.confined = confined;
+        }
 
         /**
          * Creates a new PayloadFilesManager for dealing with permanent files that
@@ -260,6 +283,11 @@ public abstract class PayloadFilesManager {
         }
 
         @Override
+        protected boolean isConfined() {
+            return confined;
+        }
+
+        @Override
         protected void postExtract(File extractedFile) {
             // no-op for permanent files
         }
@@ -274,7 +302,7 @@ public abstract class PayloadFilesManager {
                 }
                 if ( ! entry.getKey().setLastModified(entry.getValue())) {
                     logger.log(Level.WARNING, strings.getLocalString(
-                            "payload.setLatModifiedFailed",
+                            "payload.setLastModifiedFailed",
                             "Attempt to set lastModified for {0} failed; no further information is available.  Continuing.",
                             entry.getKey().getAbsoluteFile()));
                 }
@@ -346,6 +374,11 @@ public abstract class PayloadFilesManager {
         }
 
         @Override
+        protected boolean isConfined() {
+            return true;
+        }
+
+        @Override
         protected void postExtract(File extractedFile) {
             FileUtils.deleteOnExit(extractedFile);
         }
@@ -371,6 +404,53 @@ public abstract class PayloadFilesManager {
         return getParentURI(part).resolve(name);
     }
 
+    private File resolveOutputFile(final Part part, final String name) throws IOException {
+        final File candidate = new File(getOutputFileURI(part, name));
+        if (isConfined()) {
+            /*
+             * Compare resolved (symlink-aware) paths rather than merely
+             * normalized ones. The candidate file (and possibly some of its
+             * parent directories) does not exist yet, so toRealPath() is
+             * applied to the nearest existing ancestor and the remaining,
+             * not-yet-created segments are appended back on top of that
+             * resolved path.
+             */
+            final Path targetDirPath = getTargetDir().toPath().toRealPath();
+            final Path candidatePath = toRealOrNearestExistingAncestorPath(candidate.toPath());
+            if (!candidatePath.startsWith(targetDirPath)) {
+                throw new IOException(strings.getLocalString(
+                        "payload.partOutsideTargetDir",
+                        "Rejecting part {0}: resolved location {1} is outside the allowed directory {2}",
+                        name, candidatePath, targetDirPath));
+            }
+        }
+        return candidate;
+    }
+
+    /**
+     * Resolves {@code path} to its real, symlink-free form as far as the
+     * filesystem allows: the nearest ancestor that already exists is
+     * resolved with {@link Path#toRealPath}, and any trailing segments that
+     * do not exist yet (because they are about to be created) are appended,
+     * normalized, on top of that real path.
+     */
+    private static Path toRealOrNearestExistingAncestorPath(final Path path) throws IOException {
+        Path absolutePath = path.toAbsolutePath();
+        Path existingAncestor = absolutePath;
+        Path remainder = null;
+        while (existingAncestor != null && !Files.exists(existingAncestor)) {
+            final Path segment = existingAncestor.getFileName();
+            remainder = (remainder == null) ? segment : segment.resolve(remainder);
+            existingAncestor = existingAncestor.getParent();
+        }
+        if (existingAncestor == null) {
+            // Should not normally happen (a filesystem root always exists), but fail safe.
+            return absolutePath.normalize();
+        }
+        final Path realAncestor = existingAncestor.toRealPath();
+        return (remainder == null) ? realAncestor : realAncestor.resolve(remainder).normalize();
+    }
+
     private File removeFile(final Payload.Part part) throws IOException {
         final File result = removeFileWithoutConsumingPartBody(part);
         consumePartBody(part);
@@ -379,7 +459,7 @@ public abstract class PayloadFilesManager {
 
     private File removeFileWithoutConsumingPartBody(final Payload.Part part) throws IOException {
         final boolean isFine = logger.isLoggable(Level.FINE);
-        File targetFile = new File(getOutputFileURI(part, part.getName()));
+        File targetFile = resolveOutputFile(part, part.getName());
         if (targetFile.exists()) {
             final boolean isRemovalRecursive = targetFile.isDirectory() && part.isRecursive();
             if (isRemovalRecursive ?
@@ -456,7 +536,7 @@ public abstract class PayloadFilesManager {
 
 
         try {
-            File extractedFile = new File(getOutputFileURI(part, outputName));
+            File extractedFile = resolveOutputFile(part, outputName);
 
             /*
              * Create the required directory tree under the target directory.
@@ -524,7 +604,7 @@ public abstract class PayloadFilesManager {
 
             if ( ! extractedFile.setLastModified(lastModified)) {
                 logger.log(Level.WARNING, strings.getLocalString(
-                        "payload.setLatModifiedFailed",
+                        "payload.setLastModifiedFailed",
                         "Attempt to set lastModified for {0} failed; no further information is available.  Continuing.",
                         extractedFile.getAbsolutePath()));
             }
