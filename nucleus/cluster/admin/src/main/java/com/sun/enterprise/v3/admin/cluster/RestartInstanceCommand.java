@@ -426,7 +426,7 @@ public class RestartInstanceCommand implements AdminCommand {
     private void start() {
 
         try {
-            StartInstanceCommand sic = new StartInstanceCommand(habitat, instanceName, Boolean.parseBoolean(debug), env);
+            StartInstanceCommand sic = new StartInstanceCommand(habitat, instanceName, Boolean.parseBoolean(debug), timeout, env);
             sic.execute(context);
         } catch (Exception e) {
             // this is NOT normal!  start-instance communicates errors via the
