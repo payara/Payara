@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.embedded;
 
@@ -50,7 +50,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.deployment.common.GenericAnnotationDetector;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
 import org.glassfish.embeddable.BootstrapProperties;
@@ -112,6 +112,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
     private static EJBContainerImpl container;
     private static GlassFishRuntime runtime;
     private static ArchiveFactory archiveFactory;
+    private static JandexIndexer jandexIndexer;
     private static Class[] ejbAnnotations = null;
 
     public EJBContainerProviderImpl() {}
@@ -225,6 +226,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                 validateInstanceDirectory();
 
                 archiveFactory = server.getService(ArchiveFactory.class);
+                jandexIndexer = server.getService(JandexIndexer.class);
 
                 Sniffer sniffer = server.getService(Sniffer.class, "Ejb");
                 ejbAnnotations = sniffer.getAnnotationTypes();
@@ -333,9 +335,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                 moduleDesc.setArchiveUri(fileName);
                 moduleName = moduleDesc.getModuleName();
             } else {
-                GenericAnnotationDetector detector =
-                    new GenericAnnotationDetector(ejbAnnotations);
-                isEJBModule = detector.hasAnnotationInArchive(archive);
+                isEJBModule = jandexIndexer.hasAnnotations(archive, ejbAnnotations);
             }
 
             if (_logger.isLoggable(Level.FINE)) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,11 @@ package org.glassfish.concurrent.runtime.deployment.annotation.handlers;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ManagedExecutorDefinition;
-import org.glassfish.apf.*;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.logging.Level;
@@ -59,15 +63,9 @@ public class ManagedExecutorDefinitionListHandler extends AbstractResourceHandle
                                                         ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
         logger.log(Level.INFO, "Entering ManagedExecutorDefinitionListHandler.processAnnotation");
-        ManagedExecutorDefinition.List managedExecutorDefinitionList =
-                (ManagedExecutorDefinition.List) annotationInfo.getAnnotation();
-
-        ManagedExecutorDefinition[] definitions = managedExecutorDefinitionList.value();
-        if(definitions != null) {
-            for (ManagedExecutorDefinition definition : definitions) {
-                ManagedExecutorDefinitionHandler handler = new ManagedExecutorDefinitionHandler();
-                handler.processAnnotation(definition, resourceContainerContexts);
-            }
+        for (AnnotationInstance definition : annotationInfo.nestedArrayValue("value")) {
+            ManagedExecutorDefinitionHandler handler = new ManagedExecutorDefinitionHandler();
+            handler.processAnnotation(annotationInfo.getIndex(), definition, resourceContainerContexts);
         }
         return getDefaultProcessedResult();
     }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020-2024] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2020-2026] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.deployment.archivist;
 
@@ -66,7 +66,6 @@ import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.*;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.*;
 import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Contract;
 import org.xml.sax.SAXParseException;
@@ -598,14 +597,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
             return null;
         }
 
-        Parser parser = null;
-        if (archive.getParentArchive() != null) {
-            parser = archive.getParentArchive().getExtraData(Parser.class);
-        } else {
-            parser = archive.getExtraData(Parser.class);
-        }
-
-        scanner.process(archive, bundleDesc, classLoader, parser);
+        scanner.process(archive, bundleDesc, classLoader);
 
         if (!scanner.getElements().isEmpty()) {
             if (((BundleDescriptor) bundleDesc).isDDWithNoAnnotationAllowed()) {

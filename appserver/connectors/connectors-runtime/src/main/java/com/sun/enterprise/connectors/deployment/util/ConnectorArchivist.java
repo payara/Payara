@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.util;
 
 import com.sun.enterprise.connectors.connector.module.RarType;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
-import com.sun.enterprise.deployment.annotation.introspection.ResourceAdapterAnnotationScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFor;
 import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
@@ -149,8 +149,7 @@ public class ConnectorArchivist extends Archivist<ConnectorDescriptor> {
         if (abstractArchive instanceof InputJarArchive) {
             return false;
         }
-        ConnectorAnnotationDetector detector =
-                    new ConnectorAnnotationDetector(new ResourceAdapterAnnotationScanner());
+        ConnectorAnnotationDetector detector = new ConnectorAnnotationDetector();
         return detector.hasAnnotationInArchive(abstractArchive);
 
     }

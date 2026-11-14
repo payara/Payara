@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,19 +44,20 @@ import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorDefinition;
-import java.util.Arrays;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Service
 @AnnotationHandlerFor(ManagedScheduledExecutorDefinition.class)
@@ -69,21 +70,19 @@ public class ManagedScheduledExecutorDefinitionHandler extends AbstractConcurren
                                                         ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
         logger.log(Level.INFO, "Entering ManagedScheduledExecutorDefinitionHandler.processAnnotation");
-        ManagedScheduledExecutorDefinition managedScheduledExecutorDefinition =
-                (ManagedScheduledExecutorDefinition) annotationInfo.getAnnotation();
-        return processAnnotation(managedScheduledExecutorDefinition, resourceContainerContexts);
+        return processAnnotation(annotationInfo.getIndex(), annotationInfo.getAnnotation(), resourceContainerContexts);
     }
 
-    protected HandlerProcessingResult processAnnotation(ManagedScheduledExecutorDefinition managedScheduledExecutorDefinition,
+    protected HandlerProcessingResult processAnnotation(IndexView index, AnnotationInstance managedScheduledExecutorDefinition,
                                                         ResourceContainerContext[] contexts) {
         logger.log(Level.INFO, "Registering ManagedScheduledExecutorDefinitionHandler from annotation config");
-        ManagedScheduledExecutorDefinitionDescriptor msedd = createDescriptor(managedScheduledExecutorDefinition);
+        ManagedScheduledExecutorDefinitionDescriptor msedd = createDescriptor(index, managedScheduledExecutorDefinition);
 
         // add to resource contexts
         for (ResourceContainerContext context : contexts) {
             Set<ResourceDescriptor> resourceDescriptors = context.getResourceDescriptors(JavaEEResourceType.MSEDD);
             if (descriptorAlreadyPresent(resourceDescriptors, msedd)) {
-                merge(resourceDescriptors, managedScheduledExecutorDefinition);
+                merge(resourceDescriptors, index, managedScheduledExecutorDefinition);
             } else {
                 resourceDescriptors.add(msedd);
             }
@@ -91,53 +90,57 @@ public class ManagedScheduledExecutorDefinitionHandler extends AbstractConcurren
         return getDefaultProcessedResult();
     }
 
-    public ManagedScheduledExecutorDefinitionDescriptor createDescriptor(ManagedScheduledExecutorDefinition managedScheduledExecutorDefinition) {
+    public ManagedScheduledExecutorDefinitionDescriptor createDescriptor(IndexView index, AnnotationInstance managedScheduledExecutorDefinition) {
         ManagedScheduledExecutorDefinitionDescriptor msedd =
                 new ManagedScheduledExecutorDefinitionDescriptor();
-        msedd.setName(TranslatedConfigView.expandValue(managedScheduledExecutorDefinition.name()));
-        msedd.setContext(TranslatedConfigView.expandValue(managedScheduledExecutorDefinition.context()));
+        msedd.setName(TranslatedConfigView.expandValue(AnnotationValues.string(index, managedScheduledExecutorDefinition, "name")));
+        msedd.setContext(TranslatedConfigView.expandValue(AnnotationValues.string(index, managedScheduledExecutorDefinition, "context")));
 
-        if(managedScheduledExecutorDefinition.hungTaskThreshold() < 0) {
+        long hungTaskThreshold = AnnotationValues.longValue(index, managedScheduledExecutorDefinition, "hungTaskThreshold");
+        if (hungTaskThreshold < 0) {
             msedd.setHungTaskThreshold(0);
         } else {
-            msedd.setHungTaskThreshold(managedScheduledExecutorDefinition.hungTaskThreshold());
+            msedd.setHungTaskThreshold(hungTaskThreshold);
         }
 
-        if(managedScheduledExecutorDefinition.maxAsync() < 0) {
+        int maxAsync = AnnotationValues.integer(index, managedScheduledExecutorDefinition, "maxAsync");
+        if (maxAsync < 0) {
             msedd.setMaxAsync(Integer.MAX_VALUE);
         } else {
-            msedd.setMaxAsync(managedScheduledExecutorDefinition.maxAsync());
+            msedd.setMaxAsync(maxAsync);
         }
-        msedd.setVirtual(managedScheduledExecutorDefinition.virtual());
+        msedd.setVirtual(AnnotationValues.bool(index, managedScheduledExecutorDefinition, "virtual"));
 
         msedd.setMetadataSource(MetadataSource.ANNOTATION);
-        msedd.setQualifiers(Arrays.asList(managedScheduledExecutorDefinition.qualifiers()).stream().map(c -> c.getName()).collect(Collectors.toSet()));
+        msedd.setQualifiers(AnnotationValues.classNames(index, managedScheduledExecutorDefinition, "qualifiers"));
         return msedd;
     }
 
-    private void merge(Set<ResourceDescriptor> resourceDescriptors,                       ManagedScheduledExecutorDefinition msed) {
+    private void merge(Set<ResourceDescriptor> resourceDescriptors, IndexView index, AnnotationInstance msed) {
         for (ResourceDescriptor resource : resourceDescriptors) {
             ManagedScheduledExecutorDefinitionDescriptor descriptor = (ManagedScheduledExecutorDefinitionDescriptor) resource;
-            if (descriptor.getName().equals(msed.name())) {
+            if (descriptor.getName().equals(AnnotationValues.string(index, msed, "name"))) {
 
-                if (descriptor.getHungTaskThreshold() == -1 && msed.hungTaskThreshold() != -1) {
-                    descriptor.setHungTaskThreshold(msed.hungTaskThreshold());
+                long hungTaskThreshold = AnnotationValues.longValue(index, msed, "hungTaskThreshold");
+                if (descriptor.getHungTaskThreshold() == -1 && hungTaskThreshold != -1) {
+                    descriptor.setHungTaskThreshold(hungTaskThreshold);
                 }
 
                 if (descriptor.getMaxAsync() == -1) {
-                    descriptor.setMaxAsync(msed.maxAsync());
+                    descriptor.setMaxAsync(AnnotationValues.integer(index, msed, "maxAsync"));
                 }
 
                 if (descriptor.getVirtual() == null) {
-                    descriptor.setVirtual(msed.virtual());
+                    descriptor.setVirtual(AnnotationValues.bool(index, msed, "virtual"));
                 }
 
-                if (descriptor.getContext() == null && msed.context() != null && !msed.context().isBlank()) {
-                    descriptor.setContext(TranslatedConfigView.expandValue(msed.context()));
+                String context = AnnotationValues.string(index, msed, "context");
+                if (descriptor.getContext() == null && !context.isBlank()) {
+                    descriptor.setContext(TranslatedConfigView.expandValue(context));
                 }
 
-                if (descriptor.getQualifiers() == null && msed.qualifiers() != null) {
-                    descriptor.setQualifiers(mapToSetOfStrings(msed.qualifiers()));
+                if (descriptor.getQualifiers() == null) {
+                    descriptor.setQualifiers(AnnotationValues.classNames(index, msed, "qualifiers"));
                 }
             }
         }

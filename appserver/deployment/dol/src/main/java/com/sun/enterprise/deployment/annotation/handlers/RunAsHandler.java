@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,41 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
-import org.glassfish.apf.AnnotationHandlerFor;
-import org.glassfish.security.common.Role;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
+import jakarta.annotation.security.RunAs;
+import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.security.common.Role;
 import org.jvnet.hk2.annotations.Service;
 
-import jakarta.annotation.security.RunAs;
 import java.lang.annotation.Annotation;
 
 /**
  * This handler is responsible for handling the
  * jakarta.annotation.security.RunAs.
+ *
  * @author Shing Wai Chan
  */
 @Service
 @AnnotationHandlerFor(RunAs.class)
 public class RunAsHandler extends AbstractCommonAttributeHandler {
-    
+
     public RunAsHandler() {
     }
-    
+
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
-        
-        RunAs runAsAn = (RunAs)ainfo.getAnnotation();
 
         for (EjbContext ejbContext : ejbContexts) {
             EjbDescriptor ejbDesc = ejbContext.getDescriptor();
@@ -79,7 +79,7 @@ public class RunAsHandler extends AbstractCommonAttributeHandler {
             if (ejbDesc.getUsesCallerIdentity() != null) {
                 continue;
             }
-            String roleName = runAsAn.value();
+            String roleName = ainfo.stringValue("value");
             Role role = new Role(roleName);
             // add Role if not exists
             ejbDesc.getEjbBundleDescriptor().addRole(role);
@@ -94,9 +94,9 @@ public class RunAsHandler extends AbstractCommonAttributeHandler {
         return getDefaultProcessedResult();
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             WebComponentContext[] webCompContexts) throws AnnotationProcessorException {
-        RunAs runAsAn = (RunAs)ainfo.getAnnotation();
 
         for (WebComponentContext webCompContext : webCompContexts) {
             WebComponentDescriptor webDesc = webCompContext.getDescriptor();
@@ -104,7 +104,7 @@ public class RunAsHandler extends AbstractCommonAttributeHandler {
             if (webDesc.getRunAsIdentity() != null) {
                 continue;
             }
-            String roleName = runAsAn.value();
+            String roleName = ainfo.stringValue("value");
             Role role = new Role(roleName);
             // add Role if not exists
             webDesc.getWebBundleDescriptor().addRole(role);
@@ -116,6 +116,7 @@ public class RunAsHandler extends AbstractCommonAttributeHandler {
         return getDefaultProcessedResult();
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
              WebBundleContext webBundleContext)
              throws AnnotationProcessorException {
@@ -123,7 +124,12 @@ public class RunAsHandler extends AbstractCommonAttributeHandler {
             ainfo.getProcessingContext().getHandler(), ainfo);
     }
 
-
+    /**
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
+     * annotation type.
+     */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,14 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
 
-import java.lang.annotation.Annotation;
+import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import jakarta.ejb.TransactionManagement;
 import jakarta.ejb.TransactionManagementType;
-
-import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -52,25 +50,27 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+
 /**
- * This handler is responsible for handling the jakarta.ejb.TransactionManagement.
+ * This handler is responsible for handling the
+ * jakarta.ejb.TransactionManagement.
  *
  * @author Shing Wai Chan
  */
 @Service
 @AnnotationHandlerFor(TransactionManagement.class)
 public class TransactionManagementHandler extends AbstractAttributeHandler {
-    
+
     public TransactionManagementHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
-        
-        TransactionManagement tmAn = (TransactionManagement)ainfo.getAnnotation();
 
         String tmType =
-                TransactionManagementType.CONTAINER.equals(tmAn.value())?
+                TransactionManagementType.CONTAINER.name().equals(ainfo.enumValue("value")) ?
                 EjbDescriptor.CONTAINER_TRANSACTION_TYPE :
                 EjbDescriptor.BEAN_TRANSACTION_TYPE;
 
@@ -83,17 +83,19 @@ public class TransactionManagementHandler extends AbstractAttributeHandler {
         }
 
         return getDefaultProcessedResult();
-    }   
+    }
 
     /**
-     * @return an array of annotation types this annotation handler would 
-     * require to be processed (if present) before it processes it's own 
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }

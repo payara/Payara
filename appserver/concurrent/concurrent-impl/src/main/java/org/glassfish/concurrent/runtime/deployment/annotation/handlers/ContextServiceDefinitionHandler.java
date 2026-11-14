@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,13 +52,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -80,62 +82,63 @@ public class ContextServiceDefinitionHandler extends AbstractConcurrencyHandler 
             ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
         logger.log(Level.INFO, "Entering ContextServiceDefinitionHandler.processAnnotation");
-        ContextServiceDefinition contextServiceDefinition = (ContextServiceDefinition) annotationInfo.getAnnotation();
-
-        processSingleAnnotation(contextServiceDefinition, resourceContainerContexts);
+        processSingleAnnotation(annotationInfo.getIndex(), annotationInfo.getAnnotation(), resourceContainerContexts);
 
         return getDefaultProcessedResult();
     }
 
-    public void processSingleAnnotation(ContextServiceDefinition contextServiceDefinition,
+    public void processSingleAnnotation(IndexView index, AnnotationInstance contextServiceDefinition,
             ResourceContainerContext[] resourceContainerContexts) {
         logger.log(Level.INFO, "Creating custom context service by annotation");
-        ContextServiceDefinitionDescriptor csdd = createDescriptor(contextServiceDefinition);
+        ContextServiceDefinitionDescriptor csdd = createDescriptor(index, contextServiceDefinition);
 
         // add to resource contexts
         for (ResourceContainerContext context : resourceContainerContexts) {
             Set<ResourceDescriptor> resourceDescriptors = context.getResourceDescriptors(JavaEEResourceType.CSDD);
             if (descriptorAlreadyPresent(resourceDescriptors, csdd)) {
-                merge(resourceDescriptors, contextServiceDefinition);
+                merge(resourceDescriptors, index, contextServiceDefinition);
             } else {
                 resourceDescriptors.add(csdd);
             }
         }
     }
 
-    public ContextServiceDefinitionDescriptor createDescriptor(ContextServiceDefinition contextServiceDefinition) {
-        Set<String> unusedContexts = collectUnusedContexts(contextServiceDefinition);
+    public ContextServiceDefinitionDescriptor createDescriptor(IndexView index, AnnotationInstance contextServiceDefinition) {
+        String[] propagated = AnnotationValues.strings(index, contextServiceDefinition, "propagated");
+        String[] cleared = AnnotationValues.strings(index, contextServiceDefinition, "cleared");
+        String[] unchanged = AnnotationValues.strings(index, contextServiceDefinition, "unchanged");
+        Set<String> unusedContexts = collectUnusedContexts(propagated, cleared, unchanged);
 
         ContextServiceDefinitionDescriptor csdd = new ContextServiceDefinitionDescriptor();
         csdd.setDescription("Context Service Definition");
-        csdd.setName(TranslatedConfigView.expandValue(contextServiceDefinition.name()));
-        csdd.setPropagated(evaluateContexts(contextServiceDefinition.propagated(), unusedContexts));
-        csdd.setCleared(evaluateContexts(contextServiceDefinition.cleared(), unusedContexts));
-        csdd.setUnchanged(evaluateContexts(contextServiceDefinition.unchanged(), unusedContexts));
-        csdd.setQualifiers(Arrays.asList(contextServiceDefinition.qualifiers()).stream().map(c -> c.getName()).collect(Collectors.toSet()));
+        csdd.setName(TranslatedConfigView.expandValue(AnnotationValues.string(index, contextServiceDefinition, "name")));
+        csdd.setPropagated(evaluateContexts(propagated, unusedContexts));
+        csdd.setCleared(evaluateContexts(cleared, unusedContexts));
+        csdd.setUnchanged(evaluateContexts(unchanged, unusedContexts));
+        csdd.setQualifiers(AnnotationValues.classNames(index, contextServiceDefinition, "qualifiers"));
 
         return csdd;
     }
 
-    private void merge(Set<ResourceDescriptor> resourceDescriptors, ContextServiceDefinition csd) {
+    private void merge(Set<ResourceDescriptor> resourceDescriptors, IndexView index, AnnotationInstance csd) {
         for (ResourceDescriptor resource : resourceDescriptors) {
             ContextServiceDefinitionDescriptor descriptor = (ContextServiceDefinitionDescriptor) resource;
-            if (descriptor.getName().equals(csd.name())) {
+            if (descriptor.getName().equals(AnnotationValues.string(index, csd, "name"))) {
 
-                if (descriptor.getCleared() == null && csd.cleared() != null) {
-                    descriptor.setCleared(new HashSet<>(Arrays.asList(csd.cleared())));
+                if (descriptor.getCleared() == null) {
+                    descriptor.setCleared(new HashSet<>(Arrays.asList(AnnotationValues.strings(index, csd, "cleared"))));
                 }
 
-                if (descriptor.getPropagated() == null && csd.propagated() != null) {
-                    descriptor.setPropagated(new HashSet<>(Arrays.asList(csd.propagated())));
+                if (descriptor.getPropagated() == null) {
+                    descriptor.setPropagated(new HashSet<>(Arrays.asList(AnnotationValues.strings(index, csd, "propagated"))));
                 }
 
-                if (descriptor.getUnchanged() == null && csd.unchanged() != null) {
-                    descriptor.setUnchanged(new HashSet<>(Arrays.asList(csd.unchanged())));
+                if (descriptor.getUnchanged() == null) {
+                    descriptor.setUnchanged(new HashSet<>(Arrays.asList(AnnotationValues.strings(index, csd, "unchanged"))));
                 }
 
-                if (descriptor.getQualifiers() == null && csd.qualifiers() != null) {
-                    descriptor.setQualifiers(mapToSetOfStrings(csd.qualifiers()));
+                if (descriptor.getQualifiers() == null) {
+                    descriptor.setQualifiers(AnnotationValues.classNames(index, csd, "qualifiers"));
                 }
             }
         }
@@ -154,18 +157,18 @@ public class ContextServiceDefinitionHandler extends AbstractConcurrencyHandler 
         return contexts;
     }
 
-    private Set<String> collectUnusedContexts(ContextServiceDefinition csdd) {
+    private Set<String> collectUnusedContexts(String[] propagated, String[] cleared, String[] unchanged) {
         Map<String, String> usedContexts = new HashMap<>();
-        for (String context : csdd.propagated()) {
+        for (String context : propagated) {
             usedContexts.put(context, "propagated");
         }
-        for (String context : csdd.cleared()) {
+        for (String context : cleared) {
             String previous = usedContexts.put(context, "cleared");
             if (previous != null) {
                 throw new RuntimeException("Duplicate context " + context + " in " + previous + " and cleared context attributes in ContextServiceDefinition annotation!");
             }
         }
-        for (String context : csdd.unchanged()) {
+        for (String context : unchanged) {
             String previous = usedContexts.put(context, "unchanged");
             if (previous != null) {
                 throw new RuntimeException("Duplicate context " + context + " in " + previous + " and unchanged context attributes in ContextServiceDefinition annotation!");

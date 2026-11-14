@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,20 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * EjbContext.java
- *
- * Created on January 16, 2005, 5:53 PM
- */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.context;
-
-import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
@@ -59,11 +47,20 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
 import com.sun.enterprise.deployment.types.HandlerChainContainer;
 import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
-import com.sun.enterprise.deployment.util.TypeUtil;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.impl.ComponentDefinition;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
+
+import java.lang.annotation.ElementType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -71,18 +68,16 @@ import org.glassfish.deployment.common.Descriptor;
  */
 public class EjbContext extends ResourceContainerContextImpl {
     private WebServiceEndpoint endpoint;
-    private Method[] methods;
-    private boolean inherited;
-    private ArrayList<PostProcessInfo> postProcessInfos =
-            new ArrayList<>();
+    private final List<MethodInfo> methods;
+    private final boolean inherited;
+    private final ArrayList<PostProcessInfo> postProcessInfos = new ArrayList<>();
 
-    public EjbContext(EjbDescriptor currentEjb, Class ejbClass) {
+    public EjbContext(EjbDescriptor currentEjb, ClassInfo ejbClass, IndexView index) {
         super((Descriptor) currentEjb); // FIXME by srini - can we extract intf to avoid this
         componentClassName = currentEjb.getEjbClassName();
-        ComponentDefinition cdef = new ComponentDefinition(ejbClass);
-        methods = cdef.getMethods();
-        Class superClass = ejbClass.getSuperclass();
-        inherited = (superClass != null && !Object.class.equals(superClass));
+        methods = new ComponentDefinition(ejbClass, index).getMethods();
+        DotName superName = ejbClass.superName();
+        inherited = superName != null && !ClassHierarchy.OBJECT.equals(superName);
     }
 
     public EjbDescriptor getDescriptor() {
@@ -96,18 +91,16 @@ public class EjbContext extends ResourceContainerContextImpl {
     public void setEndpoint(WebServiceEndpoint endpoint) {
         this.endpoint = endpoint;
     }
-    
+
     public WebServiceEndpoint getEndpoint() {
         return endpoint;
     }
 
-    public void endElement(ElementType type, AnnotatedElement element) 
-            throws AnnotationProcessorException {
-        
+    @Override
+    public void endElement(ElementType type, AnnotationTarget element) throws AnnotationProcessorException {
         if (ElementType.TYPE.equals(type)) {
             for (PostProcessInfo ppInfo : postProcessInfos) {
-                 ppInfo.postProcessor.postProcessAnnotation(
-                         ppInfo.ainfo, this);
+                 ppInfo.postProcessor.postProcessAnnotation(ppInfo.ainfo, this);
             }
 
             // done with processing this class, let's pop this context
@@ -115,18 +108,21 @@ public class EjbContext extends ResourceContainerContextImpl {
         }
     }
 
-    public Class getDeclaringClass(MethodDescriptor md) {
-        Method method = md.getMethod(getDescriptor());
-        Class declaringClass = null;
-        for (Method m : methods) {
-            if (TypeUtil.sameMethodSignature(m, method)) {
-                declaringClass = m.getDeclaringClass();
+    /**
+     * @return the name of the class, among the bean class and its superclasses, declaring the
+     * method the descriptor denotes, or null if none does
+     */
+    public String getDeclaringClass(MethodDescriptor md) {
+        String declaringClass = null;
+        for (MethodInfo m : methods) {
+            if (ClassHierarchy.matches(m, md.getName(), md.getJavaParameterClassNames())) {
+                declaringClass = m.declaringClass().name().toString();
             }
         }
         return declaringClass;
     }
 
-    public Method[] getComponentDefinitionMethods() {
+    public List<MethodInfo> getComponentDefinitionMethods() {
         return methods;
     }
 
@@ -145,15 +141,15 @@ public class EjbContext extends ResourceContainerContextImpl {
         public AnnotationInfo ainfo;
         public PostProcessor postProcessor;
     }
-    
+
     public ServiceReferenceContainer[] getServiceRefContainers(String implName) {
         return getDescriptor().getEjbBundleDescriptor().getEjbByClassName(implName);
-    }    
+    }
 
-    public HandlerChainContainer[] 
-            getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
+    @Override
+    public HandlerChainContainer[] getHandlerChainContainers(boolean serviceSideHandlerChain, ClassInfo declaringClass) {
         if(serviceSideHandlerChain) {
-            EjbDescriptor[] ejbs = getDescriptor().getEjbBundleDescriptor().getEjbByClassName(declaringClass.getName());
+            EjbDescriptor[] ejbs = getDescriptor().getEjbBundleDescriptor().getEjbByClassName(declaringClass.name().toString());
             List<WebServiceEndpoint> result = new ArrayList<>();
             for (EjbDescriptor ejb : ejbs) {
                 result.addAll(getDescriptor().getEjbBundleDescriptor().getWebServices().getEndpointsImplementedBy(ejb));
@@ -164,5 +160,5 @@ public class EjbContext extends ResourceContainerContextImpl {
             result.addAll(getDescriptor().getEjbBundleDescriptor().getEjbServiceReferenceDescriptors());
             return(result.toArray(new HandlerChainContainer[result.size()]));
         }
-    }    
+    }
 }

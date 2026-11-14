@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,11 +44,11 @@ import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler
 import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -66,15 +66,9 @@ public class ContextServiceDefinitionListHandler extends AbstractResourceHandler
             ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
         logger.log(Level.INFO, "Entering ContextServiceDefinitionListHandler.processAnnotation");
-        AnnotatedElementHandler aeHandler = annotationInfo.getProcessingContext().getHandler();
-        ContextServiceDefinition.List contextServiceListDefinition = (ContextServiceDefinition.List) annotationInfo.getAnnotation();
-
-        ContextServiceDefinition[] definitions = contextServiceListDefinition.value();
-        if (definitions != null) {
-            for (ContextServiceDefinition definition : definitions) {
-                ContextServiceDefinitionHandler handler = new ContextServiceDefinitionHandler();
-                handler.processSingleAnnotation(definition, resourceContainerContexts);
-            }
+        for (AnnotationInstance definition : annotationInfo.nestedArrayValue("value")) {
+            ContextServiceDefinitionHandler handler = new ContextServiceDefinitionHandler();
+            handler.processSingleAnnotation(annotationInfo.getIndex(), definition, resourceContainerContexts);
         }
 
         return getDefaultProcessedResult();

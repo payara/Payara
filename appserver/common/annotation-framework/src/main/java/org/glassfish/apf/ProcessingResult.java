@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,32 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf;
 
+import org.jboss.jandex.AnnotationTarget;
+
 import java.util.Map;
-import java.lang.reflect.AnnotatedElement;
 
 /**
- * This interface encapsulates all AnnotatedElements processing result by 
- * the AnnotationProcessor tool. Each AnnotatedElement can have multiple 
- * annotations, therefore the AnnotationProcessor tool result is defined 
- * by the list of AnnotatedElements it processed and for each AnnotatedElement,
- * it defines each Annotation processed and its processing result.
+ * This interface defines the result of an annotation processing
+ * invocation.
  *
  * @author Jerome Dochez
  */
 public interface ProcessingResult {
-    
+
     /**
-     * @return a Map indexed by all AnnotatedElements processed and each 
-     * AnnotatedElement HandlerProcessingResult as values.
+     * Returns a map of annotated element to handler processing results, keyed by the annotated
+     * element (class, field, method or parameter).
      */
-    public Map<AnnotatedElement,HandlerProcessingResult> getResults();
-    
+    Map<AnnotationTarget, HandlerProcessingResult> getResults();
+
     /**
-     * @return the overall processing result, which is usually the most 
-     * severe ResultType for all the annotated elements processing
+     * @return the overall processing result
      */
-    public ResultType getOverallResult();
+    ResultType getOverallResult();
 }

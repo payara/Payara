@@ -37,17 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import jakarta.interceptor.ExcludeClassInterceptors;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import jakarta.interceptor.ExcludeClassInterceptors;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -55,52 +50,47 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.InterceptorBindingDescriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+
 /**
- * This handler is responsible for handling the 
- * jakarta.ejb.ExcludeClassInterceptors annotation.
- *
+ * This handler is responsible for handling the jakarta.interceptor.ExcludeClassInterceptors annotation.
  */
 @Service
 @AnnotationHandlerFor(ExcludeClassInterceptors.class)
-public class ExcludeClassInterceptorsHandler 
-    extends AbstractAttributeHandler {
-    
+public class ExcludeClassInterceptorsHandler extends AbstractAttributeHandler {
+
     public ExcludeClassInterceptorsHandler() {
     }
-    
+
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
          EjbBundleDescriptorImpl ejbBundle =
-             ((EjbDescriptor)ejbContexts[0].getDescriptor()).
-                 getEjbBundleDescriptor();
-        
+             ((EjbDescriptor)ejbContexts[0].getDescriptor()).getEjbBundleDescriptor();
+
          for(EjbContext next : ejbContexts) {
 
             EjbDescriptor ejbDescriptor = (EjbDescriptor) next.getDescriptor();
 
-            // Create binding information.  
-            InterceptorBindingDescriptor binding = 
-                new InterceptorBindingDescriptor();
+            InterceptorBindingDescriptor binding = new InterceptorBindingDescriptor();
 
             binding.setEjbName(ejbDescriptor.getName());
             binding.setExcludeClassInterceptors(true);
 
-            // Annotation can be defined at a method level or constructor level.
             MethodDescriptor md = null;
             if(ElementType.METHOD.equals(ainfo.getElementType())) {
-                Method m = (Method) ainfo.getAnnotatedElement();
+                MethodInfo m = ainfo.getAnnotatedElement().asMethod();
                 md = new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
             } else if(ElementType.CONSTRUCTOR.equals(ainfo.getElementType())) {
-                Constructor c = (Constructor) ainfo.getAnnotatedElement();
-                Class cl = c.getDeclaringClass();
-                Class[] ctorParamTypes = c.getParameterTypes();
-                String[] parameterClassNames = (new MethodDescriptor()).getParameterClassNamesFor(null, ctorParamTypes);
-
-                md = new MethodDescriptor(cl.getSimpleName(), null,
-                        parameterClassNames, MethodDescriptor.EJB_BEAN);
+                MethodInfo c = ainfo.getAnnotatedElement().asMethod();
+                md = new MethodDescriptor(ClassHierarchy.simpleName(c.declaringClass()), null,
+                        ClassHierarchy.sourceParameterNames(c), MethodDescriptor.EJB_BEAN);
             } // else throw Exception?
 
             binding.setBusinessMethod(md);
@@ -111,10 +101,11 @@ public class ExcludeClassInterceptorsHandler
     }
 
     /**
-     * @return an array of annotation types this annotation handler would 
-     * require to be processed (if present) before it processes it's own 
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }

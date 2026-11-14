@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,13 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
 
-import java.lang.annotation.Annotation;
-import jakarta.ejb.StatefulTimeout;
-
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import jakarta.ejb.StatefulTimeout;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -52,10 +50,11 @@ import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+import java.util.concurrent.TimeUnit;
+
 /**
- * This handler is responsible for handling the jakarta.ejb.ConcurrencyManagement.
- *
- * @author Ken Saks
+ * This handler is responsible for handling the jakarta.ejb.StatefulTimeout annotation.
  */
 @Service
 @AnnotationHandlerFor(StatefulTimeout.class)
@@ -64,10 +63,9 @@ public class StatefulTimeoutHandler extends AbstractAttributeHandler {
     public StatefulTimeoutHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
-
-        StatefulTimeout stAn = (StatefulTimeout) ainfo.getAnnotation();
 
         for (EjbContext ejbContext : ejbContexts) {
             EjbDescriptor ejbDesc = (EjbDescriptor) ejbContext.getDescriptor();
@@ -75,9 +73,9 @@ public class StatefulTimeoutHandler extends AbstractAttributeHandler {
             if( ejbDesc instanceof EjbSessionDescriptor ) {
                 EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejbDesc;
                 if( sessionDesc.isStateful() ) {
-                    // override by xml
+                    // Only set the value if it wasn't already set via ejb-jar.xml
                     if (!sessionDesc.hasStatefulTimeout()) {
-                        sessionDesc.setStatefulTimeout(stAn.value(), stAn.unit());
+                        sessionDesc.setStatefulTimeout(ainfo.longValue("value"), ainfo.enumValue("unit", TimeUnit.class));
                     }
                 }
             }
@@ -92,10 +90,12 @@ public class StatefulTimeoutHandler extends AbstractAttributeHandler {
      * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }

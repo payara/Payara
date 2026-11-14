@@ -38,6 +38,7 @@
  * holder.
  */
 
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.archivist;
 
 import java.io.IOException;
@@ -47,7 +48,6 @@ import jakarta.inject.Inject;
 
 import com.sun.ejb.containers.EjbContainerUtil;
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
@@ -176,9 +176,8 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptorImpl> {
     @Override
     protected boolean postHandles(ReadableArchive abstractArchive)
             throws IOException {
-        AnnotationDetector detector =
-                    new AnnotationDetector(new EjbComponentAnnotationScanner());
+        AnnotationDetector detector = new AnnotationDetector(AnnotationDetector.EJB_COMPONENT_ANNOTATIONS);
         return (!DeploymentUtils.isArchiveOfType(abstractArchive, DOLUtils.warType(), locator)) &&
-                detector.hasAnnotationInArchiveWithNoScanning(abstractArchive);
+                detector.hasAnnotationInArchive(abstractArchive);
     }
 }

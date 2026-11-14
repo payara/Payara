@@ -37,59 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.annotation.Annotation;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.AnnotationValue;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
+
 import java.lang.annotation.ElementType;
 
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
 /**
- * Instances encapsulate all information necessary for an AnnotationHandler 
- * to process an annotation. In particular, instances of this class provide 
- * access to :
- *
- * <p>
- * <li> the Annotation instance 
- * <li> the ProcessingContext of the tool
- * <li> the AnnotatedElement which is a reference to the annotation element 
- * (Type, Method...).
- * </p>
- *
- * @see java.lang.annotation.Annotation, java.lang.reflect.AnnotatedElement
+ * An annotation found on an element of the deployment, as read from the Jandex index, together
+ * with the context it is processed in. Attribute values are read with the annotation type's
+ * defaults applied, so handlers see what {@code java.lang.annotation.Annotation} getters would
+ * return without the class ever being loaded.
  *
  * @author Jerome Dochez
- *
  */
 public class AnnotationInfo {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AnnotationInfo.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AnnotationInfo.class);
 
-    // the annotated element 
-    final private AnnotatedElement annotatedElement;
-
-    // the annotation   
-    final private Annotation annotation;
-    
-    // the processing context
-    final private ProcessingContext context;
-    
-    // the element type
-    final private ElementType type;
+    private final AnnotationTarget annotatedElement;
+    private final AnnotationInstance annotation;
+    private final ProcessingContext context;
+    private final ElementType type;
 
     /**
-     * Creates a new instance of AnnotationInfo with all the information 
-     * necessary to process an annotation.
-     *
-     * @param context the annotation processor processing context
-     * @param element the annotated element
-     * @param annotation the annotation 
+     * @param context the processing context
+     * @param element the annotated element: a class, field, method or method parameter
+     * @param annotation the annotation instance on that element
+     * @param type the type of the element being processed
      */
-    public AnnotationInfo(ProcessingContext context, AnnotatedElement element, 
-            Annotation annotation, ElementType type) {
-        
+    public AnnotationInfo(ProcessingContext context, AnnotationTarget element, AnnotationInstance annotation,
+                          ElementType type) {
         this.context = context;
         this.annotatedElement = element;
         this.annotation = annotation;
@@ -97,35 +83,106 @@ public class AnnotationInfo {
     }
 
     /**
-     * @return the annotated element instance
+     * @return the annotated element: a {@code ClassInfo}, {@code FieldInfo}, {@code MethodInfo}
+     * or {@code MethodParameterInfo}
      */
-    public AnnotatedElement getAnnotatedElement() {
+    public AnnotationTarget getAnnotatedElement() {
         return annotatedElement;
     }
 
-    /**
-     * @return the annotation instance
-     */
-    public Annotation getAnnotation() {
-
+    public AnnotationInstance getAnnotation() {
         return annotation;
     }
 
     /**
-     * @return the processing context
+     * @return the fully qualified name of the annotation type
      */
+    public String getAnnotationTypeName() {
+        return annotation.name().toString();
+    }
+
     public ProcessingContext getProcessingContext() {
         return context;
     }
-    
-    /**
-     * @return the annotated element ElementType
-     */
+
     public ElementType getElementType() {
         return type;
     }
 
+    /**
+     * @return the index the deployment's classes, their super types and the annotation types resolve in
+     */
+    public IndexView getIndex() {
+        return context.getIndex();
+    }
+
+    /**
+     * @return the class declaring the annotated element, the class itself for a class element
+     */
+    public ClassInfo getDeclaringClass() {
+        return ClassHierarchy.declaringClass(annotatedElement);
+    }
+
+    /**
+     * @return the value of the attribute, explicit or the annotation type's default
+     */
+    public AnnotationValue value(String name) {
+        return AnnotationValues.value(getIndex(), annotation, name);
+    }
+
+    public String stringValue(String name) {
+        return AnnotationValues.string(getIndex(), annotation, name);
+    }
+
+    public String[] stringArrayValue(String name) {
+        return AnnotationValues.strings(getIndex(), annotation, name);
+    }
+
+    public boolean booleanValue(String name) {
+        return AnnotationValues.bool(getIndex(), annotation, name);
+    }
+
+    public int intValue(String name) {
+        return AnnotationValues.integer(getIndex(), annotation, name);
+    }
+
+    public long longValue(String name) {
+        return AnnotationValues.longValue(getIndex(), annotation, name);
+    }
+
+    /**
+     * @return the name of the enum constant
+     */
+    public String enumValue(String name) {
+        return AnnotationValues.enumName(getIndex(), annotation, name);
+    }
+
+    public <E extends Enum<E>> E enumValue(String name, Class<E> enumType) {
+        return AnnotationValues.enumValue(getIndex(), annotation, name, enumType);
+    }
+
+    /**
+     * @return the name of the class-valued attribute, as {@code Class.getName()} returns it
+     */
+    public String classValue(String name) {
+        return AnnotationValues.className(getIndex(), annotation, name);
+    }
+
+    public String[] classArrayValue(String name) {
+        return AnnotationValues.classNames(getIndex(), annotation, name);
+    }
+
+    public AnnotationInstance nestedValue(String name) {
+        return AnnotationValues.nested(getIndex(), annotation, name);
+    }
+
+    public AnnotationInstance[] nestedArrayValue(String name) {
+        return AnnotationValues.nestedArray(getIndex(), annotation, name);
+    }
+
+    @Override
     public String toString() {
-        return localStrings.getLocalString("annotatedinfo.string", "annotation [{0}] on annotated element [{1}] of type [{2}]", annotation, annotatedElement, type); 
+        return localStrings.getLocalString("annotatedinfo.string",
+                "annotation [{0}] on annotated element [{1}] of type [{2}]", annotation, annotatedElement, type);
     }
 }

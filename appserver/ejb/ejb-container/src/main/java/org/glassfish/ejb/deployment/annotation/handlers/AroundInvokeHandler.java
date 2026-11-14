@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,82 +37,79 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import jakarta.interceptor.AroundInvoke;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.EjbInterceptorContext;
+import jakarta.interceptor.AroundInvoke;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+
 /**
- * This handler is responsible for handling the jakarta.ejb.AroundInvoke attribute
- *
+ * This handler is responsible for handling the jakarta.interceptor.AroundInvoke annotation.
  */
 @Service
 @AnnotationHandlerFor(AroundInvoke.class)
 public class AroundInvokeHandler extends AbstractAttributeHandler {
-    
+
     public AroundInvokeHandler() {
     }
-    
+
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
         for(EjbContext next : ejbContexts) {
-            
-            EjbDescriptor ejbDescriptor = 
-                (EjbDescriptor) next.getDescriptor();
 
-            ejbDescriptor.addAroundInvokeDescriptor(
-                getAroundInvocationDescriptor(ainfo));
+            EjbDescriptor ejbDescriptor = (EjbDescriptor) next.getDescriptor();
+
+            ejbDescriptor.addAroundInvokeDescriptor(getAroundInvocationDescriptor(ainfo));
         }
 
         return getDefaultProcessedResult();
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbInterceptorContext ejbInterceptorContext)
             throws AnnotationProcessorException {
 
         EjbInterceptor ejbInterceptor =  ejbInterceptorContext.getDescriptor();
 
-        ejbInterceptor.addAroundInvokeDescriptor(
-            getAroundInvocationDescriptor(ainfo));
-            
+        ejbInterceptor.addAroundInvokeDescriptor(getAroundInvocationDescriptor(ainfo));
+
         return getDefaultProcessedResult();
     }
 
-    protected LifecycleCallbackDescriptor getAroundInvocationDescriptor(
-            AnnotationInfo ainfo) {
-        
-        Method m = (Method) ainfo.getAnnotatedElement();
-        LifecycleCallbackDescriptor lccDesc =
-                new LifecycleCallbackDescriptor();
-        lccDesc.setLifecycleCallbackClass(m.getDeclaringClass().getName());
-        lccDesc.setLifecycleCallbackMethod(m.getName());
+    protected LifecycleCallbackDescriptor getAroundInvocationDescriptor(AnnotationInfo ainfo) {
+        MethodInfo m = ainfo.getAnnotatedElement().asMethod();
+        LifecycleCallbackDescriptor lccDesc = new LifecycleCallbackDescriptor();
+        lccDesc.setLifecycleCallbackClass(m.declaringClass().name().toString());
+        lccDesc.setLifecycleCallbackMethod(m.name());
         return lccDesc;
     }
 
     /**
-     * @return an array of annotation types this annotation handler would 
-     * require to be processed (if present) before it processes it's own 
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
 
+    @Override
     protected boolean isDelegatee() {
         return true;
     }

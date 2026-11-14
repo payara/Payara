@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,59 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.introspection;
 
 import com.sun.enterprise.deployment.annotation.factory.SJSASFactory;
 import jakarta.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
 import jakarta.inject.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import org.jvnet.hk2.annotations.Service;
+
 import java.util.Set;
 
-
 /**
- * This class contains the list of all annotations types name 
- * which can be present at the class level (Type.TYPE).  
+ * This class contains the names of all the annotation types the deployment layer has handlers
+ * for, i.e. the annotations whose presence makes a class subject to annotation processing.
  *
  * @author Jerome Dochez
  */
 @Service(name="default")
 @Singleton
-public class DefaultAnnotationScanner implements AnnotationScanner, 
-    PostConstruct {
+public class DefaultAnnotationScanner implements PostConstruct {
 
-    @Inject 
+    @Inject
     SJSASFactory factory;
-    
-    private Set<String> annotations=null;
-    private Set<String> annotationsMetaDataComplete=null;
-    
-    /**
-     * Test if the passed constant pool string is a reference to 
-     * a Type.TYPE annotation of a J2EE component
-     *
-     * @String the constant pool info string 
-     * @return true if it is a J2EE annotation reference
-     */
-    public boolean isAnnotation(String value) {
-        return annotations.contains(value);
-    }
-    
+
+    private Set<String> annotations;
+    private Set<String> annotationsMetaDataComplete;
+
+    @Override
     public void postConstruct() {
         annotations = factory.getAnnotations(false);
         annotationsMetaDataComplete = factory.getAnnotations(true);
     }
 
+    /**
+     * @return the fully qualified names of the handled annotation types, the subset still
+     * processed for metadata-complete modules when so requested
+     */
     public Set<String> getAnnotations(boolean isMetaDataComplete) {
-        if (!isMetaDataComplete) {
-            return AbstractAnnotationScanner.constantPoolToFQCN(annotations);
-        } else {
-            return AbstractAnnotationScanner.constantPoolToFQCN(annotationsMetaDataComplete);
-        }
+        return isMetaDataComplete ? annotationsMetaDataComplete : annotations;
     }
 
-    @Override
     public Set<String> getAnnotations() {
         return getAnnotations(false);
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,75 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
-
+// Portions Copyright [2020-2026] Payara Foundation and/or affiliates
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.annotation.introspection.AnnotationScanner;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
 import java.io.IOException;
-import java.io.File;
-import java.io.FileFilter;
-import java.util.Enumeration;
-import java.util.jar.JarFile;
-import java.util.jar.JarEntry;
+import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Subclass for connector annotation detection.
  * Connector annotation detector need to scan for top level jars as well
- *
  */
 public class ConnectorAnnotationDetector extends AnnotationDetector {
 
-    public ConnectorAnnotationDetector(AnnotationScanner scanner) {
-        super(scanner);
+    public ConnectorAnnotationDetector() {
+        this(CONNECTOR_ANNOTATIONS);
     }
-    
+
+    public ConnectorAnnotationDetector(Collection<String> annotationNames) {
+        super(annotationNames);
+    }
+
     @Override
-    public boolean hasAnnotationInArchive(ReadableArchive archive) throws IOException {
-
-        Enumeration<String> entries = archive.entries();
-        while (entries.hasMoreElements()) {
-            String entryName = entries.nextElement();
-            if (entryName.endsWith(".class")) {
-                if (containsAnnotation(archive, entryName)) {
-                    return true;
-                }
-            } 
-
-            // scan classes in top level jars
-            File archiveFile = new File(archive.getURI());
-            File[] jarFiles = archiveFile.listFiles(new FileFilter() {
-                 public boolean accept(File pathname) {
-                     return (pathname.isFile() &&
-                            pathname.getAbsolutePath().endsWith(".jar"));
-                 }
-            });
-
-            if (jarFiles != null && jarFiles.length > 0) {
-                for (File file : jarFiles) {
-                    JarFile jarFile = null; 
-                    try {
-                        jarFile = new JarFile(file);
-                        Enumeration<JarEntry> jarEntries = jarFile.entries();
-                        while (jarEntries.hasMoreElements()) {
-                            JarEntry jarEntry = jarEntries.nextElement();
-                            if (jarEntry.getName().endsWith(".class")) {
-                                if (containsAnnotation(jarFile.getInputStream(
-                                    jarEntry), jarEntry.getSize())) {
-                                    return true;
-                                }
-                            }
-                        } 
-                    } finally {
-                        if (jarFile != null) {
-                            jarFile.close();
-                        }
+    protected List<URI> additionalArchives(ReadableArchive archive) throws IOException {
+        List<URI> jars = super.additionalArchives(archive);
+        for (String entry : Collections.list(archive.entries())) {
+            if (!entry.contains("/") && entry.endsWith(".jar")) {
+                try (ReadableArchive jar = archive.getSubArchive(entry)) {
+                    if (jar != null) {
+                        jars.add(jar.getURI());
                     }
                 }
             }
         }
-        return false;
+        return jars;
     }
 }

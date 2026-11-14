@@ -38,13 +38,14 @@
  * holder.
  */
 
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.context;
 
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import org.glassfish.apf.context.AnnotationContext;
 
 import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
+import org.jboss.jandex.AnnotationTarget;
 
 /**
  * This provides a context for a collection of web components with the same
@@ -84,7 +85,7 @@ public class WebComponentsContext extends AnnotationContext
         return webCompContexts;
     }
     
-    public void endElement(ElementType type, AnnotatedElement element) {
+    public void endElement(ElementType type, AnnotationTarget element) {
         
         if (ElementType.TYPE.equals(type)) {
             // done with processing this class, let's pop this context

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2026] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.ejb.deployment.descriptor;
@@ -45,7 +45,12 @@ package org.glassfish.ejb.deployment.descriptor;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.ejb.deployment.BeanMethodCalculatorImpl;
 import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -190,16 +195,16 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
     @Override
     public Set getTxBusinessMethodDescriptors() {
 
-        ClassLoader classLoader = getEjbBundleDescriptor().getClassLoader();
+        IndexView index = getIndex();
         Set methods = new HashSet();
 
         try {
             addAllInterfaceMethodsIn
-                (methods, classLoader.loadClass(messageListenerType),
+                (methods, index, messageListenerType,
                  MethodDescriptor.EJB_BEAN);
 
             addAllInterfaceMethodsIn
-                (methods, classLoader.loadClass(getEjbClassName()),
+                (methods, index, getEjbClassName(),
                 MethodDescriptor.EJB_BEAN);
 
             if (isTimedObject()) {
@@ -717,17 +722,24 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
         if( beanClassTxMethods == null ) {
             try {
                 beanClassTxMethods = new HashSet();
-                Class ejbClass = classLoader.loadClass(this.getEjbClassName());
-                Method interfaceMessageListenerMethods[] =
-                    getMessageListenerInterfaceMethods(classLoader);
-                for(int i = 0; i < interfaceMessageListenerMethods.length;
-                    i++) {
-                    Method next = interfaceMessageListenerMethods[i];
-                    // Convert method objects from MessageListener interface
-                    // to method objects from ejb class
-                    Method nextBeanMethod = ejbClass.getMethod
-                        (next.getName(), next.getParameterTypes());
+                IndexView index = BeanMethodCalculatorImpl.indexFor(classLoader);
+                ClassInfo ejbClass = BeanMethodCalculatorImpl.classInfo(index, this.getEjbClassName());
+                // the bean's public methods, java.lang.Object's included as Class.getMethods() lists them
+                List<MethodInfo> beanMethods = ClassHierarchy.publicMethods(index, ejbClass, true);
+                ClassInfo messageListenerClass = BeanMethodCalculatorImpl.classInfo(index, messageListenerType);
+                for (MethodInfo next : messageListenerClass.methods()) {
+                    if (next.name().startsWith("<")) {
+                        continue;
+                    }
+                    // Convert methods from MessageListener interface to methods from ejb class
+                    MethodInfo nextBeanMethod = ClassHierarchy.find(beanMethods, next.name(), ClassHierarchy.javaParameterNames(next));
+                    if (nextBeanMethod == null) {
+                        throw new NoSuchMethodException(next.toString());
+                    }
                     beanClassTxMethods.add(new MethodDescriptor(nextBeanMethod, MethodDescriptor.EJB_BEAN));
+                }
+                for (MethodInfo beanMethod : beanMethods) {
+                    beanClassTxMethods.add(new MethodDescriptor(beanMethod, MethodDescriptor.EJB_BEAN));
                 }
                 if( isTimedObject() ) {
                     beanClassTxMethods.add(getEjbTimeoutMethod());
