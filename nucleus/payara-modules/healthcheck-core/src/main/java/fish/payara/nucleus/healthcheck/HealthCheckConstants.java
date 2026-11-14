@@ -72,6 +72,8 @@ public interface HealthCheckConstants {
     final String OLD_CONCURRENTMARKSWEEP = "ConcurrentMarkSweep";
     final String OLD_G1GC = "G1 Old Generation";
 
+    final String CONCURRENT_G1GC = "G1 Concurrent GC";
+
     final String DEFAULT_ENABLED = "false";
     final String DEFAULT_ADD_TO_MICROPROFILE_HEALTH = "false";
     final String DEFAULT_TIME = "5";
