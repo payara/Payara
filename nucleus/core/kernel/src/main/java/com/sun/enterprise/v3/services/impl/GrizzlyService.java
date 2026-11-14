@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright 2018-2025 Payara Foundation and/or its affiliates
+ * Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
  */
 
 package com.sun.enterprise.v3.services.impl;
@@ -104,9 +104,11 @@ import org.glassfish.grizzly.http.HttpCodecFilter;
 import org.glassfish.grizzly.http.HttpProbe;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
+import org.glassfish.grizzly.http.util.HttpRequestURIDecoder;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.utils.Futures;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -159,6 +161,13 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
     private final GrizzlyMonitoring monitoring;
 
     private static final String NETWORK_CONFIG_PREFIX = "";
+
+    /**
+     * When true, a percent-encoded backslash ({@code %5C}) in a request URI is accepted as path data (RFC 3986)
+     * instead of being rejected. Payara defaults it to true, since {@code StandardContextValve} already guards
+     * against backslash traversal. Uses a class literal, which does not initialize {@link HttpRequestURIDecoder}.
+     */
+    private static final String ALLOW_BACKSLASH_PROPERTY = HttpRequestURIDecoder.class.getName() + ".ALLOW_BACKSLASH";
 
     private final Set<MapperUpdateListener> mapperUpdateListeners =
             Collections.newSetFromMap(
@@ -545,6 +554,11 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
      */
     @Override
     public void postConstruct() {
+        // must happen before HttpRequestURIDecoder is loaded, as it reads the property once
+        if (System.getProperty(ALLOW_BACKSLASH_PROPERTY) == null) {
+            System.setProperty(ALLOW_BACKSLASH_PROPERTY, "true");
+        }
+        Globals.initAllowBackslash(Boolean.getBoolean(ALLOW_BACKSLASH_PROPERTY));
         events.register(this);
 
         final NetworkConfig networkConfig = config.getNetworkConfig();
