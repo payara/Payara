@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.loader;
 
 import fish.payara.web.loader.ServletContainerInitializerBlacklist;
 import org.glassfish.deployment.common.ClassDependencyBuilder;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.classmodel.reflect.*;
 
 import jakarta.servlet.ServletContainerInitializer;
@@ -53,12 +54,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -448,6 +452,16 @@ public class ServletContainerInitializerUtil {
         if (classInfo==null) {
             return initializerList;
         }
+        addWarLibraryTypes(interestList, initializerList, cl, isStandalone);
+        return checkAgainstInterestList(classInfo, interestList, initializerList, cl, isStandalone, type -> true);
+    }
+
+    private static Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> checkAgainstInterestList(
+                                Types classInfo,
+                                Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
+                                Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList,
+                                ClassLoader cl, boolean isStandalone, Predicate<Type> include) {
+
         for (Map.Entry<Class<?>, List<Class<? extends ServletContainerInitializer>>> e:
                 interestList.entrySet()) {
 
@@ -464,7 +478,7 @@ public class ServletContainerInitializerUtil {
                     } else if (ae instanceof Parameter) {
                         ae = ((Parameter) ae).getMethod().getDeclaringType();
                     }
-                    if (ae instanceof Type) {
+                    if (ae instanceof Type && include.test((Type) ae)) {
                         try {
                             resultSet.add(cl.loadClass(ae.getName()));
                         } catch (Throwable t) {
@@ -484,6 +498,9 @@ public class ServletContainerInitializerUtil {
                     classes = ((ClassModel) type).allSubTypes();
                 }
                 for (ClassModel classModel : classes) {
+                    if (!include.test(classModel)) {
+                        continue;
+                    }
                     try {
                         resultSet.add(cl.loadClass(classModel.getName()));
                     } catch (Throwable t) {
@@ -557,6 +574,26 @@ public class ServletContainerInitializerUtil {
             }
         }
         return initializerList;
+    }
+
+    /**
+     * War libraries are scanned only once and are absent from the deployment's Types.
+     * Match them against the interest list using the Types they were scanned into.
+     */
+    private static void addWarLibraryTypes(
+            Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
+            Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList,
+            ClassLoader cl, boolean isStandalone) {
+        if (!DeploymentUtils.useWarLibraries(DeploymentUtils.getCurrentDeploymentContext())) {
+            return;
+        }
+        DeploymentUtils.getWarLibraryCache().forEach((path, descriptor) -> {
+            if (descriptor.getDeploymentTypes() != null) {
+                List<URI> warLibrary = List.of(Path.of(path).toUri());
+                checkAgainstInterestList(descriptor.getDeploymentTypes(), interestList, initializerList, cl,
+                        isStandalone, type -> type.wasDefinedIn(warLibrary));
+            }
+        });
     }
 
     private static Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> checkAgainstBlacklist(

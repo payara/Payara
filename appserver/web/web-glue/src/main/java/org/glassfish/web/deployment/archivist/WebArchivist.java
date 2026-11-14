@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.archivist;
 
@@ -375,8 +375,11 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                                 warArchive.close();
                             }
                         }
+                        Types types = deployment.getCurrentDeploymentContext()
+                                .getTransientAppMetaData(Types.class.getName(), Types.class);
                         DeploymentUtils.getWarLibraryCache().putIfAbsent(wfDesc.getWarLibraryPath(),
-                                new DeploymentUtils.WarLibraryDescriptor(wfDesc, filterTypesByWarLibrary(wfDesc)));
+                                new DeploymentUtils.WarLibraryDescriptor(wfDesc,
+                                        filterTypesByWarLibrary(wfDesc, types), types));
                     }
                 } else {
                     super.readAnnotations(archive, wfDesc, localExtensions);
@@ -418,8 +421,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
         descriptor.addDefaultWebBundleDescriptor(defaultWebBundleDescriptor);
     }
 
-    private List<Type> filterTypesByWarLibrary(WebFragmentDescriptor wfDesc) {
-        Types types = deployment.getCurrentDeploymentContext().getTransientAppMetaData(Types.class.getName(), Types.class);
+    private List<Type> filterTypesByWarLibrary(WebFragmentDescriptor wfDesc, Types types) {
         if (types == null) {
             return List.of();
         }
@@ -487,8 +489,8 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
 
         }
 
-        if (((WebBundleDescriptorImpl)descriptor).getAbsoluteOrderingDescriptor() != null) {
-            wfList = ((WebBundleDescriptorImpl)descriptor).getAbsoluteOrderingDescriptor().order(wfList);
+        if (descriptor.getAbsoluteOrderingDescriptor() != null) {
+            wfList = descriptor.getAbsoluteOrderingDescriptor().order(wfList);
         } else {
             OrderingDescriptor.sort(wfList);
         }
