@@ -133,6 +133,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private String hzMulticastGroup;
     private int hzPort = Integer.MIN_VALUE;
+    private int hzMulticastTimeout = Integer.MIN_VALUE;
     private int hzStartPort = Integer.MIN_VALUE;
     private String hzClusterName;
     private int httpPort = Integer.MIN_VALUE;
@@ -1219,6 +1220,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     hzPort = Integer.parseInt(value);
                     break;
                 }
+                case mctimeout:
+                    hzMulticastTimeout = Integer.parseInt(value);
+                    break;
                 case startport:
                     hzStartPort = Integer.parseInt(value);
                     break;
@@ -2059,6 +2063,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-port=" + hzPort));
             }
 
+            if (hzMulticastTimeout > Integer.MIN_VALUE) {
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.multicast-timeout-seconds=" + hzMulticastTimeout));
+            }
+
             if (hzStartPort > Integer.MIN_VALUE) {
                 preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.start-port=" + hzStartPort));
             }
@@ -2318,6 +2326,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         sniEnabled = getBooleanProperty("payaramicro.sniEnabled");
         hzMulticastGroup = getProperty("payaramicro.mcAddress");
         hzPort = getIntegerProperty("payaramicro.mcPort", Integer.MIN_VALUE);
+        hzMulticastTimeout = getIntegerProperty("payaramicro.mcTimeout", Integer.MIN_VALUE);
         hostAware = getBooleanProperty("payaramicro.hostAware", "true");
         hzStartPort = getIntegerProperty("payaramicro.startPort", Integer.MIN_VALUE);
         hzClusterName = getProperty("payaramicro.clusterName");
@@ -2412,6 +2421,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (hzPort != Integer.MIN_VALUE) {
             props.setProperty("payaramicro.mcPort", Integer.toString(hzPort));
+        }
+        if (hzMulticastTimeout != Integer.MIN_VALUE) {
+            props.setProperty("payaramicro.mcTimeout", Integer.toString(hzMulticastTimeout));
         }
         if (instanceName != null) {
             props.setProperty("payaramicro.name", instanceName);
