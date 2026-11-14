@@ -142,14 +142,7 @@ public class PythonClientGenerator extends ClientGenerator {
             ZipEntry entry = new ZipEntry(sourcePath);
             target.putNextEntry(entry);
 
-            byte[] buffer = new byte[1024];
-            while (true) {
-                int count = source.read(buffer);
-                if (count == -1) {
-                    break;
-                }
-                target.write(buffer, 0, count);
-            }
+            source.transferTo(target);
             target.closeEntry();
         } finally {
             if (source != null) {

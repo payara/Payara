@@ -76,6 +76,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
+import java.nio.file.Files;
 
 /**
  * Util class for connector related classes
@@ -850,34 +851,8 @@ public class ConnectorsUtil {
                     f.mkdir();
                     continue;
                 }
-                InputStream is = null;
-                FileOutputStream fos = null;
-                try {
-                    is = jar.getInputStream(file);
-                    fos = new FileOutputStream(f);
-                    while (is.available() > 0) {
-                        fos.write(is.read());
-                    }
-                } finally {
-                    try {
-                        if (fos != null) {
-                            fos.close();
-                        }
-                    } catch (Exception e) {
-                        if (_logger.isLoggable(Level.FINEST)) {
-                            _logger.log(Level.FINEST, "exception while closing archive [ " + f.getName() + " ]", e);
-                        }
-                    }
-
-                    try {
-                        if (is != null) {
-                            is.close();
-                        }
-                    } catch (Exception e) {
-                        if (_logger.isLoggable(Level.FINEST)) {
-                            _logger.log(Level.FINEST, "exception while closing archive [ " + file.getName() + " ]", e);
-                        }
-                    }
+                try (InputStream is = jar.getInputStream(file)) {
+                    Files.copy(is, f.toPath());
                 }
             }
         }finally{

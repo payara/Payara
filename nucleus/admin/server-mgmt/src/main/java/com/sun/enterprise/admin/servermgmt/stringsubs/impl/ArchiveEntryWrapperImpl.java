@@ -235,10 +235,7 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
         try {
             in = jar.getInputStream(jarEntry);
             outputStream = new BufferedOutputStream(new FileOutputStream(file));
-            int i = 0;
-            while ((i = in.read(BUFFER)) != -1) {
-                outputStream.write(BUFFER, 0, i);
-            }
+            in.transferTo(outputStream);
         } finally {
             if (in != null) {
                 try {
@@ -364,10 +361,7 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
             throws IOException {
         jos.putNextEntry(jarEntry);
         if(!jarEntry.isDirectory()) {
-            int i = 0;
-            while ((i = is.read(BUFFER)) != -1) {
-                jos.write(BUFFER, 0, i);
-            }
+            is.transferTo(jos);
             is.close();
             jos.flush();
         }

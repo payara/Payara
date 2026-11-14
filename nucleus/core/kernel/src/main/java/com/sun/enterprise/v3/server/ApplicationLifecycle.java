@@ -123,13 +123,11 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.beans.PropertyVetoException;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -2364,17 +2362,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         final ZipEntry entry = new ZipEntry(entryName);
         zipOS.putNextEntry(entry);
         if ( ! f.isDirectory()) {
-            final byte[] buffer = new byte[1024];
-            final InputStream is = new BufferedInputStream(new FileInputStream(f));
-            int bytesRead;
-            try {
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    zipOS.write(buffer, 0, bytesRead);
-                }
-            } finally {
-                is.close();
-                zipOS.closeEntry();
-            }
+            Files.copy(f.toPath(), zipOS);
+            zipOS.closeEntry();
         } else {
             /*
              * A directory entry has no content itself.

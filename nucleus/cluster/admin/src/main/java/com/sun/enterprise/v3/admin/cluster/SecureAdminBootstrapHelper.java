@@ -358,12 +358,8 @@ public abstract class SecureAdminBootstrapHelper {
         @Override
         void writeToFile(final String path, final InputStream content) throws IOException {
             final OutputStream os = new BufferedOutputStream(ftpClient.writeToFile(path));
-            int bytesRead;
-            final byte[] buffer = new byte[1024];
             try {
-                while ((bytesRead = content.read(buffer)) != -1) {
-                    os.write(buffer, 0, bytesRead);
-                }
+                content.transferTo(os);
             }
             finally {
                 os.close();

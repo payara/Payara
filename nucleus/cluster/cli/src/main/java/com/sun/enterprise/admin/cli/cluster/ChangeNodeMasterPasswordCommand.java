@@ -47,7 +47,6 @@ import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -188,8 +187,8 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
         try {
             // Write the master password location if applicable
             if (mpLocation != null) {
-                try (FileWriter writer = new FileWriter(mpLocationFile)) {
-                    writer.write(mpLocation);
+                try {
+                    Files.writeString(mpLocationFile.toPath(), mpLocation);
                 } catch (Exception e) {
                     throw new CommandException(STRINGS.get("masterPasswordFileLocationNotSaved"), e);
                 }

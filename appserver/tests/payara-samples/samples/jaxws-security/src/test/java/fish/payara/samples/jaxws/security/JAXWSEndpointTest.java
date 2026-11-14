@@ -101,11 +101,7 @@ public abstract class JAXWSEndpointTest {
     }
 
     private final void pipe(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[1024];
-        int size;
-        while ((size = in.read(buffer)) != -1) {
-            out.write(buffer, 0, size);
-        }
+        in.transferTo(out);
     }
 
     protected final String readTextFromInputStream(InputStream inputStream) throws IOException {

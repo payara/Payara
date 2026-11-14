@@ -79,19 +79,10 @@ public final class ResponseUtil {
                                    ServletOutputStream ostream) {
 
         IOException exception = null;
-        byte buffer[] = new byte[2048];
-        int len;
-        while (true) {
-            try {
-                len = istream.read(buffer);
-                if (len == -1)
-                    break;
-                ostream.write(buffer, 0, len);
-            } catch (IOException e) {
-                exception = e;
-                len = -1;
-                break;
-            }
+        try {
+            istream.transferTo(ostream);
+        } catch (IOException e) {
+            exception = e;
         }
         return exception;
 

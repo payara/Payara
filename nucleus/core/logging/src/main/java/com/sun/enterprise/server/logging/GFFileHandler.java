@@ -1046,11 +1046,7 @@ public class GFFileHandler extends StreamHandler implements
             FileOutputStream fos  = new FileOutputStream(infile.getCanonicalPath() + GZIP_EXTENSION);
             GZIPOutputStream gzos = new GZIPOutputStream(fos)
         ) {
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len=fis.read(buffer)) != -1 ) {
-                gzos.write(buffer, 0, len);
-            }
+            fis.transferTo(gzos);
             gzos.finish();
 
             status = true;

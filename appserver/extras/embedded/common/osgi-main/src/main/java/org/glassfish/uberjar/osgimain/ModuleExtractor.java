@@ -280,11 +280,9 @@ public class ModuleExtractor {
         for (OSGIModule b : ModuleExtractor.extractModules(new File(args[0]))) {
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] array = new byte[BYTEBUFFER_SIZE];
-            int count;
 
-            while ((count = b.getContentStream().read(array)) != -1) {
-                out.write(array, 0, count);
+            try (InputStream contentStream = b.getContentStream()) {
+                contentStream.transferTo(out);
             }
 
             ++bundleCount;

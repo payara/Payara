@@ -42,8 +42,9 @@
 package com.sun.enterprise.security.common;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.io.InputStream;
 import java.util.List;
 import javax.security.auth.callback.CallbackHandler;
@@ -144,23 +145,15 @@ public class Util {
                 localFile.createNewFile();
             }
         }
-        FileOutputStream oStream = null;
-        InputStream iStream = null;
+        InputStream iStream = Util.class.getResourceAsStream("/config/" + fileName);
         try {
-            oStream = new FileOutputStream(localFile);
-            iStream = Util.class.getResourceAsStream("/config/" + fileName);
-
-            while (iStream != null && iStream.available() > 0) {
-                oStream.write(iStream.read());
+            if (iStream != null) {
+                Files.copy(iStream, localFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
         } finally {
-            if (oStream != null) {
-                oStream.close();
-            }
             if (iStream != null) {
                 iStream.close();
             }
-
         }
 
         return localFile;

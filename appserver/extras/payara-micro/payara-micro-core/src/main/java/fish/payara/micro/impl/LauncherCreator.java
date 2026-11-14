@@ -162,10 +162,7 @@ class LauncherCreator {
                         try {
                             out.putNextEntry(entry);
                             try (InputStream input = bootJar.getInputStream(entry)) {
-                                byte[] buffer = new byte[4096];
-                                for (int read = 0; (read = input.read(buffer)) > 0; ) {
-                                    out.write(buffer, 0, read);
-                                }
+                                input.transferTo(out);
                             }
                         } catch (IOException e) {
                             throw new RuntimeException(e);
