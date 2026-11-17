@@ -18,7 +18,7 @@ Treat this space with the same respect you would give a public park.
 
 ## Keep it tidy
 
-- Search first. Your question may already be answered in Discussions, Issues or the [Payara documentation](https://docs.payara.fish).
+- Search first. Your question may already be answered in Discussions, Issues or the [Payara documentation](https://docs.azul.com/payara-community/).
 - Choose the right category for your post.
 - One topic per discussion. Please don't post the same thing in several places.
 - Use a 👍 reaction instead of "+1" or "me too" comments.
