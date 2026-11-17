@@ -164,8 +164,7 @@ public class StartInstanceCommand implements AdminCommand {
      * Do NOT make this public!!
      * @author Byron Nevins
      */
-    StartInstanceCommand(ServiceLocator serviceLocator, String instanceName, boolean debug, int timeout,
-                         ServerEnvironment env) {
+    StartInstanceCommand(ServiceLocator serviceLocator, String instanceName, boolean debug, int timeout, ServerEnvironment env) {
         this.instanceName = instanceName;
         this.debug = debug;
         this.timeout = timeout;
