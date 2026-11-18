@@ -50,17 +50,6 @@
     <name>Microprofile - Fault Tolerance</name>
     <description>Implementation of MicroProfile Fault Tolerance API</description>
     <packaging>glassfish-jar</packaging>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <rerunFailingTestsCount>3</rerunFailingTestsCount>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
     <dependencies>
         <dependency>
             <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
@@ -117,4 +106,15 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <rerunFailingTestsCount>3</rerunFailingTestsCount>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
