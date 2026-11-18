@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,6 +64,7 @@ public class JrePlatform {
 
     private static final String OS_NAME_PROPERTY = "os.name";
     private static final String OS_NAME_WINDOWS_PREFIX = "Windows";
+    private static final String OS_NAME_MAC_OS_X_PREFIX = "Mac OS X";
 
     static {
         /*
@@ -93,8 +94,10 @@ public class JrePlatform {
         }
 
         IS_WINDOWS = osName.startsWith(OS_NAME_WINDOWS_PREFIX);
+        IS_MAC_OS_X = osName.startsWith(OS_NAME_MAC_OS_X_PREFIX);
     }
 
 
     public static final boolean IS_WINDOWS;
+    public static final boolean IS_MAC_OS_X;
 }
