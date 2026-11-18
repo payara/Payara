@@ -43,7 +43,10 @@ package org.glassfish.cluster.ssh.connect;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
+
+import fish.payara.cluster.winrm.NodeRunnerWinrm;
 import org.glassfish.api.admin.AdminCommandContext;
+import fish.payara.api.admin.WinrmCommandExecutionException;
 import org.glassfish.common.util.admin.AsadminInput;
 import org.glassfish.api.admin.SSHCommandExecutionException;
 import com.sun.enterprise.universal.process.ProcessManagerException;
@@ -117,7 +120,8 @@ public class NodeRunner {
             SSHCommandExecutionException,
             ProcessManagerException,
             UnsupportedOperationException,
-            IllegalArgumentException {
+            IllegalArgumentException,
+            WinrmCommandExecutionException {
 
         return runAdminCommandOnNode(node, output, false, args, context);
     }
@@ -129,7 +133,8 @@ public class NodeRunner {
             SSHCommandExecutionException,
             ProcessManagerException,
             UnsupportedOperationException,
-            IllegalArgumentException {
+            IllegalArgumentException,
+            WinrmCommandExecutionException {
 
 
         if (node == null) {
@@ -208,7 +213,7 @@ public class NodeRunner {
             List<String> args,
             List<String> stdinLines) throws
             SSHCommandExecutionException, IllegalArgumentException,
-            UnsupportedOperationException {
+            UnsupportedOperationException, WinrmCommandExecutionException {
 
         // don't want to call a config object proxy more than absolutely necessary!
         String type = node.getType();
@@ -220,7 +225,14 @@ public class NodeRunner {
             return result;
         }
 
-        throw new UnsupportedOperationException("Node is not of type SSH");
+        if ("WINRM".equals(type)) {
+            NodeRunnerWinrm winrmRunner = new NodeRunnerWinrm(habitat, logger);
+            int result = winrmRunner.runAdminCommandOnRemoteNode(node, output, args, stdinLines);
+            lastCommandRun = winrmRunner.getLastCommandRun();
+            return result;
+        }
+
+        throw new UnsupportedOperationException("Node is not of type SSH or WinRM");
     }
 
     private void trace(String s) {

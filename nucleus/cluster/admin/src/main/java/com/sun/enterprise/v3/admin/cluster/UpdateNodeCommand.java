@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import fish.payara.enterprise.config.serverbeans.WinrmConnector;
 import jakarta.inject.Inject;
 
 import org.glassfish.api.ActionReport;
@@ -145,6 +146,15 @@ public class UpdateNodeCommand implements AdminCommand {
 
     @Param(name = "windowsdomain", optional = true)
     String windowsdomain;
+
+    @Param(name = NodeUtils.PARAM_REMOTE_WINRM_USER, optional = true)
+    String winrmuser;
+
+    @Param(name = NodeUtils.PARAM_REMOTE_WINRM_PASSWORD, optional = true, password = true)
+    String winrmpassword;
+
+    @Param(name = NodeUtils.PARAM_REMOTE_WINRM_PORT, optional = true, defaultValue = NodeUtils.NODE_DEFAULT_WINRM_PORT)
+    String winrmport;
 
     @Param(name = "dockerImage", optional = true)
     String dockerImage;
@@ -303,6 +313,27 @@ public class UpdateNodeCommand implements AdminCommand {
                             }
                             sshConnector.setSshAuth(sshAuth);
                         }
+                    }
+
+                    if (RemoteType.WINRM.name().equals(type)) {
+                        WinrmConnector connector = writeableNode.getWinrmConnector();
+                        if (connector == null) {
+                            connector = writeableNode.createChild(WinrmConnector.class);
+                        }
+
+                        if (winrmuser != null) {
+                            connector.setWinrmUser(winrmuser);
+                        }
+
+                        if (winrmpassword != null) {
+                            connector.setWinrmPassword(winrmpassword);
+                        }
+
+                        if (winrmport != null) {
+                            connector.setWinrmPort(winrmport);
+                        }
+
+                        writeableNode.setWinrmConnector(connector);
                     }
 
                     if (dockerImage != null) {
