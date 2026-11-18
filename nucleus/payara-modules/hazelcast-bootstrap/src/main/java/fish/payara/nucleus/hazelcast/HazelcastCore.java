@@ -45,6 +45,7 @@ import com.hazelcast.cluster.ClusterState;
 import com.hazelcast.cluster.Member;
 import com.hazelcast.collection.ISet;
 import com.hazelcast.config.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.hazelcast.config.DiscoveryStrategyConfig;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
@@ -73,14 +74,12 @@ import com.hazelcast.map.IMap;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.hazelcast.spi.properties.ClusterProperty;
-import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.ServerEnvironment.Status;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -153,6 +152,12 @@ public class HazelcastCore implements EventListener, ConfigListener {
     private CachingProvider hazelcastCachingProvider;
     private boolean enabled;
     private boolean booted=false;
+    /**
+     * Whether the server has started; together with {@link #booted} guarded by {@link #bootstrapState}. The
+     * bootstrap complete event is sent by whichever of the server start and the Hazelcast boot happens second.
+     */
+    private boolean serverStarted;
+    private final Object bootstrapState = new Object();
     private String memberName;
     private String memberGroup;
 
@@ -166,6 +171,9 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
     @Inject
     ServerEnvironment env;
+
+    @Inject
+    Domain domain;
 
     @Inject
     HazelcastRuntimeConfiguration configuration;
@@ -215,6 +223,27 @@ public class HazelcastCore implements EventListener, ConfigListener {
         if (datagridEncryptionValue) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Data grid encryption is enabled");
         }
+        if (enabled) {
+            startBootstrap();
+        }
+    }
+
+    /**
+     * Boots Hazelcast on its own thread so that the startup services and the applications load meanwhile. Every
+     * accessor still waits for the boot to finish through the synchronized {@link #bootstrapHazelcast()}, and
+     * retries it should the boot have failed.
+     */
+    private void startBootstrap() {
+        Thread bootstrap = new Thread(() -> {
+            try {
+                bootstrapHazelcast();
+            } catch (RuntimeException e) {
+                Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, "Hazelcast failed to start", e);
+            }
+        }, "hazelcast-bootstrap");
+        bootstrap.setContextClassLoader(clh.getCommonClassLoader());
+        bootstrap.setDaemon(true);
+        bootstrap.start();
     }
 
     /**
@@ -298,18 +327,16 @@ public class HazelcastCore implements EventListener, ConfigListener {
     public void event(Event event) {
         if (event.is(Deployment.ALL_APPLICATIONS_STOPPED)) {
             shutdownHazelcast();
-        } else if (event.is(Deployment.ALL_APPLICATIONS_LOADED)) {
-            ClassLoader oldCL = Utility.getClassLoader();
-            try {
-                Utility.setContextClassLoader(clh.getCommonClassLoader());
-                bootstrapHazelcast();
-            } finally {
-                Utility.setContextClassLoader(oldCL);
+        } else if (event.is(EventTypes.SERVER_STARTUP)) {
+            boolean announce;
+            synchronized (bootstrapState) {
+                serverStarted = true;
+                // only after all startup services have been initialized, and only if the boot got there first
+                announce = isEnabled() && booted;
             }
-        }
-        else if(event.is(EventTypes.SERVER_STARTUP) && isEnabled() && booted) {
-            // send this event only after all Startup services have been initialized
-            events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+            if (announce) {
+                events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+            }
         }
     }
 
@@ -411,8 +438,12 @@ public class HazelcastCore implements EventListener, ConfigListener {
                     }
                 }
                 config.setClassLoader(clh.getCommonClassLoader());
-                // can set to zero as of Hazelcast 5.4 or greater
-                config.setProperty(ClusterProperty.WAIT_SECONDS_BEFORE_JOIN.getName(), "1");
+                // the join wait lets discovery-based members starting at the same time find each other and lets the
+                // master coalesce the partition rebalancing of several joins; a DAS whose domain defines no instances
+                // has nobody to wait for, while Hazelcast would still poll discovery for the full period (a single
+                // round with 0 as of Hazelcast 5.4). An explicitly set system property always wins.
+                String waitBeforeJoin = ClusterProperty.WAIT_SECONDS_BEFORE_JOIN.getName();
+                config.setProperty(waitBeforeJoin, System.getProperty(waitBeforeJoin, mayHaveOtherMembers() ? "1" : "0"));
 
                 if(ctxUtil != null) {
                     SerializationConfig serializationConfig = new SerializationConfig();
@@ -461,6 +492,18 @@ public class HazelcastCore implements EventListener, ConfigListener {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Configuration data could no be saved", ex);
         }
         return config;
+    }
+
+    /**
+     * @return whether another member of this domain's data grid may exist: always for instances, Payara Micro and
+     * discovery modes that find members the domain does not define, for a DAS using domain discovery only if the
+     * domain defines server instances
+     */
+    private boolean mayHaveOtherMembers() {
+        if (!env.isDas() || env.isMicro() || !"domain".equals(configuration.getDiscoveryMode())) {
+            return true;
+        }
+        return domain.getServers().getServer().stream().anyMatch(server -> !server.isDas());
     }
 
     private static boolean isYamlFile(String hazelcastFilePath) {
@@ -526,6 +569,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             mcConfig.setEnabled(true);
             mcConfig.setMulticastGroup(configuration.getMulticastGroup());
             mcConfig.setMulticastPort(Integer.parseInt(configuration.getMulticastPort()));
+            mcConfig.setMulticastTimeoutSeconds(Integer.parseInt(configuration.getMulticastTimeoutSeconds()));
         } else if (discoveryMode.startsWith("kubernetes")) {
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             config.getNetworkConfig().getJoin().getKubernetesConfig().setEnabled(true)
@@ -623,12 +667,15 @@ public class HazelcastCore implements EventListener, ConfigListener {
             setAttribute(theInstance.getCluster().getLocalMember().getUuid(), INSTANCE_GROUP_ATTRIBUTE, memberGroup);
             hazelcastCachingProvider = new HazelcastServerCachingProvider(theInstance);
             bindToJNDI();
-            if(env.getStatus() == Status.started) {
-                // only issue this event if the server is already running,
-                // otherwise the SERVER_STARTUP event will issue this event as well
+            boolean announce;
+            synchronized (bootstrapState) {
+                booted = true;
+                // otherwise the SERVER_STARTUP event issues this event once all startup services are initialized
+                announce = serverStarted;
+            }
+            if (announce) {
                 events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
             }
-            booted = true;
         }
     }
 
@@ -741,6 +788,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             if (multicastConfig != null && multicastConfig.isEnabled()) {
                 configuration.setMulticastGroup(multicastConfig.getMulticastGroup());
                 configuration.setMulticastPort(String.valueOf(multicastConfig.getMulticastPort()));
+                configuration.setMulticastTimeoutSeconds(String.valueOf(multicastConfig.getMulticastTimeoutSeconds()));
             }
             KubernetesConfig kubernetesConfig = joinConfig.getKubernetesConfig();
             if (kubernetesConfig != null && kubernetesConfig.isEnabled()) {
