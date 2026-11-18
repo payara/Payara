@@ -6,12 +6,57 @@ One of the key goals of Payara is to interact with our community of users and un
 [[questions]]
 == Questions and General Advice
 
-For questions regarding about using the platform, visit the https://forum.payara.fish/[Payara Forum] and create a topic to discuss your inquiries in detail. This includes advice on:
+For questions about using the platform, start a discussion in https://github.com/payara/Payara/discussions[Payara Discussions]. This includes advice on:
 
 * Configuration of any Payara Platform distributions
 * Integration of the Payara Platform with other technologies
 * Software Architecture and Best Practices
-* etc.
+* Ideas, feedback, tips and experiences with Payara
+
+Discussions is community-led. Payara team members take part regularly, but another user may well answer first, and there is no guaranteed response time.
+
+=== What goes where
+
+[cols="2,2"]
+|===
+|I want to... |Go to
+
+|Ask how to use, configure or troubleshoot Payara
+|Discussions: Q&A
+
+|Share an idea or give general feedback
+|Discussions: Ideas
+
+|Share a tip, project or experience with Payara
+|Discussions: Show and tell
+
+|Report a bug
+|GitHub Issues, with a test case that reproduces it
+
+|Request a specific enhancement
+|GitHub Issues (vote with a thumbs-up on existing ones)
+
+|Report a security vulnerability
+|Email security@payara.fish, not a public post
+
+|Get urgent help or a guaranteed response
+|https://support.azul.com[Azul Payara Support]
+|===
+
+=== Asking a good question
+
+A clear question gets a faster answer. Please include:
+
+* A short, specific title
+* What you are trying to do
+* Your Payara version and edition (Server or Micro), Java version and operating system
+* What happened, and what you expected instead
+* Relevant logs or configuration, trimmed down and in code blocks
+* What you have already tried
+
+If you think you have found a bug, open a GitHub Issue instead (see below).
+
+Please read our https://github.com/payara/Payara/blob/main/.github/CODE_OF_CONDUCT.md[Code of Conduct] before posting. In short: be kind, post in the right place, and help where you can.
 
 [[user-requests]]
 == User Requests
