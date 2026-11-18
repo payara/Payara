@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import jakarta.decorator.Decorator;
 import jakarta.ejb.MessageDriven;
 import jakarta.ejb.Stateful;
@@ -74,6 +75,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.deployment.common.DeploymentUtils.WarLibraryDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.AnnotationType;
@@ -96,6 +98,7 @@ public class WeldUtils {
     private static Logger logger = Logger.getLogger(WeldUtils.class.getName());
 
     private static final String EMPTY_BEANS_XML_MODE_ALL = "fish.payara.deployment.emptyBeansXmlModeALL";
+    private static final String CDI_ANNOTATED_CLASS_NAMES = "fish.payara.weld.cdiAnnotatedClassNames";
 
     public static final char SEPARATOR_CHAR = '/';
     public static final String WEB_INF = "WEB-INF";
@@ -217,7 +220,8 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified path
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, URI path) {
-        return hasCDIEnablingAnnotations(context, Collections.singleton(path));
+        return computeForWarLibrary(context, path, "hasCDIEnablingAnnotations",
+                () -> hasCDIEnablingAnnotations(context, Collections.singleton(path)));
     }
 
 
@@ -285,6 +289,15 @@ public class WeldUtils {
      * @return A collection of class names; The collection could be empty if none are found.
      */
     public static Collection<String> getCDIAnnotatedClassNames(DeploymentContext context) {
+        Collection<String> cached = context.getTransientAppMetaData(CDI_ANNOTATED_CLASS_NAMES, Collection.class);
+        if (cached == null) {
+            cached = findCDIAnnotatedClassNames(context);
+            context.addTransientAppMetaData(CDI_ANNOTATED_CLASS_NAMES, cached);
+        }
+        return cached;
+    }
+
+    private static Collection<String> findCDIAnnotatedClassNames(DeploymentContext context) {
         final Set<String> result = new HashSet<>();
         final Set<String> cdiEnablingAnnotations = new HashSet<>();
         Collections.addAll(cdiEnablingAnnotations, getCDIEnablingAnnotations(context));
@@ -707,24 +720,47 @@ public class WeldUtils {
             return List.of();
         }
 
-        List<Type> allTypes = new ArrayList<>(types.getAllTypes());
+        List<Type> allTypes = new ArrayList<>();
+        // the deployment's types are only needed for paths that aren't cached war libraries
+        boolean onlyWarLibraries = !paths.isEmpty() && DeploymentUtils.useWarLibraries(context);
         if (DeploymentUtils.useWarLibraries(context)) {
-            Map<String, DeploymentUtils.WarLibraryDescriptor> cache = DeploymentUtils.getWarLibraryCache();
+            Map<String, WarLibraryDescriptor> cache = DeploymentUtils.getWarLibraryCache();
             for (URI path : paths.isEmpty() ? cache.keySet().stream().map(Path::of).map(Path::toUri)
                                               .toList() : paths) {
-                var descriptor = cache.get(path.getRawPath());
+                var descriptor = getWarLibrary(context, path);
                 if (descriptor != null) {
                     allTypes.addAll(descriptor.getTypes());
+                } else {
+                    onlyWarLibraries = false;
                 }
             }
         }
+        if (!onlyWarLibraries) {
+            allTypes.addAll(types.getAllTypes());
+        }
         return allTypes;
+    }
+
+    /**
+     * Computes a value for a cached war library only once, as war libraries don't change between deployments.
+     * Anything else is computed every time.
+     *
+     * @param path the archive or jar path, can be null
+     */
+    public static <T> T computeForWarLibrary(DeploymentContext context, URI path, String key, Supplier<T> supplier) {
+        WarLibraryDescriptor warLibrary = getWarLibrary(context, path);
+        return warLibrary == null ? supplier.get() : warLibrary.getDerivedData(key, supplier);
+    }
+
+    private static WarLibraryDescriptor getWarLibrary(DeploymentContext context, URI path) {
+        return path != null && DeploymentUtils.useWarLibraries(context)
+                ? DeploymentUtils.getWarLibraryCache().get(path.getRawPath()) : null;
     }
 
     private static Map<String, AnnotationType> getWarLibraryAnnotationTypes(DeploymentContext context) {
         if (DeploymentUtils.useWarLibraries(context)) {
             var cache = DeploymentUtils.getWarLibraryCache();
-            return cache.values().stream().map(DeploymentUtils.WarLibraryDescriptor::getTypes)
+            return cache.values().stream().map(WarLibraryDescriptor::getTypes)
                     .flatMap(Collection::stream)
                     .filter(AnnotationType.class::isInstance)
                     .map(AnnotationType.class::cast)
