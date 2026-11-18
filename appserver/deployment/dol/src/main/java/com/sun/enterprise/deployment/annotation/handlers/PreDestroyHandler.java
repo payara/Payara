@@ -37,41 +37,51 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
-
+// Portions Copyright [2020-2026] Payara Foundation and/or affiliates
 package com.sun.enterprise.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import org.glassfish.apf.*;
+import jakarta.annotation.PreDestroy;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
-import jakarta.annotation.PreDestroy;
-import java.lang.reflect.Method;
-
 /**
- * This handler is responsible for handling jakarta.annotation.PreDestroy 
- *
+ * This handler is responsible for handling jakarta.annotation.PreDestroy
  */
 @Service
 @AnnotationHandlerFor(PreDestroy.class)
 public class PreDestroyHandler extends AbstractResourceHandler {
-    
+
     public PreDestroyHandler() {
     }
 
+    /**
+     * Process a particular annotation which type is the same as the
+     * one returned by @see getAnnotationType(). All information
+     * pertinent to the annotation and its context is encapsulated
+     * in the passed AnnotationInfo instance.
+     *
+     * @param ainfo the annotation information
+     * @param rcContexts an array of ResourceContainerContext
+     * @return HandlerProcessingResult
+     */
     @Override
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts) throws AnnotationProcessorException {
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
+            throws AnnotationProcessorException {
 
-        Method annMethod = (Method)ainfo.getAnnotatedElement();
-        validateAnnotatedLifecycleMethod(annMethod);
-        String pdMethodName = annMethod.getName();
-        String pdClassName = annMethod.getDeclaringClass().getName();
+        MethodInfo annMethod = ainfo.getAnnotatedElement().asMethod();
+        validateAnnotatedLifecycleMethod(annMethod, ainfo.getIndex());
+        String pdMethodName = annMethod.name();
+        String pdClassName = annMethod.declaringClass().name().toString();
 
         for (ResourceContainerContext rcContext : rcContexts) {
-            LifecycleCallbackDescriptor preDestroyDesc =
-                   new LifecycleCallbackDescriptor();
+            LifecycleCallbackDescriptor preDestroyDesc = new LifecycleCallbackDescriptor();
             preDestroyDesc.setLifecycleCallbackClass(pdClassName);
             preDestroyDesc.setLifecycleCallbackMethod(pdMethodName);
             preDestroyDesc.setMetadataSource(MetadataSource.ANNOTATION);

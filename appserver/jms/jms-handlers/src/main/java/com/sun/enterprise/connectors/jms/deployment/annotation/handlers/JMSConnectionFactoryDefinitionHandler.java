@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.*;
@@ -46,18 +46,23 @@ import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.AroundTimeout;
 import jakarta.interceptor.Interceptors;
 import jakarta.jms.JMSConnectionFactoryDefinition;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -71,28 +76,27 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-        JMSConnectionFactoryDefinition jmsConnectionFactoryDefnAn =
-                (JMSConnectionFactoryDefinition)ainfo.getAnnotation();
-        return processAnnotation(jmsConnectionFactoryDefnAn, ainfo, rcContexts);
+        return processAnnotation(ainfo.getAnnotation(), ainfo, rcContexts);
     }
 
-    protected HandlerProcessingResult processAnnotation(JMSConnectionFactoryDefinition jmsConnectionFactoryDefnAn, AnnotationInfo aiInfo,
+    protected HandlerProcessingResult processAnnotation(AnnotationInstance jmsConnectionFactoryDefnAn, AnnotationInfo aiInfo,
                                                         ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-        Class<?> annotatedClass = (Class<?>)aiInfo.getAnnotatedElement();
-        Annotation[] annotations = annotatedClass.getAnnotations();
+        IndexView index = aiInfo.getIndex();
+        ClassInfo annotatedClass = aiInfo.getAnnotatedElement().asClass();
+        List<AnnotationInstance> annotations = ClassHierarchy.classAnnotations(index, annotatedClass);
         boolean warClass = isAWebComponentClass(annotations);
         boolean ejbClass = isAEjbComponentClass(annotations);
 
         for (ResourceContainerContext context : rcContexts) {
-            if (!canProcessAnnotation(annotatedClass, ejbClass, warClass, context)) {
+            if (!canProcessAnnotation(index, annotatedClass, ejbClass, warClass, context)) {
                 return getDefaultProcessedResult();
             }
 
             Set<ResourceDescriptor> jmscfdDescs = context.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
-            JMSConnectionFactoryDefinitionDescriptor desc = createDescriptor(jmsConnectionFactoryDefnAn);
+            JMSConnectionFactoryDefinitionDescriptor desc = createDescriptor(index, jmsConnectionFactoryDefnAn);
             if (isDefinitionAlreadyPresent(jmscfdDescs, desc)) {
-                merge(jmscfdDescs, jmsConnectionFactoryDefnAn);
+                merge(jmscfdDescs, index, jmsConnectionFactoryDefnAn);
                 for (ResourceDescriptor jmscfdDesc : jmscfdDescs) {
                     if (jmscfdDesc instanceof JMSConnectionFactoryDefinitionDescriptor) {
                         setDefaultTransactionSupport((JMSConnectionFactoryDefinitionDescriptor) jmscfdDesc);
@@ -119,14 +123,16 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
      * This method helps to overcome the issue, partially.<br>
      * Checks whether both the annotated class and the context are either ejb or web.
      *
+     * @param index resolves the annotations of the class's methods
      * @param annotatedClass annotated-class
      * @param ejbClass indicates whether the class is an ejb-class
      * @param warClass indicates whether the class is an web-class
      * @param context resource-container-context
      * @return boolean indicates whether the annotation can be processed.
      */
-    private boolean canProcessAnnotation(Class<?> annotatedClass, boolean ejbClass, boolean warClass,
+    private boolean canProcessAnnotation(IndexView index, ClassInfo annotatedClass, boolean ejbClass, boolean warClass,
                                          ResourceContainerContext context) {
+        String annotatedClassName = annotatedClass.name().toString();
         if (ejbClass) {
             if (!(context instanceof EjbBundleContext ||
                     context instanceof EjbContext ||
@@ -141,11 +147,11 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
         } else if (context instanceof EjbBundleContext) {
             EjbBundleContext ejbContext = (EjbBundleContext) context;
             EjbBundleDescriptor ejbBundleDescriptor = ejbContext.getDescriptor();
-            EjbDescriptor[] ejbDescriptor = ejbBundleDescriptor.getEjbByClassName(annotatedClass.getName());
+            EjbDescriptor[] ejbDescriptor = ejbBundleDescriptor.getEjbByClassName(annotatedClassName);
             if (ejbDescriptor == null || ejbDescriptor.length == 0) {
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing as the class " +
-                            "[ " + annotatedClass + " ] is " +
+                            "[ " + annotatedClassName + " ] is " +
                             "not an EJB class and the context is EJBContext");
                 }
                 return false;
@@ -166,38 +172,35 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
             for (RootDeploymentDescriptor desc : extDesc) {
                 if (desc instanceof EjbBundleDescriptor) {
                     EjbBundleDescriptor ejbBundleDesc = (EjbBundleDescriptor)desc;
-                    EjbDescriptor[] ejbDescs = ejbBundleDesc.getEjbByClassName(annotatedClass.getName());
+                    EjbDescriptor[] ejbDescs = ejbBundleDesc.getEjbByClassName(annotatedClassName);
                     if (ejbDescs != null && ejbDescs.length > 0) {
                         if (logger.isLoggable(Level.FINEST)) {
                             logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing as the class " +
-                                    "[ " + annotatedClass + " ] is " +
+                                    "[ " + annotatedClassName + " ] is " +
                                     "not an Web class and the context is WebContext");
                         }
                         return false;
-                    } else if (ejbBundleDesc.getInterceptorByClassName(annotatedClass.getName()) != null) {
+                    } else if (ejbBundleDesc.getInterceptorByClassName(annotatedClassName) != null) {
                             if (logger.isLoggable(Level.FINEST)) {
                                 logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing " +
                                         "as the class " +
-                                        "[ " + annotatedClass + " ] is " +
+                                        "[ " + annotatedClassName + " ] is " +
                                         "not an Web class and the context is WebContext");
                             }
                             return false;
                     } else {
-                        Method[] methods = annotatedClass.getDeclaredMethods();
-                        for (Method method : methods) {
-                            Annotation annotations[] = method.getAnnotations();
-                            for (Annotation annotation : annotations) {
-                                if (annotation.annotationType().equals(AroundInvoke.class) ||
-                                        annotation.annotationType().equals(AroundTimeout.class) ||
-                                        annotation.annotationType().equals(Interceptors.class)) {
-                                    if (logger.isLoggable(Level.FINEST)) {
-                                        logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing " +
-                                                "as the class " +
-                                                "[ " + annotatedClass + " ] is " +
-                                                "not an Web class, an interceptor and the context is WebContext");
-                                    }
-                                    return false;
+                        for (MethodInfo method : annotatedClass.methods()) {
+                            if (!method.isConstructor()
+                                    && (ClassHierarchy.annotation(index, method, AroundInvoke.class) != null
+                                    || ClassHierarchy.annotation(index, method, AroundTimeout.class) != null
+                                    || ClassHierarchy.annotation(index, method, Interceptors.class) != null)) {
+                                if (logger.isLoggable(Level.FINEST)) {
+                                    logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing " +
+                                            "as the class " +
+                                            "[ " + annotatedClassName + " ] is " +
+                                            "not an Web class, an interceptor and the context is WebContext");
                                 }
+                                return false;
                             }
                         }
                     }
@@ -217,83 +220,85 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
         return false;
     }
 
-    private void merge(Set<ResourceDescriptor> jmscfdDescs, JMSConnectionFactoryDefinition defn) {
+    private void merge(Set<ResourceDescriptor> jmscfdDescs, IndexView index, AnnotationInstance defn) {
 
         for (ResourceDescriptor descriptor : jmscfdDescs) {
             if (descriptor instanceof JMSConnectionFactoryDefinitionDescriptor) {
                 JMSConnectionFactoryDefinitionDescriptor desc = (JMSConnectionFactoryDefinitionDescriptor)descriptor;
-                if (desc.getName().equals(defn.name())) {
-    
+                if (desc.getName().equals(AnnotationValues.string(index, defn, "name"))) {
+
                     if (desc.getInterfaceName() == null) {
-                        desc.setInterfaceName(defn.interfaceName());
+                        desc.setInterfaceName(AnnotationValues.string(index, defn, "interfaceName"));
                     }
-    
+
                     if (desc.getClassName() == null) {
-                        if (isValid(defn.className())) {
-                            desc.setClassName(defn.className());
+                        String className = AnnotationValues.string(index, defn, "className");
+                        if (isValid(className)) {
+                            desc.setClassName(className);
                         }
                     }
-    
+
                     if (desc.getDescription() == null) {
-                        if (isValid(defn.description())) {
-                            desc.setDescription(defn.description());
+                        String description = AnnotationValues.string(index, defn, "description");
+                        if (isValid(description)) {
+                            desc.setDescription(description);
                         }
                     }
-    
+
                     if (desc.getResourceAdapter() == null) {
-                        if (isValid(defn.resourceAdapter())) {
-                            desc.setResourceAdapter(defn.resourceAdapter());
+                        String resourceAdapter = AnnotationValues.string(index, defn, "resourceAdapter");
+                        if (isValid(resourceAdapter)) {
+                            desc.setResourceAdapter(resourceAdapter);
                         }
                     }
-    
+
                     if (desc.getUser() == null) {
-                        if (isValid(defn.user())) {
-                            desc.setUser(defn.user());
+                        String user = AnnotationValues.string(index, defn, "user");
+                        if (isValid(user)) {
+                            desc.setUser(user);
                         }
                     }
-    
+
                     if (desc.getPassword() == null) {
-                        if (defn.password() != null /*ALLOW EMPTY PASSWORDS && !defn.password().equals("")*/) {
-                            desc.setPassword(defn.password());
-                        }
+                        // allow empty passwords
+                        desc.setPassword(AnnotationValues.string(index, defn, "password"));
                     }
-    
+
                     if (desc.getClientId() == null) {
-                        if (isValid(defn.clientId())) {
-                            desc.setClientId(defn.clientId());
+                        String clientId = AnnotationValues.string(index, defn, "clientId");
+                        if (isValid(clientId)) {
+                            desc.setClientId(clientId);
                         }
                     }
-    
+
                     if (!desc.isTransactionSet()) {
-                        desc.setTransactional(defn.transactional());
+                        desc.setTransactional(AnnotationValues.bool(index, defn, "transactional"));
                     }
-    
+
                     if (desc.getMaxPoolSize() < 0) {
-                        if (defn.maxPoolSize() >= 0) {
-                            desc.setMaxPoolSize(defn.maxPoolSize());
+                        int maxPoolSize = AnnotationValues.integer(index, defn, "maxPoolSize");
+                        if (maxPoolSize >= 0) {
+                            desc.setMaxPoolSize(maxPoolSize);
                         }
                     }
-    
+
                     if (desc.getMinPoolSize() < 0) {
-                        if (defn.minPoolSize() >= 0) {
-                            desc.setMinPoolSize(defn.minPoolSize());
+                        int minPoolSize = AnnotationValues.integer(index, defn, "minPoolSize");
+                        if (minPoolSize >= 0) {
+                            desc.setMinPoolSize(minPoolSize);
                         }
                     }
-    
+
                     Properties properties = desc.getProperties();
-                    String[] defnProperties = defn.properties();
-    
-                    if (defnProperties.length > 0) {
-                        for (String property : defnProperties) {
-                            int index = property.indexOf('=');
-                            // found "=" and not at start or end of string
-                            if (index > 0 && index < property.length() - 1) {
-                                String name = property.substring(0, index).trim();
-                                String value = property.substring(index + 1).trim();
-                                //add to properties only when not already present
-                                if (properties.get(name) == null) {
-                                    properties.put(name, value);
-                                }
+                    for (String property : AnnotationValues.strings(index, defn, "properties")) {
+                        int separator = property.indexOf('=');
+                        // found "=" and not at start or end of string
+                        if (separator > 0 && separator < property.length() - 1) {
+                            String name = property.substring(0, separator).trim();
+                            String value = property.substring(separator + 1).trim();
+                            //add to properties only when not already present
+                            if (properties.get(name) == null) {
+                                properties.put(name, value);
                             }
                         }
                     }
@@ -304,61 +309,61 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
 
     }
 
-    private JMSConnectionFactoryDefinitionDescriptor createDescriptor(JMSConnectionFactoryDefinition defn) {
+    private JMSConnectionFactoryDefinitionDescriptor createDescriptor(IndexView index, AnnotationInstance defn) {
 
         JMSConnectionFactoryDefinitionDescriptor desc = new JMSConnectionFactoryDefinitionDescriptor();
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
-        desc.setName(defn.name());
-        desc.setInterfaceName(defn.interfaceName());
+        desc.setName(AnnotationValues.string(index, defn, "name"));
+        desc.setInterfaceName(AnnotationValues.string(index, defn, "interfaceName"));
 
-        if (isValid(defn.className())) {
-            desc.setClassName(defn.className());
+        String className = AnnotationValues.string(index, defn, "className");
+        if (isValid(className)) {
+            desc.setClassName(className);
         }
 
-        if (isValid(defn.description())) {
-            desc.setDescription(defn.description());
+        String description = AnnotationValues.string(index, defn, "description");
+        if (isValid(description)) {
+            desc.setDescription(description);
         }
 
-        if (isValid(defn.resourceAdapter())) {
-            desc.setResourceAdapter(defn.resourceAdapter());
+        String resourceAdapter = AnnotationValues.string(index, defn, "resourceAdapter");
+        if (isValid(resourceAdapter)) {
+            desc.setResourceAdapter(resourceAdapter);
         }
 
-        if (isValid(defn.user())) {
-            desc.setUser(defn.user());
+        String user = AnnotationValues.string(index, defn, "user");
+        if (isValid(user)) {
+            desc.setUser(user);
         }
 
-        if (defn.password() != null /*ALLOW EMPTY PASSWORDS && !defn.password().equals("")*/) {
-            desc.setPassword(defn.password());
+        // allow empty passwords
+        desc.setPassword(AnnotationValues.string(index, defn, "password"));
+
+        String clientId = AnnotationValues.string(index, defn, "clientId");
+        if (isValid(clientId)) {
+            desc.setClientId(clientId);
         }
 
-        if (isValid(defn.clientId())) {
-            desc.setClientId(defn.clientId());
+        desc.setTransactional(AnnotationValues.bool(index, defn, "transactional"));
+
+        int maxPoolSize = AnnotationValues.integer(index, defn, "maxPoolSize");
+        if (maxPoolSize >= 0) {
+            desc.setMaxPoolSize(maxPoolSize);
+        }
+        int minPoolSize = AnnotationValues.integer(index, defn, "minPoolSize");
+        if (minPoolSize >= 0) {
+            desc.setMinPoolSize(minPoolSize);
         }
 
-        desc.setTransactional(defn.transactional());
-
-        if (defn.maxPoolSize() >= 0) {
-            desc.setMaxPoolSize(defn.maxPoolSize());
-        }
-        if (defn.minPoolSize() >= 0) {
-            desc.setMinPoolSize(defn.minPoolSize());
-        }
-
-        if (defn.properties() != null) {
-            Properties properties = desc.getProperties();
-
-            String[] defnProperties = defn.properties();
-            if (defnProperties.length > 0) {
-                for (String property : defnProperties) {
-                    int index = property.indexOf('=');
-                    // found "=" and not at start or end of string
-                    if (index > 0 && index < property.length() - 1) {
-                        String name = property.substring(0, index).trim();
-                        String value = property.substring(index + 1).trim();
-                        properties.put(name, value);
-                    }
-                }
+        Properties properties = desc.getProperties();
+        for (String property : AnnotationValues.strings(index, defn, "properties")) {
+            int separator = property.indexOf('=');
+            // found "=" and not at start or end of string
+            if (separator > 0 && separator < property.length() - 1) {
+                String name = property.substring(0, separator).trim();
+                String value = property.substring(separator + 1).trim();
+                properties.put(name, value);
             }
         }
 
@@ -366,6 +371,6 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
     }
 
     private boolean isValid(String s) {
-        return (s != null) && !s.equals("");
+        return !s.isEmpty();
     }
 }

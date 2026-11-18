@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,74 +37,72 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-import jakarta.ejb.AccessTimeout;
-import jakarta.ejb.ConcurrencyManagement;
-import jakarta.ejb.Singleton;
-import jakarta.ejb.Stateful;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
-import com.sun.enterprise.deployment.util.TypeUtil;
+import jakarta.ejb.AccessTimeout;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Stateful;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 /**
- * This handler is responsible for handling the jakarta.ejb.AccessTimeout.
+ * This handler is responsible for handling the jakarta.ejb.AccessTimeout annotation on
+ * a Bean class or method.
  *
- * @author Mahesh Kannan
- * @author Marina Vatkina
+ * @author Shing Wai Chan
  */
 @Service
 @AnnotationHandlerFor(AccessTimeout.class)
-public class AccessTimeoutHandler extends AbstractAttributeHandler 
+public class AccessTimeoutHandler extends AbstractAttributeHandler
         implements PostProcessor<EjbContext> {
 
     public AccessTimeoutHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
-
-        AccessTimeout timeout = (AccessTimeout) ainfo.getAnnotation();
 
         for (EjbContext ejbContext : ejbContexts) {
             if (ejbContext.getDescriptor() instanceof EjbSessionDescriptor) {
 
-                EjbSessionDescriptor sessionDesc =
-                        (EjbSessionDescriptor) ejbContext.getDescriptor();
+                EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejbContext.getDescriptor();
 
                 if( sessionDesc.isStateless() ) {
                     continue;
                 }
 
                 if (ElementType.TYPE.equals(ainfo.getElementType())) {
-                    // Delay processing Class-level default until after methods are processed
+                    // delay processing Class-level default until after methods are processed
                     ejbContext.addPostProcessInfo(ainfo, this);
                 } else {
-                    Method annMethod = (Method) ainfo.getAnnotatedElement();
+                    MethodInfo annMethod = ainfo.getAnnotatedElement().asMethod();
 
-                    // Only assign access timeout info if the method hasn't already
-                    // been processed.  This correctly ignores superclass methods that
-                    // are overridden and applies the correct .xml overriding semantics.
-                    if(!matchesExistingAccessTimeoutMethod(annMethod, sessionDesc)) {
-                      
+                    // Only add the method-level access timeout if the method doesn't
+                    // already have one from the deployment descriptor.
+                    if(!matchesExistingAccessTimeoutMethod(annMethod, sessionDesc, ejbContext)) {
                         MethodDescriptor newMethodDesc = new MethodDescriptor(annMethod);
-                        sessionDesc.addAccessTimeoutMethod(newMethodDesc, timeout.value(),
-                                                             timeout.unit());
+                        sessionDesc.addAccessTimeoutMethod(newMethodDesc, ainfo.longValue("value"),
+                                ainfo.enumValue("unit", TimeUnit.class));
                     }
                 }
             }
@@ -115,15 +113,15 @@ public class AccessTimeoutHandler extends AbstractAttributeHandler
 
     /**
      * @return an array of annotation types this annotation handler would
-     *         require to be processed (if present) before it processes it's own
-     *         annotation type.
+     * require to be processed (if present) before it processes it's own
+     * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
-
         return new Class[]{Singleton.class, Stateful.class, ConcurrencyManagement.class};
-
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }
@@ -131,64 +129,57 @@ public class AccessTimeoutHandler extends AbstractAttributeHandler
     /**
      * Set the default value (from class type annotation) on all
      * methods that don't have a value.
+     * Class type annotation applies to all methods not having an explicit method-level
+     * annotation, including methods of its superclasses it does not override and the
+     * class's own private methods.
      */
+    @Override
     public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
         EjbSessionDescriptor ejbDesc = (EjbSessionDescriptor) ejbContext.getDescriptor();
 
-        // At this point, all method-level specific annotations have been processed.
-        // For non-private methods, find the ones from the EjbContext's
-        // component definition view that are declared on this class.  This will correctly
-        // eliminate any overridden methods and provide the most-derived version of each.
-        // Use the Class's declared methods list to get the private methods.
-        
-        Class classAn = (Class)ainfo.getAnnotatedElement();
-        AccessTimeout timeoutAnn = (AccessTimeout) ainfo.getAnnotation();
+        ClassInfo classAn = ainfo.getAnnotatedElement().asClass();
+        String className = classAn.name().toString();
 
-        List<Method> toProcess = new ArrayList<Method>();
-        for(Method m : ejbContext.getComponentDefinitionMethods()) {
-            if( classAn.equals(m.getDeclaringClass())) {
+        List<MethodInfo> toProcess = new ArrayList<>();
+        for(MethodInfo m : ejbContext.getComponentDefinitionMethods()) {
+            if( className.equals(m.declaringClass().name().toString())) {
                 toProcess.add(m);
             }
         }
-        for(Method m : classAn.getDeclaredMethods()) {
-            if( Modifier.isPrivate(m.getModifiers()) ) {
+        for(MethodInfo m : classAn.methods()) {
+            if( Modifier.isPrivate(m.flags()) && !m.name().startsWith("<") ) {
                 toProcess.add(m);
             }
         }
 
-        for( Method m : toProcess ) {
+        long value = ainfo.longValue("value");
+        TimeUnit unit = ainfo.enumValue("unit", TimeUnit.class);
+        for( MethodInfo m : toProcess ) {
 
-            // If the method is declared on the same class as the TYPE-level default
-            // and it hasn't already been assigned lock information from the deployment
-            // descriptor, set it.
-            if( !matchesExistingAccessTimeoutMethod(m, ejbDesc) ) {
+            if( !matchesExistingAccessTimeoutMethod(m, ejbDesc, ejbContext) ) {
 
                 MethodDescriptor newMethodDesc = new MethodDescriptor(m);
-                    ejbDesc.addAccessTimeoutMethod(newMethodDesc, timeoutAnn.value(),
-                                                   timeoutAnn.unit());
+                ejbDesc.addAccessTimeoutMethod(newMethodDesc, value, unit);
             }
         }
 
     }
 
-    private boolean matchesExistingAccessTimeoutMethod(Method methodToMatch,
-                                                       EjbSessionDescriptor desc) {
+    private boolean matchesExistingAccessTimeoutMethod(MethodInfo methodToMatch, EjbSessionDescriptor desc,
+                                                       EjbContext ejbContext) {
 
         List<MethodDescriptor> timeoutMethods = desc.getAccessTimeoutMethods();
+        String declaringClass = methodToMatch.declaringClass().name().toString();
 
-        boolean match = false;
         for (MethodDescriptor next : timeoutMethods) {
-
-            Method m = next.getMethod(desc);
-            if (( m.getDeclaringClass().equals(methodToMatch.getDeclaringClass()) ) &&
-                  TypeUtil.sameMethodSignature(m, methodToMatch) ) {
-                match = true;
-                break;
+            if (declaringClass.equals(ejbContext.getDeclaringClass(next))
+                    && ClassHierarchy.matches(methodToMatch, next.getName(), next.getJavaParameterClassNames())) {
+                return true;
             }
         }
 
-        return match;
+        return false;
     }
 
 }

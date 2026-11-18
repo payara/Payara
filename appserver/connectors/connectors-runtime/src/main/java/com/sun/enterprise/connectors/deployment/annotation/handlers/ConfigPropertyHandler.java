@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
@@ -49,7 +50,6 @@ import jakarta.resource.spi.*;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.IllegalStateException;
 import java.util.Locale;
@@ -62,6 +62,14 @@ import java.util.logging.Logger;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.*;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.FieldInfo;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.Type;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -77,10 +85,11 @@ public class ConfigPropertyHandler extends AbstractHandler {
     protected final static Logger logger = AnnotationUtils.getLogger();
 
     private static final String SUCCESS = "success";
+    private static final String OBJECT = Object.class.getName();
 
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
-        ConfigProperty configProperty = (ConfigProperty) element.getAnnotation();
+        AnnotationInstance configProperty = element.getAnnotation();
 
         if (aeHandler instanceof RarBundleContext) {
 
@@ -94,89 +103,99 @@ public class ConfigPropertyHandler extends AbstractHandler {
     }
 
     public HandlerProcessingResult handleConfigPropertyAnnotation(
-            ConfigProperty configProperty, AnnotationInfo element, ConnectorDescriptor desc){
-                    String defaultValue = configProperty.defaultValue();
-            String[] description = configProperty.description();
-            boolean ignore = configProperty.ignore();
-            boolean supportsDynamicUpdates = configProperty.supportsDynamicUpdates();
-            boolean confidential = configProperty.confidential();
+            AnnotationInstance configProperty, AnnotationInfo element, ConnectorDescriptor desc){
+            IndexView index = element.getIndex();
+            String defaultValue = AnnotationValues.string(index, configProperty, "defaultValue");
+            String[] description = AnnotationValues.strings(index, configProperty, "description");
+            boolean ignore = AnnotationValues.bool(index, configProperty, "ignore");
+            boolean supportsDynamicUpdates = AnnotationValues.bool(index, configProperty, "supportsDynamicUpdates");
+            boolean confidential = AnnotationValues.bool(index, configProperty, "confidential");
 
-            Class type ;
+            String type ;
 
             if (element.getElementType().equals(ElementType.METHOD)) {
-                Method m = (Method) element.getAnnotatedElement();
-                String result = validateMethod(m, configProperty);
+                MethodInfo m = element.getAnnotatedElement().asMethod();
+                String result = validateMethod(index, m, configProperty);
 
                 if(!result.equals(SUCCESS)){
                     return getFailureResult(element, result, true);
                 }
 
-                type = getType(configProperty, m.getParameterTypes()[0]);
+                type = getType(index, configProperty, ClassHierarchy.javaName(m.parameterTypes().get(0)));
                 //XXX: Siva: For now use the first provided description
                 String firstDesc = "";
                 if (description.length > 0) firstDesc = description[0];
                 ConnectorConfigProperty ep = getConfigProperty(defaultValue, firstDesc, ignore,
-                        supportsDynamicUpdates, confidential, type, m.getName().substring(3));
+                        supportsDynamicUpdates, confidential, type, m.name().substring(3));
 
-                handleConfigPropertyAnnotation(element, desc, ep, m.getDeclaringClass());
+                handleConfigPropertyAnnotation(element, desc, ep, m.declaringClass());
 
             } else if (element.getElementType().equals(ElementType.FIELD)) {
-                Field f = (Field) element.getAnnotatedElement();
-                String result = validateField(f, configProperty);
+                FieldInfo f = element.getAnnotatedElement().asField();
+                String result = validateField(index, f, configProperty);
 
 
                 if(!result.equals(SUCCESS)){
                     return getFailureResult(element, result, true);
                 }
 
-                type = getType(configProperty, f.getType());
+                type = getType(index, configProperty, ClassHierarchy.javaName(f.type()));
 
-                if(defaultValue == null || defaultValue.equals("")){
-                    defaultValue = deriveDefaultValueOfField(f);
+                if(defaultValue.equals("")){
+                    defaultValue = deriveDefaultValueOfField(f, desc);
                 }
                 //XXX: Siva: For now use the first provided description
                 String firstDesc = "";
                 if (description.length > 0) firstDesc = description[0];
                 ConnectorConfigProperty ep = getConfigProperty(defaultValue,firstDesc, ignore,
-                        supportsDynamicUpdates, confidential,  type, f.getName());
+                        supportsDynamicUpdates, confidential,  type, f.name());
 
-                handleConfigPropertyAnnotation(element, desc, ep, f.getDeclaringClass());
+                handleConfigPropertyAnnotation(element, desc, ep, f.declaringClass());
             }
         return getDefaultProcessedResult();
     }
 
-    private static Class getWrapperClass(String primitive){
+    /**
+     * @return the name of the wrapper class of the primitive type
+     */
+    private static String getWrapperClass(String primitive){
         if(primitive.equalsIgnoreCase("int")){
-            return java.lang.Integer.class;
+            return Integer.class.getName();
         }else if(primitive.equalsIgnoreCase("long")){
-            return java.lang.Long.class;
+            return Long.class.getName();
         }else if(primitive.equalsIgnoreCase("short")){
-            return java.lang.Short.class;
+            return Short.class.getName();
         }else if(primitive.equalsIgnoreCase("char")){
-            return Character.class;
+            return Character.class.getName();
         }else if(primitive.equalsIgnoreCase("byte")){
-            return java.lang.Byte.class;
+            return Byte.class.getName();
         }else if(primitive.equalsIgnoreCase("boolean")){
-            return java.lang.Boolean.class;
+            return Boolean.class.getName();
         }else if(primitive.equalsIgnoreCase("float")){
-            return java.lang.Float.class;
+            return Float.class.getName();
         }else if(primitive.equalsIgnoreCase("double")){
-            return java.lang.Double.class;
+            return Double.class.getName();
         }else{
             throw new IllegalArgumentException("Could not determine Wrapper class for primitive type ["+primitive+"]");
         }
     }
 
-    private static String deriveDefaultValueOfField(Field f){
-        Class declaringClass = f.getDeclaringClass();
-        String fieldName = f.getName();
+    /**
+     * The default of a field without an explicit {@code defaultValue} is what its getter returns on a
+     * new instance of the JavaBean. The index cannot tell, so this is the one place where a resource
+     * adapter class is loaded and instantiated, through the class loader of the descriptor.
+     */
+    private static String deriveDefaultValueOfField(FieldInfo f, ConnectorDescriptor desc){
+        String declaringClassName = f.declaringClass().name().toString();
+        String fieldName = f.name();
         String value = null;
         try {
+            Class<?> declaringClass = Class.forName(declaringClassName, false, classLoader(desc));
             Object o = declaringClass.newInstance();
             String getterMethod = "get" + getCamelCasedPropertyName(fieldName);
 
-            if(Boolean.class.isAssignableFrom(f.getType())){
-                getterMethod = "is" + getCamelCasedPropertyName(fieldName);                
+            if(Boolean.class.getName().equals(ClassHierarchy.javaName(f.type()))){
+                getterMethod = "is" + getCamelCasedPropertyName(fieldName);
             }
             Method m = declaringClass.getDeclaredMethod(getterMethod);
             m.setAccessible(true);
@@ -185,13 +204,23 @@ public class ConfigPropertyHandler extends AbstractHandler {
                 value = result.toString();
             }
         } catch (Exception e) {
-            Object[] args = {fieldName, declaringClass.getName(), e.getMessage()};
+            Object[] args = {fieldName, declaringClassName, e.getMessage()};
             String localString = localStrings.getLocalString(
                     "enterprise.deployment.annotation.handlers.configpropertyfieldreadfailure",
                     "failed to read the value of field [{0}] on class [{1}], reason : {2}", args);
             logger.log(Level.WARNING, localString, e);
         }
         return value;
+    }
+
+    /**
+     * @return the class loader of the resource adapter: the descriptor's, as the context class loader
+     * of the DAS does not see a resource adapter that is not targeted to it, or the context class
+     * loader when the descriptor has none
+     */
+    public static ClassLoader classLoader(ConnectorDescriptor desc) {
+        ClassLoader classLoader = desc.getClassLoader();
+        return classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
     }
 
     /**
@@ -206,7 +235,7 @@ public class ConfigPropertyHandler extends AbstractHandler {
 
     private static ConnectorConfigProperty getConfigProperty(String defaultValue, String description, boolean ignore,
                                                       boolean supportsDynamicUpdates, boolean confidential,
-                                                      Class type, String propertyName) {
+                                                      String type, String propertyName) {
         ConnectorConfigProperty ep = new ConnectorConfigProperty();
         //use description if specified
         if (!description.equals("")) {
@@ -216,7 +245,7 @@ public class ConfigPropertyHandler extends AbstractHandler {
         if ( defaultValue!= null && !defaultValue.equals("")) {
             ep.setValue(defaultValue);
         }
-        ep.setType(type.getName());
+        ep.setType(type);
 
         ep.setName(propertyName);
 
@@ -233,37 +262,38 @@ public class ConfigPropertyHandler extends AbstractHandler {
     }
 
     private void handleConfigPropertyAnnotation(AnnotationInfo element, ConnectorDescriptor desc,
-                                                ConnectorConfigProperty ep, Class declaringClass) {
+                                                ConnectorConfigProperty ep, ClassInfo declaringClass) {
+        IndexView index = element.getIndex();
 
-        if ((ResourceAdapter.class.isAssignableFrom(declaringClass)
-                && (!Modifier.isAbstract(declaringClass.getModifiers()))) ||
-                ( declaringClass.getAnnotation(Connector.class) != null)){
-            if (!processConnector(desc, ep, declaringClass)) {
+        if ((ClassHierarchy.isSubtype(index, declaringClass, ResourceAdapter.class)
+                && (!ClassHierarchy.isAbstract(declaringClass))) ||
+                ( ClassHierarchy.annotation(index, declaringClass, Connector.class) != null)){
+            if (!processConnector(index, desc, ep, declaringClass)) {
                 //need to book-keep the annotation for post-processing
-                desc.addConfigPropertyAnnotation(declaringClass.getName(), element);
+                desc.addConfigPropertyAnnotation(declaringClass.name().toString(), element);
             }
-        } else if (ManagedConnectionFactory.class.isAssignableFrom(declaringClass) &&
-                (!Modifier.isAbstract(declaringClass.getModifiers()))) {
+        } else if (ClassHierarchy.isSubtype(index, declaringClass, ManagedConnectionFactory.class) &&
+                (!ClassHierarchy.isAbstract(declaringClass))) {
                 //@ConnectionDefintion, @ConnectionDefinitions must be of type ManagedConnectionFactory and hence
                 //the above check is sufficient to take care of JavaBean as well annotation.
                 processConnectionDefinition(element, desc, ep, declaringClass);
-        } else if ((ActivationSpec.class.isAssignableFrom(declaringClass) &&
-                (!Modifier.isAbstract(declaringClass.getModifiers()))) ||
-                (declaringClass.getAnnotation(Activation.class) != null) ) {
+        } else if ((ClassHierarchy.isSubtype(index, declaringClass, ActivationSpec.class) &&
+                (!ClassHierarchy.isAbstract(declaringClass))) ||
+                (ClassHierarchy.annotation(index, declaringClass, Activation.class) != null) ) {
             processActivation(element, desc, ep, declaringClass);
-        } else if (declaringClass.getAnnotation(AdministeredObject.class) != null ||
+        } else if (ClassHierarchy.annotation(index, declaringClass, AdministeredObject.class) != null ||
                 isAdminObjectJavaBean(declaringClass, desc)){
             processAdministeredObject(element, desc, ep, declaringClass);
         }
     }
 
-    private boolean isAdminObjectJavaBean(Class adminObjectClass, ConnectorDescriptor desc) {
+    private boolean isAdminObjectJavaBean(ClassInfo adminObjectClass, ConnectorDescriptor desc) {
         boolean isAdminObject = false;
         Set adminObjects = desc.getAdminObjects();
         Iterator adminObjectsItr = adminObjects.iterator();
         while(adminObjectsItr.hasNext()){
             AdminObject adminObject = (AdminObject)adminObjectsItr.next();
-            if(adminObject.getAdminObjectClass().equals(adminObjectClass.getName())){
+            if(adminObject.getAdminObjectClass().equals(adminObjectClass.name().toString())){
                 isAdminObject = true;
                 break;
             }
@@ -272,25 +302,26 @@ public class ConfigPropertyHandler extends AbstractHandler {
     }
 
     private void processAdministeredObject(AnnotationInfo element, ConnectorDescriptor desc,
-                                                           ConnectorConfigProperty ep, Class declaringClass) {
+                                                           ConnectorConfigProperty ep, ClassInfo declaringClass) {
+        IndexView index = element.getIndex();
+        String declaringClassName = declaringClass.name().toString();
 
-        if (declaringClass.getAnnotation(AdministeredObject.class) != null) {
-            AdministeredObject ao = (AdministeredObject) declaringClass.getAnnotation(AdministeredObject.class);
-            Class[] adminObjectInterfaces = ao.adminObjectInterfaces();
+        AnnotationInstance ao = ClassHierarchy.annotation(index, declaringClass, AdministeredObject.class);
+        if (ao != null) {
+            String[] adminObjectInterfaces = AnnotationValues.classNames(index, ao, "adminObjectInterfaces");
             if(adminObjectInterfaces.length > 0){
-                for (Class adminObjectInterface : adminObjectInterfaces) {
+                for (String adminObjectInterface : adminObjectInterfaces) {
                     handleAdministeredObject(element, desc, ep, declaringClass, adminObjectInterface);
                 }
             }else{
                 //handle the case where admin object interfaces are not specified via annotaiton
-                List<Class> interfacesList = AdministeredObjectHandler.
+                List<String> interfacesList = AdministeredObjectHandler.
                         deriveAdminObjectInterfacesFromHierarchy(declaringClass);
 
                 //We assume that there will be only one interface (if there had been many, admin-object annotation
                 //handler would have rejected it.)
                 if(interfacesList.size() == 1){
-                    Class intf = interfacesList.get(0);
-                    handleAdministeredObject(element, desc, ep, declaringClass, intf);
+                    handleAdministeredObject(element, desc, ep, declaringClass, interfacesList.get(0));
                 }
             }
         } else {
@@ -298,14 +329,15 @@ public class ConfigPropertyHandler extends AbstractHandler {
             Iterator adminObjectItr = adminObjects.iterator();
             while(adminObjectItr.hasNext()){
                 AdminObject adminObject = (AdminObject)adminObjectItr.next();
-                if(adminObject.getAdminObjectClass().equals(declaringClass.getName())){
+                if(adminObject.getAdminObjectClass().equals(declaringClassName)){
                     if (!(isConfigDefined(adminObject.getConfigProperties(), ep))) {
                         adminObject.addConfigProperty(ep);
                     }
                     String uniqueName = adminObject.getAdminObjectInterface() + "_" + adminObject.getAdminObjectClass();
                     if(!desc.getConfigPropertyProcessedClasses().contains(uniqueName)){
-                        processParent(declaringClass.getSuperclass(), adminObject.getConfigProperties());
-                        desc.addConfigPropertyProcessedClass(declaringClass.getName());
+                        processParent(index, ClassHierarchy.superClass(index, declaringClass),
+                                adminObject.getConfigProperties(), desc);
+                        desc.addConfigPropertyProcessedClass(declaringClassName);
                     }
                 }
             }
@@ -313,53 +345,59 @@ public class ConfigPropertyHandler extends AbstractHandler {
     }
 
     private void handleAdministeredObject(AnnotationInfo element, ConnectorDescriptor desc,
-                                          ConnectorConfigProperty ep, Class adminObjectClass, Class adminObjectIntf) {
-        AdminObject adminObject = desc.getAdminObject(adminObjectIntf.getName(), adminObjectClass.getName());
+                                          ConnectorConfigProperty ep, ClassInfo adminObjectClass, String adminObjectIntf) {
+        IndexView index = element.getIndex();
+        String adminObjectClassName = adminObjectClass.name().toString();
+        AdminObject adminObject = desc.getAdminObject(adminObjectIntf, adminObjectClassName);
         if (adminObject != null) {
             if (!(isConfigDefined(adminObject.getConfigProperties(), ep))) {
                 adminObject.addConfigProperty(ep);
             }
-            if(!desc.getConfigPropertyProcessedClasses().contains(adminObjectClass.getName())){
-                processParent(adminObjectClass.getSuperclass(), adminObject.getConfigProperties());
-                desc.addConfigPropertyProcessedClass(adminObjectClass.getName());
+            if(!desc.getConfigPropertyProcessedClasses().contains(adminObjectClassName)){
+                processParent(index, ClassHierarchy.superClass(index, adminObjectClass),
+                        adminObject.getConfigProperties(), desc);
+                desc.addConfigPropertyProcessedClass(adminObjectClassName);
             }
         } else {
             // ideally adminObject should not be null as "@AdministeredObject" 
             // should have been handled before @ConfigProperty
             getFailureResult(element, "could not get adminobject of interface " +
-                    "[ " + adminObjectIntf.getName() + " ]" +
-                    " and class [ " + adminObjectClass.getName() + " ]", true);
+                    "[ " + adminObjectIntf + " ]" +
+                    " and class [ " + adminObjectClassName + " ]", true);
         }
     }
 
     private void processActivation(AnnotationInfo element, ConnectorDescriptor desc,
-                                   ConnectorConfigProperty ep, Class declaringClass) {
+                                   ConnectorConfigProperty ep, ClassInfo declaringClass) {
+        IndexView index = element.getIndex();
+        String declaringClassName = declaringClass.name().toString();
 
            InboundResourceAdapter ira = desc.getInboundResourceAdapter();
-        if (declaringClass.getAnnotation(Activation.class) != null) {
+        AnnotationInstance activation = ClassHierarchy.annotation(index, declaringClass, Activation.class);
+        if (activation != null) {
             // Inbound Resource Adapter should have been defined if @Activation annotation
             // was processed successfully, before.
             if (desc.getInBoundDefined()) {
-                Activation activation = (Activation) declaringClass.getAnnotation(Activation.class);
-                Class[] messageListeners = activation.messageListeners();
+                String[] messageListeners = AnnotationValues.classNames(index, activation, "messageListeners");
 
                 //messageListeners cant be 0 as we ask "@Activation" to be handled before "@ConfigProperty"
-                for (Class clz : messageListeners) {
-                    if (ira.hasMessageListenerType(clz.getName())) {
-                        MessageListener ml = ira.getMessageListener(clz.getName());
+                for (String clz : messageListeners) {
+                    if (ira.hasMessageListenerType(clz)) {
+                        MessageListener ml = ira.getMessageListener(clz);
 
                         //check whether the activation-spec class in the descriptor
                         //for a particular message-listener is the same as this class as it is possible
                         //that this activation-spec class may have been ignored if ra.xml is already defined with
                         //this particular message-listener-type. If so, we should not add config-property as they
                         // belong to a particular activation-spec class.
-                        if (ml.getActivationSpecClass().equals(declaringClass.getName())) {
+                        if (ml.getActivationSpecClass().equals(declaringClassName)) {
                             if (!(isConfigDefined(ml.getConfigProperties(), ep))) {
                                 ml.addConfigProperty(ep);
                             }
-                            if (!desc.getConfigPropertyProcessedClasses().contains(declaringClass.getName())) {
-                                processParent(declaringClass.getSuperclass(), ml.getConfigProperties());
-                                desc.addConfigPropertyProcessedClass(declaringClass.getName());
+                            if (!desc.getConfigPropertyProcessedClasses().contains(declaringClassName)) {
+                                processParent(index, ClassHierarchy.superClass(index, declaringClass),
+                                        ml.getConfigProperties(), desc);
+                                desc.addConfigPropertyProcessedClass(declaringClassName);
                             }
                         }
                     }
@@ -371,13 +409,14 @@ public class ConfigPropertyHandler extends AbstractHandler {
                     Iterator mlItr = messageListeners.iterator();
                     while(mlItr.hasNext()){
                         MessageListener ml = (MessageListener)mlItr.next();
-                        if(ml.getActivationSpecClass().equals(declaringClass.getName())){
+                        if(ml.getActivationSpecClass().equals(declaringClassName)){
                             if (!(isConfigDefined(ml.getConfigProperties(), ep))) {
                                 ml.addConfigProperty(ep);
                             }
-                            if(!desc.getConfigPropertyProcessedClasses().contains(declaringClass.getName())){
-                                processParent(declaringClass.getSuperclass(), ml.getConfigProperties());
-                                desc.addConfigPropertyProcessedClass(declaringClass.getName());
+                            if(!desc.getConfigPropertyProcessedClasses().contains(declaringClassName)){
+                                processParent(index, ClassHierarchy.superClass(index, declaringClass),
+                                        ml.getConfigProperties(), desc);
+                                desc.addConfigPropertyProcessedClass(declaringClassName);
                             }
                         }
                     }
@@ -386,7 +425,9 @@ public class ConfigPropertyHandler extends AbstractHandler {
         }
 
     private void processConnectionDefinition(AnnotationInfo element, ConnectorDescriptor desc,
-                                             ConnectorConfigProperty ep, Class declaringClass) {
+                                             ConnectorConfigProperty ep, ClassInfo declaringClass) {
+        IndexView index = element.getIndex();
+        String declaringClassName = declaringClass.name().toString();
         if (desc.getOutBoundDefined()) {
 
             OutboundResourceAdapter ora = desc.getOutboundResourceAdapter();
@@ -395,7 +436,7 @@ public class ConfigPropertyHandler extends AbstractHandler {
             for (Object o : connectionDefinitions) {
                 ConnectionDefDescriptor cd = (ConnectionDefDescriptor) o;
 
-                if (cd.getManagedConnectionFactoryImpl().equals(declaringClass.getName())) {
+                if (cd.getManagedConnectionFactoryImpl().equals(declaringClassName)) {
 
                     if (!(isConfigDefined(cd.getConfigProperties(), ep))) {
                         cd.addConfigProperty(ep);
@@ -404,7 +445,8 @@ public class ConfigPropertyHandler extends AbstractHandler {
                     //store it based on connection-factory-interface class which is the unique
                     //identifier for a connection-definition
                     if(!desc.getConfigPropertyProcessedClasses().contains(cd.getConnectionFactoryIntf())){
-                        processParent(declaringClass.getSuperclass(), cd.getConfigProperties());
+                        processParent(index, ClassHierarchy.superClass(index, declaringClass),
+                                cd.getConfigProperties(), desc);
                         desc.addConfigPropertyProcessedClass(cd.getConnectionFactoryIntf());
                     }
                 }
@@ -426,19 +468,21 @@ public class ConfigPropertyHandler extends AbstractHandler {
         }
     }
 
-    public static boolean processConnector(ConnectorDescriptor desc, ConnectorConfigProperty ep, Class declaringClass) {
+    public static boolean processConnector(IndexView index, ConnectorDescriptor desc, ConnectorConfigProperty ep,
+                                           ClassInfo declaringClass) {
         // make sure that the RA Class considered here is the one specified in descriptor
         // If not, it will be processed once the @Connector is selected during post-processing 
 
         // handle the annotation specified on a ResourceAdapter JavaBean
         // make sure that the property is not already specified in DD
-        if(desc.getResourceAdapterClass().equals(declaringClass.getName())){
+        String declaringClassName = declaringClass.name().toString();
+        if(desc.getResourceAdapterClass().equals(declaringClassName)){
             if (!(isConfigDefined(desc.getConfigProperties(), ep))) {
                 desc.addConfigProperty(ep);
             }
-            if(!desc.getConfigPropertyProcessedClasses().contains(declaringClass.getName())){
-                processParent(declaringClass.getSuperclass(), desc.getConfigProperties());
-                desc.addConfigPropertyProcessedClass(declaringClass.getName());
+            if(!desc.getConfigPropertyProcessedClasses().contains(declaringClassName)){
+                processParent(index, ClassHierarchy.superClass(index, declaringClass), desc.getConfigProperties(), desc);
+                desc.addConfigPropertyProcessedClass(declaringClassName);
             }
             //indicate that the config-property is processed
             return true;
@@ -448,132 +492,176 @@ public class ConfigPropertyHandler extends AbstractHandler {
         }
     }
 
-    private static String validateMethod(Method m, ConfigProperty property){
+    private static String validateMethod(IndexView index, MethodInfo m, AnnotationInstance property){
 
-        if(!m.getName().startsWith("set")){
-            return "not a standard JavaBean setter method : [" + m.getName() + " ] ";
+        if(!m.name().startsWith("set")){
+            return "not a standard JavaBean setter method : [" + m.name() + " ] ";
         }
 
-        int modifier = m.getModifiers();
+        int modifier = m.flags();
 
         //we are not restricting protected, default methods as potentially
         //any of the sub-classes may broaden the accessibility.
         if(Modifier.isPrivate(modifier)){
             return "@ConfigProperty annotation on a " +
-                    "private setter method [ "+m.getName()+" ] " +
-                    "of class [ "+m.getDeclaringClass().getName()+" ]";
+                    "private setter method [ "+m.name()+" ] " +
+                    "of class [ "+m.declaringClass().name()+" ]";
         }
 
-        Class type = property.type();
-        Class[] parameters = m.getParameterTypes();
-        Class propertyType;
-        if (parameters.length != 0) {
-            if (parameters.length == 1) {
-                propertyType = parameters[0];
+        Type type = AnnotationValues.value(index, property, "type").asClass();
+        List<Type> parameters = m.parameterTypes();
+        Type propertyType;
+        if (parameters.size() != 0) {
+            if (parameters.size() == 1) {
+                propertyType = parameters.get(0);
             } else {
-                return "more than one parameter for JavaBean setter method : [" + m.getName() + " ] ";
+                return "more than one parameter for JavaBean setter method : [" + m.name() + " ] ";
             }
         } else {
-            return "no parameters for JavaBean setter method :  [" + m.getName() + " ] ";
+            return "no parameters for JavaBean setter method :  [" + m.name() + " ] ";
         }
         //check compatibility between annotation type and property-type
 
-        if (!type.equals(Object.class) && !propertyType.isAssignableFrom(type)) {
-            if(type.isPrimitive()){
-                type = getWrapperClass(type.getName());
-            }else if(propertyType.isPrimitive()){
-                propertyType = getWrapperClass(propertyType.getName());
+        if (!isObject(type) && !isAssignableFrom(index, propertyType, type)) {
+            String typeName = ClassHierarchy.javaName(type);
+            String propertyTypeName = ClassHierarchy.javaName(propertyType);
+            if(type.kind() == Type.Kind.PRIMITIVE){
+                typeName = getWrapperClass(typeName);
+            }else if(propertyType.kind() == Type.Kind.PRIMITIVE){
+                propertyTypeName = getWrapperClass(propertyTypeName);
             }
 
-            if(!propertyType.isAssignableFrom(type)){
-                return "annotation type [" + type + "] and property-type" +
-                        " [" + propertyType + "] " +
+            if(!isAssignableFrom(index, propertyTypeName, typeName)){
+                return "annotation type [" + describe(index, typeName) + "] and property-type" +
+                        " [" + describe(index, propertyTypeName) + "] " +
                         "are not assignment compatible";
             }
         }
         return SUCCESS;
     }
 
-    private static Class getType( ConfigProperty property, Class type){
-        Class configPropertyType = property.type();
+    /**
+     * @param declaredType the type of the annotated field or setter parameter, as {@code Class.getName()} gives it
+     * @return the type of the config property: the annotation's unless it is left at {@code Object}
+     */
+    private static String getType(IndexView index, AnnotationInstance property, String declaredType){
+        String configPropertyType = AnnotationValues.className(index, property, "type");
 
-        if (configPropertyType.equals(Object.class)) {
-            configPropertyType = type;
+        if (configPropertyType.equals(OBJECT)) {
+            configPropertyType = declaredType;
         }
         return configPropertyType;
     }
 
-    private static String validateField(Field f, ConfigProperty property){
+    private static String validateField(IndexView index, FieldInfo f, AnnotationInstance property){
 
-        Class c = f.getDeclaringClass();
-        Class returnType = f.getType();
-        Class type = property.type();
-        if (!type.equals(Object.class)) {
+        Type returnType = f.type();
+        Type type = AnnotationValues.value(index, property, "type").asClass();
+        if (!isObject(type)) {
             //check compatibility between annotation type and return-type
-            if (!returnType.isAssignableFrom(type)) {
-                return "annotation type [" + type + "] " +
-                        "and return-type [" + returnType + "] " +
+            if (!isAssignableFrom(index, returnType, type)) {
+                return "annotation type [" + describe(index, ClassHierarchy.javaName(type)) + "] " +
+                        "and return-type [" + describe(index, ClassHierarchy.javaName(returnType)) + "] " +
                         "are not assignment compatible for @ConfigProperty in " +
-                        "field [ " + f.getName() + " ] of class [ " + c + " ]";
+                        "field [ " + f.name() + " ] of class [ " + describe(index, f.declaringClass().name().toString()) + " ]";
             }
         }
         return SUCCESS;
     }
 
-    public static void processParent(Class claz, Set configProperties) {
+    private static boolean isObject(Type type) {
+        return OBJECT.equals(ClassHierarchy.javaName(type));
+    }
+
+    /**
+     * {@code target.isAssignableFrom(source)}: a primitive is assignable to itself only
+     */
+    private static boolean isAssignableFrom(IndexView index, Type target, Type source) {
+        if (target.kind() == Type.Kind.PRIMITIVE || source.kind() == Type.Kind.PRIMITIVE) {
+            return ClassHierarchy.javaName(target).equals(ClassHierarchy.javaName(source));
+        }
+        return isAssignableFrom(index, ClassHierarchy.javaName(target), ClassHierarchy.javaName(source));
+    }
+
+    private static boolean isAssignableFrom(IndexView index, String target, String source) {
+        return ClassHierarchy.isSubtype(index, DotName.createSimple(source), DotName.createSimple(target));
+    }
+
+    /**
+     * @return what {@code Class.toString()} says of the type: {@code int}, {@code class X} or {@code interface X}
+     */
+    private static String describe(IndexView index, String javaName) {
+        if (javaName.startsWith("[")) {
+            return "class " + javaName;
+        }
+        ClassInfo type = index.getClassByName(DotName.createSimple(javaName));
+        if (type == null) {
+            // a primitive
+            return javaName;
+        }
+        return (ClassHierarchy.isInterface(type) ? "interface " : "class ") + javaName;
+    }
+
+    /**
+     * Collects the {@code @ConfigProperty} declarations of the class and of its superclasses.
+     *
+     * @param claz the class to start from, null for the superclass of a class extending {@code Object}
+     * @param desc the resource adapter, whose class loader the JavaBeans load with to derive field defaults
+     */
+    public static void processParent(IndexView index, ClassInfo claz, Set configProperties, ConnectorDescriptor desc) {
 
         if(claz == null){
             return;
         }
         //process the methods
-        Method[] methods = claz.getDeclaredMethods();
-        for (Method m : methods) {
-            ConfigProperty property = m.getAnnotation(ConfigProperty.class);
+        for (MethodInfo m : claz.methods()) {
+            AnnotationInstance property = ClassHierarchy.annotation(index, m, ConfigProperty.class);
             if (property != null) {
-                String result = validateMethod(m, property);
+                String result = validateMethod(index, m, property);
                 if (!result.equals(SUCCESS)) {
                     throw new IllegalStateException(result);
                 }
-                String defaultValue = property.defaultValue();
-                Class type = getType(property, m.getParameterTypes()[0]);
-                processConfigProperty(configProperties, m.getName().substring(3), property, defaultValue, type);
+                String defaultValue = AnnotationValues.string(index, property, "defaultValue");
+                processConfigProperty(index, configProperties, m.name().substring(3), property, defaultValue,
+                        ClassHierarchy.javaName(m.parameterTypes().get(0)));
             }
         }
 
         //process the fields
-        Field[] fields = claz.getDeclaredFields();
-        for (Field f : fields) {
-            ConfigProperty property = f.getAnnotation(ConfigProperty.class);
+        for (FieldInfo f : claz.fields()) {
+            AnnotationInstance property = ClassHierarchy.annotation(index, f, ConfigProperty.class);
 
             if (property != null) {
-                String status = validateField(f, property);
+                String status = validateField(index, f, property);
                 if(!status.equals(SUCCESS)){
                     throw new IllegalStateException(status);
                 }
-                String defaultValue = property.defaultValue();
+                String defaultValue = AnnotationValues.string(index, property, "defaultValue");
 
-                if (defaultValue == null || defaultValue.equals("")) {
-                    defaultValue = deriveDefaultValueOfField(f);
+                if (defaultValue.equals("")) {
+                    defaultValue = deriveDefaultValueOfField(f, desc);
                 }
-                processConfigProperty(configProperties, f.getName(), property, defaultValue, f.getType());
+                processConfigProperty(index, configProperties, f.name(), property, defaultValue,
+                        ClassHierarchy.javaName(f.type()));
             }
         }
 
         //process its super-class
-        if (claz.getSuperclass() != null) {
-            processParent(claz.getSuperclass(), configProperties);
-        }
+        processParent(index, ClassHierarchy.superClass(index, claz), configProperties, desc);
     }
 
-    private static void processConfigProperty(Set configProperties, String propertyName,
-                                              ConfigProperty property, String defaultValue, Class declaredEntityType) {
+    private static void processConfigProperty(IndexView index, Set configProperties, String propertyName,
+                                              AnnotationInstance property, String defaultValue, String declaredEntityType) {
         String description = "";
-        if(property.description() != null && property.description().length > 0){
-            description = property.description()[0];
+        String[] descriptions = AnnotationValues.strings(index, property, "description");
+        if(descriptions.length > 0){
+            description = descriptions[0];
         }
-        Class type = getType(property, declaredEntityType);
+        String type = getType(index, property, declaredEntityType);
         ConnectorConfigProperty ccp = getConfigProperty(defaultValue, description,
-                property.ignore(), property.supportsDynamicUpdates(), property.confidential(),
+                AnnotationValues.bool(index, property, "ignore"),
+                AnnotationValues.bool(index, property, "supportsDynamicUpdates"),
+                AnnotationValues.bool(index, property, "confidential"),
                 type, propertyName);
         if(!isConfigDefined(configProperties, ccp)){
             configProperties.add(ccp);
@@ -614,13 +702,7 @@ public class ConfigPropertyHandler extends AbstractHandler {
         HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
         result.addResult(getAnnotationType(), ResultType.FAILED);
         if (doLog) {
-            Object o = element.getAnnotatedElement();
-            String className = null;
-            if(o instanceof Field){
-                className = ((Field)o).getDeclaringClass().getName();
-            }else { //else it can be only METHOD
-                className = ((Method)o).getDeclaringClass().getName();
-            }
+            String className = element.getDeclaringClass().name().toString();
             Object args[] = new Object[]{
                 element.getAnnotation(),
                 className,

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,77 +37,73 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import jakarta.ejb.Remove;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import jakarta.ejb.Remove;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+
 /**
- * This handler is responsible for handling the jakarta.ejb.Remove attribute
- *
+ * This handler is responsible for handling the jakarta.ejb.Remove annotation.
  */
 @Service
 @AnnotationHandlerFor(Remove.class)
 public class RemoveHandler extends AbstractAttributeHandler {
-    
+
     public RemoveHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
-        Remove remove = (Remove) ainfo.getAnnotation();
+        boolean retainIfException = ainfo.booleanValue("retainIfException");
 
         for(EjbContext next : ejbContexts) {
-            
-            EjbSessionDescriptor sessionDescriptor = 
-                (EjbSessionDescriptor) next.getDescriptor();
 
-            Method m = (Method) ainfo.getAnnotatedElement();
-            MethodDescriptor removeMethod = 
-                new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
+            EjbSessionDescriptor sessionDescriptor = (EjbSessionDescriptor) next.getDescriptor();
 
-            EjbRemovalInfo removalInfo = 
-                sessionDescriptor.getRemovalInfo(removeMethod);
+            MethodInfo m = ainfo.getAnnotatedElement().asMethod();
+            MethodDescriptor removeMethod = new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
+
+            EjbRemovalInfo removalInfo = sessionDescriptor.getRemovalInfo(removeMethod);
 
             if (removalInfo == null) {
-                // if this element is not defined in xml 
-                // use all information from annotation
+                // if this remove method is not defined in the descriptor
+                // add it to the removeMethods list in the descriptor
                 removalInfo = new EjbRemovalInfo();
                 removalInfo.setRemoveMethod(removeMethod);
-                removalInfo.setRetainIfException(remove.retainIfException());
+                removalInfo.setRetainIfException(retainIfException);
                 sessionDescriptor.addRemoveMethod(removalInfo);
             } else {
-                // if this element is already defined in xml
-                // set the retainIfException only if this subelement 
-                // is not defined in xml
+                // if this remove method is already defined in the descriptor
+                // only set the retainIfException if it was not already set
                 if (! removalInfo.isRetainIfExceptionSet()) {
-                    removalInfo.setRetainIfException(
-                        remove.retainIfException());
+                    removalInfo.setRetainIfException(retainIfException);
                 }
-            } 
+            }
         }
-        
+
         return getDefaultProcessedResult();
     }
 
     /**
-     * @return an array of annotation types this annotation handler would 
-     * require to be processed (if present) before it processes it's own 
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }

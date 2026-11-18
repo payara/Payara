@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2026] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -76,8 +76,6 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
 
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -724,11 +722,6 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
             if (isFinalClean) {
                 transientAppMetaData.clear();
             } else {
-                final String [] classNamesToClean = {Types.class.getName(), Parser.class.getName()};
-        
-                for (String className : classNamesToClean) {
-                    transientAppMetaData.remove(className);
-                }
                 com.sun.enterprise.deploy.shared.FileArchive.clearCache();
             }
         }

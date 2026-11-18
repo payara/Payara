@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
@@ -46,13 +46,15 @@ import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.resource.AdministeredObjectDefinition;
 import jakarta.resource.AdministeredObjectDefinitions;
 
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.deployment.AdministeredObjectDefinitionDescriptor;
@@ -76,12 +78,13 @@ public class AdministeredObjectDefinitionsHandler extends AbstractResourceHandle
     @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,  ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-        AdministeredObjectDefinitions defns = (AdministeredObjectDefinitions) ainfo.getAnnotation();
-        AdministeredObjectDefinition values[] = defns.value();
+        IndexView index = ainfo.getIndex();
+        AnnotationInstance values[] = ainfo.nestedArrayValue("value");
         Set<String> duplicates = new HashSet<String>();
-        if(values != null && values.length >0){
-            for(AdministeredObjectDefinition defn : values){
-                String defnName = AdministeredObjectDefinitionDescriptor.getJavaName(defn.name());
+        if(values.length >0){
+            for(AnnotationInstance defn : values){
+                String defnName = AdministeredObjectDefinitionDescriptor.getJavaName(
+                        AnnotationValues.string(index, defn, "name"));
 
                 if(duplicates.contains(defnName)){
                     // where is the local-string file?

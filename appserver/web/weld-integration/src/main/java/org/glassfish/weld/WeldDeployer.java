@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.weld;
 
@@ -71,13 +71,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -107,6 +108,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
@@ -122,6 +124,9 @@ import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
 import org.jboss.weld.configuration.spi.ExternalConfiguration;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.injection.spi.InjectionServices;
+import org.jboss.weld.resources.spi.ClassFileInfo;
+import org.jboss.weld.resources.spi.ClassFileInfoException;
+import org.jboss.weld.resources.spi.ClassFileServices;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.serialization.spi.ProxyServices;
@@ -192,6 +197,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     private Deployment deployment;
+
+    @Inject
+    private JandexIndexer jandexIndexer;
 
     private Map<BundleDescriptor, BeanDeploymentArchive> bundleToBeanDeploymentArchive = new HashMap<>();
 
@@ -294,6 +302,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             } catch (NamingException ex) {
                 throw new RuntimeException(ex);
             }
+
+            // Weld's fast bootstrap path: class metadata comes from the deployment's class indexes, so only
+            // classes that are beans, observers or extensions get loaded
+            deploymentImpl.getServices().add(ClassFileServices.class,
+                    new JandexClassFileServices(jandexIndexer.getCompositeIndex(context), context.getClassLoader()));
 
             addWeldListenerToAllWars(context);
         } else {
@@ -829,72 +842,76 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             DeploymentImpl deploymentImpl) {
         Set<BeanDeploymentArchive> beanDeploymentArchives = deploymentImpl.getBeanDeploymentArchives();
 
-        Class<?> messageListenerClass = getMessageListenerClass();
-
         // Web-Profile and other lighter distributions would not ship the JMS
         // API and implementations.
         // So, the weld-integration layer cannot have a direct dependency on the JMS API
-        boolean isFullProfile = messageListenerClass != null;
+        // For distributions that have the JMS API, an MDB is a valid non-contextual EE component to which we have to
+        // fire <code>ProcessInjectionTarget</code> events (see GLASSFISH-16730)
+        Class<?> messageListenerClass = getMessageListenerClass();
+        List<Class<?>> componentTypes = new ArrayList<>(Arrays.asList(NON_CONTEXT_CLASSES));
+        if (messageListenerClass != null) {
+            componentTypes.add(messageListenerClass);
+        }
+        ClassFileServices classFileServices = deploymentImpl.getServices().get(ClassFileServices.class);
 
         for (BeanDeploymentArchive beanDeploymentArchive : beanDeploymentArchives) {
-            Collection<Class<?>> beanClassObjects = ((BeanDeploymentArchiveImpl) beanDeploymentArchive).getBeanClassObjects();
-            for (Class<?> bdaClazz : beanClassObjects) {
-                for (Class<?> nonClazz : NON_CONTEXT_CLASSES) {
-                    if (nonClazz.isAssignableFrom(bdaClazz)) {
-                        firePITEvent(bootstrap, beanDeploymentArchive, bdaClazz);
-                    }
-                }
-
-                // For distributions that have the JMS API, an MDB is a valid non-contextual EE component to which we have to
-                // fire <code>ProcessInjectionTarget</code> events (see GLASSFISH-16730)
-                if (isFullProfile && messageListenerClass.isAssignableFrom(bdaClazz)) {
-                    if (logger.isLoggable(FINE)) {
-                        logger.log(FINE, MDB_PIT_EVENT, new Object[] { bdaClazz });
-                    }
-
-                    firePITEvent(bootstrap, beanDeploymentArchive, bdaClazz);
-                }
-            }
-
-            // Fix for CDI TCK test: ContainerEventTest#testProcessInjectionTargetEventFiredForServlet
-            // Check for Servlets which have not yet been loaded and haven't been identified as Beans
-            // From the spec: "The container must also fire an event for every Jakarta EE component class supporting
-            // injection that may be instantiated by the container at runtime". Stress on the "may".
-            Collection<String> injectionTargetClassNames = WeldUtils.getInjectionTargetClassNames(
-                    deploymentImpl.getTypes(), beanDeploymentArchive.getKnownClasses());
-            for (String injectionTargetClassName : injectionTargetClassNames) {
-                // Don't fire twice
-                if (beanDeploymentArchive.getBeanClasses().contains(injectionTargetClassName)) {
-                    continue;
-                }
-
-                Class<?> injectionTargetClass = null;
-                try {
-                    injectionTargetClass = applicationInfo.getAppClassLoader().loadClass(injectionTargetClassName);
-                } catch (ClassNotFoundException appClassLoaderClassNotFoundException) {
-                    try {
-                        logger.log(Level.FINE, "Caught exception loading class using application class loader, " +
-                                "trying again with module class loader");
-                        injectionTargetClass = applicationInfo.getModuleClassLoader().loadClass(injectionTargetClassName);
-                    } catch (ClassNotFoundException moduleClassLoaderClassNotFoundException) {
-                        logger.log(Level.FINE, "Caught exception loading class using module class loader, " +
-                                "ProcessInjectionTarget event may not get fired for " + injectionTargetClassName);
-                    }
-                }
-
-                if (injectionTargetClass != null) {
-                    for (Class<?> nonClazz : NON_CONTEXT_CLASSES) {
-                        if (nonClazz.isAssignableFrom(injectionTargetClass)) {
-                            firePITEvent(bootstrap, beanDeploymentArchive, injectionTargetClass);
-                        }
-                    }
-
-                    if(isFullProfile && messageListenerClass.isAssignableFrom(injectionTargetClass)) {
-                        firePITEvent(bootstrap, beanDeploymentArchive, injectionTargetClass);
-                    }
+            // Bean classes, and - fix for CDI TCK test ContainerEventTest#testProcessInjectionTargetEventFiredForServlet -
+            // classes which have not been identified as beans but support injection. From the spec: "The container
+            // must also fire an event for every Jakarta EE component class supporting injection that may be
+            // instantiated by the container at runtime". Stress on the "may". A set, so that no event is fired twice.
+            Set<String> candidates = new LinkedHashSet<>(beanDeploymentArchive.getBeanClasses());
+            candidates.addAll(WeldUtils.getInjectionTargetClassNames(deploymentImpl.context, beanDeploymentArchive.getKnownClasses()));
+            for (String className : candidates) {
+                Class<?> componentClass = loadNonContextualComponent(classFileServices, applicationInfo, className,
+                        componentTypes, messageListenerClass);
+                if (componentClass != null) {
+                    firePITEvent(bootstrap, beanDeploymentArchive, componentClass);
                 }
             }
         }
+    }
+
+    /**
+     * @return the class if it is a Jakarta EE component class supporting injection (servlet, filter, listener,
+     * tag, message listener), otherwise null. Where the class is in the deployment's class index the decision
+     * is taken without loading it.
+     */
+    private Class<?> loadNonContextualComponent(ClassFileServices classFileServices, ApplicationInfo applicationInfo,
+            String className, List<Class<?>> componentTypes, Class<?> messageListenerClass) {
+        if (classFileServices != null) {
+            try {
+                ClassFileInfo classFileInfo = classFileServices.getClassFileInfo(className);
+                if (componentTypes.stream().noneMatch(classFileInfo::isAssignableTo)) {
+                    return null;
+                }
+            } catch (ClassFileInfoException e) {
+                logger.log(FINE, e, () -> "Deciding from the loaded class whether " + className + " is a component class");
+            }
+        }
+
+        Class<?> componentClass;
+        try {
+            componentClass = applicationInfo.getAppClassLoader().loadClass(className);
+        } catch (ClassNotFoundException appClassLoaderClassNotFoundException) {
+            try {
+                logger.log(FINE, "Caught exception loading class using application class loader, " +
+                        "trying again with module class loader");
+                componentClass = applicationInfo.getModuleClassLoader().loadClass(className);
+            } catch (ClassNotFoundException moduleClassLoaderClassNotFoundException) {
+                logger.log(FINE, "Caught exception loading class using module class loader, " +
+                        "ProcessInjectionTarget event may not get fired for " + className);
+                return null;
+            }
+        }
+        for (Class<?> componentType : componentTypes) {
+            if (componentType.isAssignableFrom(componentClass)) {
+                if (componentType == messageListenerClass && logger.isLoggable(FINE)) {
+                    logger.log(FINE, MDB_PIT_EVENT, new Object[] { componentClass });
+                }
+                return componentClass;
+            }
+        }
+        return null;
     }
 
     private Class<?> getMessageListenerClass() {

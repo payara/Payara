@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022-2025] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,9 +47,12 @@ import jakarta.enterprise.concurrent.ManagedThreadFactoryDefinition;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.Set;
@@ -67,22 +70,19 @@ public class ManagedThreadFactoryDefinitionHandler extends AbstractConcurrencyHa
                                                         ResourceContainerContext[] resourceContainerContexts)
             throws AnnotationProcessorException {
         logger.log(Level.INFO, "Entering ManagedThreadFactoryDefinitionHandler.processAnnotation");
-        ManagedThreadFactoryDefinition managedThreadFactoryDefinition =
-                (ManagedThreadFactoryDefinition) annotationInfo.getAnnotation();
-
-        return processAnnotation(managedThreadFactoryDefinition, resourceContainerContexts);
+        return processAnnotation(annotationInfo.getIndex(), annotationInfo.getAnnotation(), resourceContainerContexts);
     }
 
-    protected HandlerProcessingResult processAnnotation(ManagedThreadFactoryDefinition managedThreadFactoryDefinition,
+    protected HandlerProcessingResult processAnnotation(IndexView index, AnnotationInstance managedThreadFactoryDefinition,
                                                         ResourceContainerContext[] contexts) {
         logger.log(Level.INFO, "Registering ManagedThreadFactory from annotation config");
-        ManagedThreadFactoryDefinitionDescriptor mtfdd = createDescriptor(managedThreadFactoryDefinition);
+        ManagedThreadFactoryDefinitionDescriptor mtfdd = createDescriptor(index, managedThreadFactoryDefinition);
 
         // add to resource contexts
         for (ResourceContainerContext context : contexts) {
             Set<ResourceDescriptor> resourceDescriptors = context.getResourceDescriptors(JavaEEResourceType.MTFDD);
             if (descriptorAlreadyPresent(resourceDescriptors, mtfdd)) {
-                merge(resourceDescriptors, managedThreadFactoryDefinition);
+                merge(resourceDescriptors, index, managedThreadFactoryDefinition);
             } else {
                 resourceDescriptors.add(mtfdd);
             }
@@ -90,36 +90,39 @@ public class ManagedThreadFactoryDefinitionHandler extends AbstractConcurrencyHa
         return getDefaultProcessedResult();
     }
 
-    public ManagedThreadFactoryDefinitionDescriptor createDescriptor(ManagedThreadFactoryDefinition managedThreadFactoryDefinition) {
+    public ManagedThreadFactoryDefinitionDescriptor createDescriptor(IndexView index, AnnotationInstance managedThreadFactoryDefinition) {
         ManagedThreadFactoryDefinitionDescriptor mtfdd = new ManagedThreadFactoryDefinitionDescriptor();
         mtfdd.setMetadataSource(MetadataSource.ANNOTATION);
-        mtfdd.setName(TranslatedConfigView.expandValue(managedThreadFactoryDefinition.name()));
-        mtfdd.setContext(TranslatedConfigView.expandValue(managedThreadFactoryDefinition.context()));
-        mtfdd.setVirtual(managedThreadFactoryDefinition.virtual());
-        if(managedThreadFactoryDefinition.priority() <= 0) {
+        mtfdd.setName(TranslatedConfigView.expandValue(AnnotationValues.string(index, managedThreadFactoryDefinition, "name")));
+        mtfdd.setContext(TranslatedConfigView.expandValue(AnnotationValues.string(index, managedThreadFactoryDefinition, "context")));
+        mtfdd.setVirtual(AnnotationValues.bool(index, managedThreadFactoryDefinition, "virtual"));
+        int priority = AnnotationValues.integer(index, managedThreadFactoryDefinition, "priority");
+        if (priority <= 0) {
             mtfdd.setPriority(Thread.NORM_PRIORITY);
         } else {
-            mtfdd.setPriority(managedThreadFactoryDefinition.priority());
+            mtfdd.setPriority(priority);
         }
-        mtfdd.setQualifiers(mapToSetOfStrings(managedThreadFactoryDefinition.qualifiers()));
+        mtfdd.setQualifiers(AnnotationValues.classNames(index, managedThreadFactoryDefinition, "qualifiers"));
         return mtfdd;
     }
 
-    private void merge(Set<ResourceDescriptor> resourceDescriptors, ManagedThreadFactoryDefinition mtfdd) {
+    private void merge(Set<ResourceDescriptor> resourceDescriptors, IndexView index, AnnotationInstance mtfdd) {
         for (ResourceDescriptor resource : resourceDescriptors) {
             ManagedThreadFactoryDefinitionDescriptor descriptor = (ManagedThreadFactoryDefinitionDescriptor) resource;
-            if (descriptor.getName().equals(mtfdd.name())) {
+            if (descriptor.getName().equals(AnnotationValues.string(index, mtfdd, "name"))) {
 
-                if (descriptor.getPriority() == -1 && mtfdd.priority() != -1) {
-                    descriptor.setPriority(mtfdd.priority());
+                int priority = AnnotationValues.integer(index, mtfdd, "priority");
+                if (descriptor.getPriority() == -1 && priority != -1) {
+                    descriptor.setPriority(priority);
                 }
 
-                if (descriptor.getContext() == null && mtfdd.context() != null && !mtfdd.context().isBlank()) {
-                    descriptor.setContext(TranslatedConfigView.expandValue(mtfdd.context()));
+                String context = AnnotationValues.string(index, mtfdd, "context");
+                if (descriptor.getContext() == null && !context.isBlank()) {
+                    descriptor.setContext(TranslatedConfigView.expandValue(context));
                 }
 
-                if (descriptor.getQualifiers() == null && mtfdd.qualifiers() != null) {
-                    descriptor.setQualifiers(mapToSetOfStrings(mtfdd.qualifiers()));
+                if (descriptor.getQualifiers() == null) {
+                    descriptor.setQualifiers(AnnotationValues.classNames(index, mtfdd, "qualifiers"));
                 }
             }
         }

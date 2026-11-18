@@ -38,12 +38,13 @@
  * holder.
  */
 
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.context;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
 
 import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
+import org.jboss.jandex.AnnotationTarget;
 
 /**
  * This provides a context for a of interceptor.
@@ -63,7 +64,7 @@ public class EjbInterceptorContext extends ResourceContainerContextImpl {
         descriptor = ejbInterceptor;
     }
 
-    public void endElement(ElementType type, AnnotatedElement element) {
+    public void endElement(ElementType type, AnnotationTarget element) {
         
         if (ElementType.TYPE.equals(type)) {
             // done with processing this class, let's pop this context

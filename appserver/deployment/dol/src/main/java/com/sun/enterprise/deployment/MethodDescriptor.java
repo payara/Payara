@@ -37,13 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -156,6 +161,22 @@ public final class MethodDescriptor extends Descriptor {
         this.parameterClassNames = getParameterClassNamesFor(method, paramTypes);
         this.javaParameterClassNames = getJavaFormatClassNamesFor(paramTypes);
         this.className = method.getDeclaringClass().getName();
+    }
+
+    /**
+     * Constructs a method descriptor for the method as read from the class index, without loading the class.
+     */
+    public MethodDescriptor(MethodInfo method, String methodIntf) {
+        this(method);
+        isExact = true;
+        this.setEjbClassSymbol(methodIntf);
+    }
+
+    public MethodDescriptor(MethodInfo method) {
+        super(method.name(), "");
+        this.parameterClassNames = ClassHierarchy.sourceParameterNames(method);
+        this.javaParameterClassNames = ClassHierarchy.javaParameterNames(method);
+        this.className = method.declaringClass().name().toString();
     }
 
     public MethodDescriptor() {
@@ -338,6 +359,110 @@ public final class MethodDescriptor extends Descriptor {
             _logger.log(Level.SEVERE, "enterprise.deployment.backend.methodClassLoadFailure", new Object[] { e.getMessage(), ejbDescriptor });
         }
         return method;
+    }
+
+    /**
+     * The method this descriptor designates, read from the class index without loading any class: the
+     * same search as {@link #getMethod(EjbDescriptor)}.
+     *
+     * @return the method, or null if the descriptor does not resolve
+     */
+    public MethodInfo getMethod(EjbDescriptor ejbDescriptor, IndexView index) {
+        String[] params = exactParameterClassNames(getJavaParameterClassNames());
+        MethodInfo method = null;
+        if (ejbClassSymbol == null || ejbClassSymbol.equals("") || ejbClassSymbol.equals(EJB_BEAN) || ejbClassSymbol.equals(TIMER_METHOD)
+                || ejbClassSymbol.equals(LIFECYCLE_CALLBACK) || ejbClassSymbol.equals(MESSAGE_ENDPOINT_METHOD)) {
+            // a known declaring class is searched alone, the method can have any access type; otherwise the
+            // method is public and can be anywhere in the bean class hierarchy
+            method = className.equals("") ? publicMethod(index, ejbDescriptor.getEjbClassName(), params)
+                    : declaredMethod(index, className, params);
+            if (method == null && ejbDescriptor.isRemoteInterfacesSupported()) {
+                method = publicMethod(index, ejbDescriptor.getHomeClassName(), params);
+            }
+            if (method == null && ejbDescriptor.isLocalInterfacesSupported()) {
+                method = publicMethod(index, ejbDescriptor.getLocalHomeClassName(), params);
+            }
+            if (method == null && ejbDescriptor.hasWebServiceEndpointInterface()) {
+                method = publicMethod(index, ejbDescriptor.getWebServiceEndpointInterfaceName(), params);
+            }
+        } else if (ejbClassSymbol.equals(EJB_HOME)) {
+            method = publicMethod(index, ejbDescriptor.getHomeClassName(), params);
+        } else if (ejbClassSymbol.equals(EJB_LOCALHOME)) {
+            method = publicMethod(index, ejbDescriptor.getLocalHomeClassName(), params);
+        } else if (ejbClassSymbol.equals(EJB_REMOTE)) {
+            if (ejbDescriptor.isRemoteInterfacesSupported()) {
+                method = publicMethod(index, ejbDescriptor.getRemoteClassName(), params);
+            }
+            if (method == null && ejbDescriptor.isRemoteBusinessInterfacesSupported()) {
+                method = publicMethod(index, ejbDescriptor.getRemoteBusinessClassNames(), params);
+            }
+        } else if (ejbClassSymbol.equals(EJB_LOCAL)) {
+            if (ejbDescriptor.isLocalBean()) {
+                method = publicMethod(index, ejbDescriptor.getEjbClassName(), params);
+            }
+            if (method == null && ejbDescriptor.isLocalInterfacesSupported()) {
+                method = publicMethod(index, ejbDescriptor.getLocalClassName(), params);
+            }
+            if (method == null && ejbDescriptor.isLocalBusinessInterfacesSupported()) {
+                method = publicMethod(index, ejbDescriptor.getLocalBusinessClassNames(), params);
+            }
+        } else if (ejbClassSymbol.equals(EJB_WEB_SERVICE)) {
+            method = publicMethod(index, ejbDescriptor.getWebServiceEndpointInterfaceName(), params);
+        }
+        return method;
+    }
+
+    /**
+     * The method this descriptor designates among those declared in the bean class hierarchy, of any
+     * access type, read from the class index: the same search as {@link #getDeclaredMethod(EjbDescriptor)}.
+     *
+     * @return the method, or null if the descriptor does not resolve
+     */
+    public MethodInfo getDeclaredMethod(EjbDescriptor ejbDescriptor, IndexView index) {
+        return getDeclaredMethod(ejbDescriptor, index, getJavaParameterClassNames());
+    }
+
+    public MethodInfo getDeclaredMethod(EjbDescriptor ejbDescriptor, IndexView index, String[] javaParamClassNames) {
+        ClassInfo ejbClass = index.getClassByName(DotName.createSimple(ejbDescriptor.getEjbClassName()));
+        if (ejbClass == null) {
+            _logger.log(Level.SEVERE, "enterprise.deployment.backend.methodClassLoadFailure", new Object[] { ejbDescriptor });
+            return null;
+        }
+        String[] params = exactParameterClassNames(javaParamClassNames);
+        for (ClassInfo next : ClassHierarchy.hierarchy(index, ejbClass)) {
+            MethodInfo method = ClassHierarchy.find(next.methods(), getName(), params);
+            if (method != null) {
+                return method;
+            }
+        }
+        return null;
+    }
+
+    /** unspecified parameters designate a method without parameters, as they do for Class.getMethod */
+    private static String[] exactParameterClassNames(String[] javaParamClassNames) {
+        return javaParamClassNames == null ? new String[0] : javaParamClassNames;
+    }
+
+    private MethodInfo publicMethod(IndexView index, Collection<String> classNames, String[] javaParamClassNames) {
+        for (String className : classNames) {
+            MethodInfo method = publicMethod(index, className, javaParamClassNames);
+            if (method != null) {
+                return method;
+            }
+        }
+        return null;
+    }
+
+    /** the equivalent of Class.getMethod: a public method of the class, of its superclasses or of its interfaces */
+    private MethodInfo publicMethod(IndexView index, String className, String[] javaParamClassNames) {
+        ClassInfo type = index.getClassByName(DotName.createSimple(className));
+        return type == null ? null : ClassHierarchy.find(ClassHierarchy.publicMethods(index, type, true), getName(), javaParamClassNames);
+    }
+
+    /** the equivalent of Class.getDeclaredMethod: a method the class declares itself, of any access type */
+    private MethodInfo declaredMethod(IndexView index, String className, String[] javaParamClassNames) {
+        ClassInfo type = index.getClassByName(DotName.createSimple(className));
+        return type == null ? null : ClassHierarchy.find(type.methods(), getName(), javaParamClassNames);
     }
 
     public Method getMethod(Class declaringClass) {

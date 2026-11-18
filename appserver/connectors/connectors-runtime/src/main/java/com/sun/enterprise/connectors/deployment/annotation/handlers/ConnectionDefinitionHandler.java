@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
@@ -49,15 +50,15 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import jakarta.resource.spi.ConnectionDefinition;
 import jakarta.resource.spi.ManagedConnectionFactory;
-import jakarta.resource.spi.Connector;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import org.glassfish.apf.*;
-import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
@@ -67,7 +68,10 @@ public class ConnectionDefinitionHandler extends AbstractHandler  {
     protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ConnectionDefinitionHandler.class);
 
-    public void processAnnotation(AnnotationInfo element, ConnectionDefinition defn)
+    /**
+     * @param defn one {@code @ConnectionDefinition} nested in the {@code @ConnectionDefinitions} of the element
+     */
+    public void processAnnotation(AnnotationInfo element, AnnotationInstance defn)
             throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
         handleAnnotation(aeHandler, defn, element);
@@ -75,7 +79,7 @@ public class ConnectionDefinitionHandler extends AbstractHandler  {
 
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
-        ConnectionDefinition connDefn = (ConnectionDefinition) element.getAnnotation();
+        AnnotationInstance connDefn = element.getAnnotation();
 
         if (aeHandler instanceof RarBundleContext) {
             handleAnnotation(aeHandler, connDefn, element);
@@ -85,13 +89,14 @@ public class ConnectionDefinitionHandler extends AbstractHandler  {
         return getDefaultProcessedResult();
     }
 
-    private void handleAnnotation(AnnotatedElementHandler aeHandler, ConnectionDefinition connDefn, AnnotationInfo element) {
+    private void handleAnnotation(AnnotatedElementHandler aeHandler, AnnotationInstance connDefn, AnnotationInfo element) {
         RarBundleContext rarContext = (RarBundleContext) aeHandler;
         ConnectorDescriptor desc = rarContext.getDescriptor();
+        IndexView index = element.getIndex();
 
-        Class c = (Class) element.getAnnotatedElement();
-        String targetClassName = c.getName();
-        if (ManagedConnectionFactory.class.isAssignableFrom(c)) {
+        ClassInfo c = element.getAnnotatedElement().asClass();
+        String targetClassName = c.name().toString();
+        if (ClassHierarchy.isSubtype(index, c, ManagedConnectionFactory.class)) {
 
             if (!desc.getOutBoundDefined()) {
                 OutboundResourceAdapter ora = new OutboundResourceAdapter();
@@ -100,12 +105,13 @@ public class ConnectionDefinitionHandler extends AbstractHandler  {
 
             OutboundResourceAdapter ora = desc.getOutboundResourceAdapter();
 
-            if (!ora.hasConnectionDefDescriptor(connDefn.connectionFactory().getName())) {
+            String connectionFactory = AnnotationValues.className(index, connDefn, "connectionFactory");
+            if (!ora.hasConnectionDefDescriptor(connectionFactory)) {
                 ConnectionDefDescriptor cdd = new ConnectionDefDescriptor();
-                cdd.setConnectionFactoryImpl(connDefn.connectionFactoryImpl().getName());
-                cdd.setConnectionFactoryIntf(connDefn.connectionFactory().getName());
-                cdd.setConnectionIntf(connDefn.connection().getName());
-                cdd.setConnectionImpl(connDefn.connectionImpl().getName());
+                cdd.setConnectionFactoryImpl(AnnotationValues.className(index, connDefn, "connectionFactoryImpl"));
+                cdd.setConnectionFactoryIntf(connectionFactory);
+                cdd.setConnectionIntf(AnnotationValues.className(index, connDefn, "connection"));
+                cdd.setConnectionImpl(AnnotationValues.className(index, connDefn, "connectionImpl"));
 
                 cdd.setManagedConnectionFactoryImpl(targetClassName);
 
@@ -140,8 +146,7 @@ public class ConnectionDefinitionHandler extends AbstractHandler  {
         HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
         result.addResult(getAnnotationType(), ResultType.FAILED);
         if (doLog) {
-            Class c = (Class) element.getAnnotatedElement();
-            String className = c.getName();
+            String className = element.getDeclaringClass().name().toString();
             Object args[] = new Object[]{
                 element.getAnnotation(),
                 className,
@@ -156,4 +161,3 @@ public class ConnectionDefinitionHandler extends AbstractHandler  {
     }
     
 }
-             

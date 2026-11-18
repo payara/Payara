@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,70 +37,74 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf.impl;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.lang.annotation.Annotation;
-
-import org.glassfish.apf.ResultType;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.ResultType;
+
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
+ * Implementation of the HandlerProcessingResult, keyed by annotation type name.
  *
- * @author dochez
+ * @author Jerome Dochez
  */
 public class HandlerProcessingResultImpl implements HandlerProcessingResult {
-    
-    Map<Class<? extends Annotation>,ResultType> results;
-    ResultType overallResult = ResultType.UNPROCESSED;
-    
-    /**
-     * Creates a new instance of HandlerProcessingResultImpl 
-     */
-    public HandlerProcessingResultImpl(Map<Class<? extends Annotation>, ResultType> results) {
+
+    private final Map<String, ResultType> results;
+    private ResultType overallResult = ResultType.UNPROCESSED;
+
+    public HandlerProcessingResultImpl(Map<String, ResultType> results) {
         this.results = results;
     }
-    
-    public HandlerProcessingResultImpl() {        
-        results = new HashMap<Class<? extends Annotation>, ResultType>();
+
+    public HandlerProcessingResultImpl() {
+        results = new HashMap<>();
     }
-    
+
     public static HandlerProcessingResultImpl getDefaultResult(Class<? extends Annotation> annotationType, ResultType result) {
-        
+        return getDefaultResult(annotationType.getName(), result);
+    }
+
+    public static HandlerProcessingResultImpl getDefaultResult(String annotationType, ResultType result) {
         HandlerProcessingResultImpl impl = new HandlerProcessingResultImpl();
         impl.results.put(annotationType, result);
         impl.overallResult = result;
-        return impl;                
+        return impl;
     }
-    
+
     @Override
-    public Map<Class<? extends Annotation>,ResultType> processedAnnotations() {
+    public Map<String, ResultType> processedAnnotations() {
         return results;
     }
-    
+
     public void addResult(Class<? extends Annotation> annotationType, ResultType result) {
-        if (result.compareTo(overallResult)>0) {
+        addResult(annotationType.getName(), result);
+    }
+
+    public void addResult(String annotationType, ResultType result) {
+        if (result.compareTo(overallResult) > 0) {
             overallResult = result;
         }
         results.put(annotationType, result);
     }
-    
+
     public void addAll(HandlerProcessingResult result) {
-         if (result == null) {
-             return;
-         }
-         if (result.getOverallResult().compareTo(overallResult)>0) {
+        if (result == null) {
+            return;
+        }
+        if (result.getOverallResult().compareTo(overallResult) > 0) {
             overallResult = result.getOverallResult();
         }
         results.putAll(result.processedAnnotations());
     }
-    
+
     @Override
-    public ResultType getOverallResult(){
+    public ResultType getOverallResult() {
         return overallResult;
     }
-  
 }

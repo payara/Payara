@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,15 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.annotation.context.*;
+import com.sun.enterprise.deployment.annotation.context.ComponentContext;
+import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
+import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import com.sun.enterprise.deployment.annotation.context.EjbsContext;
+import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
+import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
+import com.sun.enterprise.deployment.annotation.context.WebComponentsContext;
 import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.ClassInfo;
 
 import java.lang.annotation.ElementType;
 import java.util.logging.Level;
@@ -54,20 +60,8 @@ import java.util.logging.Level;
  * This is an abstract class encapsulate generic behaviour of annotation
  * handler applying on Ejb and WebComponent Class. It will get the corresponding
  * EjbDescriptors or WebComponentDescriptor associated to the annotation on
- * the given Class and then pass it to underlying processAnnotation method.
- * Concrete subclass handlers need to implement the following:
- *     public Class&lt;? extends Annotation&gt; getAnnotationType();
- *     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
- *             EjbContext[] ejbContexts) throws AnnotationProcessorException;
- *     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
- *             WebComponentContext[] webCompContexts)
- *             throws AnnotationProcessorException;
- *     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
- *             WebBundleContext webBundleContext)
- *             throws AnnotationProcessorException;
- * It may also need to override the following if other annotations
- * need to be processed prior to given annotation:
- *     public Class&lt;? extends Annotation&gt;[] getTypeDependencies();
+ * the given Class and then pass it to underlying subclass to process.
+ * We will only process the annotations if the ejb class is not a dummy descriptor.
  *
  * @author Shing Wai Chan
  */
@@ -136,10 +130,10 @@ public abstract class AbstractCommonAttributeHandler extends AbstractHandler {
                 ElementType.TYPE.equals(ainfo.getElementType()) &&
                 aeHandler instanceof ComponentContext) {
             ComponentContext context = (ComponentContext)aeHandler;
-            Class clazz = (Class)ainfo.getAnnotatedElement();
-            if (!clazz.getName().equals(context.getComponentClassName())) {
+            ClassInfo clazz = ainfo.getAnnotatedElement().asClass();
+            if (!clazz.name().toString().equals(context.getComponentClassName())) {
                 if (logger.isLoggable(Level.WARNING)) {
-                    log(Level.WARNING, ainfo, 
+                    log(Level.WARNING, ainfo,
                         localStrings.getLocalString(
                         "enterprise.deployment.annotation.handlers.typeinhernotsupp",
                         "The annotation symbol inheritance is not supported."));
@@ -171,7 +165,7 @@ public abstract class AbstractCommonAttributeHandler extends AbstractHandler {
     }
 
     /**
-     * This indicates whether the annotation type should be processed for
+     * Indicates whether the annotation type should be processed for
      * type level in super-class.
      */
     protected boolean supportTypeInheritance() {

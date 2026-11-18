@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,29 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-import jakarta.ejb.BeforeCompletion;
-import jakarta.ejb.Stateful;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import jakarta.ejb.BeforeCompletion;
+import jakarta.ejb.Stateful;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.Type;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+import java.util.logging.Level;
+
 /**
- * This handler is responsible for handling the jakarta.ejb.BeforeCompletion
- * annotation on a Bean method.
- *
- * @author Marina Vatkina
+ * This handler is responsible for handling the jakarta.ejb.BeforeCompletion attribute
  */
 @Service
 @AnnotationHandlerFor(BeforeCompletion.class)
@@ -68,14 +66,14 @@ public class BeforeCompletionHandler extends AbstractAttributeHandler {
     public BeforeCompletionHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
-        
-        for (EjbContext ejbContext : ejbContexts) {
-            EjbSessionDescriptor ejbDesc = 
-                    (EjbSessionDescriptor) ejbContext.getDescriptor();
 
-            Method annMethod = (Method) ainfo.getAnnotatedElement();
+        for (EjbContext ejbContext : ejbContexts) {
+            EjbSessionDescriptor ejbDesc = (EjbSessionDescriptor) ejbContext.getDescriptor();
+
+            MethodInfo annMethod = ainfo.getAnnotatedElement().asMethod();
             checkValid(annMethod);
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("Setting BeforeCompletion method " + annMethod);
@@ -88,28 +86,23 @@ public class BeforeCompletionHandler extends AbstractAttributeHandler {
     }
 
     /**
-     * @return an array of annotation types this annotation handler would 
-     * require to be processed (if present) before it processes it's own 
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
-        
         return new Class[] { Stateful.class};
-                
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }
 
-    /**
-     * Verify that the return type is void and it's a no-arg method
-     */
-    private void checkValid(Method m) throws AnnotationProcessorException {
-        if ( !(m.getReturnType().equals(Void.TYPE) &&
-                m.getParameterTypes().length == 0) ) {
-            throw new AnnotationProcessorException("Method " + m +
-                    "annotated as @BeforeCompletion is not valid");
+    private void checkValid(MethodInfo m) throws AnnotationProcessorException {
+        if ( !(m.returnType().kind() == Type.Kind.VOID && m.parametersCount() == 0) ) {
+            throw new AnnotationProcessorException("Method " + m + "annotated as @BeforeCompletion is not valid");
         }
     }
 

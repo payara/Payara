@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,32 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2024 Payara Foundation and/or its affiliates
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import jakarta.annotation.security.DenyAll;
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
-import com.sun.enterprise.deployment.util.TypeUtil;
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
+
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * This is an abstract class encapsulate generic behaviour of auth annotations,
@@ -70,10 +70,10 @@ import org.glassfish.apf.HandlerProcessingResult;
  *
  * Concrete subclass handlers need to implement the following:
  *     public Class&lt;? extends Annotation&gt; getAnnotationType();
- *     protected void processEjbMethodSecurity(Annotaton authAnnotation,
- *          MethodDescriptor md, EjbDescriptor ejbDesc);
- *     protected Classlt;? extends Annotaion&gt;[] relatedAnnotationClasses();
- *      
+ *     protected void processEjbMethodSecurity(AnnotationInfo ainfo,
+ *             MethodDescriptor md, EjbDescriptor ejbDesc);
+ *     protected Class&lt;? extends Annotation&gt;[] relatedAnnotationClasses();
+ *
  * @author Shing Wai Chan
  */
 abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHandler
@@ -82,7 +82,7 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
     /**
      * This method processes the EJB Security for the given Annotation.
      */
-    protected abstract void processEjbMethodSecurity(Annotation authAnnotation,
+    protected abstract void processEjbMethodSecurity(AnnotationInfo ainfo,
             MethodDescriptor md, EjbDescriptor ejbDesc);
 
     /**
@@ -92,31 +92,26 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
      * @return HandlerProcessingResult
      */
     @Override
-    protected HandlerProcessingResult processAnnotation(
-            AnnotationInfo ainfo, EjbContext[] ejbContexts)
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, EjbContext[] ejbContexts)
             throws AnnotationProcessorException {
 
         if (!validateAccessControlAnnotations(ainfo)) {
             return getDefaultFailedResult();
         }
 
-        Annotation authAnnotation = ainfo.getAnnotation();
         for (EjbContext ejbContext : ejbContexts) {
             EjbDescriptor ejbDesc = ejbContext.getDescriptor();
-                
+
             if (ElementType.TYPE.equals(ainfo.getElementType())) {
-                // postpone the processing at the end
+                // postpone the processing of the class-level annotation until the methods are known
                 ejbContext.addPostProcessInfo(ainfo, this);
             } else { // METHOD
-                Method annMethod = (Method) ainfo.getAnnotatedElement();
+                MethodInfo annMethod = ainfo.getAnnotatedElement().asMethod();
                 for (Object next : ejbDesc.getSecurityBusinessMethodDescriptors()) {
                     MethodDescriptor md = (MethodDescriptor)next;
-                    // override by xml
-                    if (!hasMethodPermissionsFromDD(md, ejbDesc)) {
-                        Method m = md.getMethod(ejbDesc);
-                        if (TypeUtil.sameMethodSignature(m, annMethod)) {
-                            processEjbMethodSecurity(authAnnotation, md, ejbDesc);
-                        }
+                    if (!hasMethodPermissionsFromDD(md, ejbDesc)
+                            && ClassHierarchy.matches(annMethod, md.getName(), md.getJavaParameterClassNames())) {
+                        processEjbMethodSecurity(ainfo, md, ejbDesc);
                     }
                 }
             }
@@ -132,10 +127,8 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
      * @return HandlerProcessingResult
      */
     @Override
-    protected HandlerProcessingResult processAnnotation(
-            AnnotationInfo ainfo, WebComponentContext[] webCompContexts)
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, WebComponentContext[] webCompContexts)
             throws AnnotationProcessorException {
-
         // this is not for web component
         return getInvalidAnnotatedElementHandlerResult(webCompContexts[0], ainfo);
     }
@@ -147,10 +140,8 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
      * @return HandlerProcessingResult
      */
     @Override
-    protected HandlerProcessingResult processAnnotation(
-            AnnotationInfo ainfo, WebBundleContext webBundleContext)
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, WebBundleContext webBundleContext)
             throws AnnotationProcessorException {
-
         // this is not for web bundle
         return getInvalidAnnotatedElementHandlerResult(webBundleContext, ainfo);
     }
@@ -159,32 +150,34 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
      * This method is for processing security annotation associated to ejb.
      * Dervied class call this method may like to override
      *
-     * protected void processEjbMethodSecurity(Annotation authAnnotation,
+     * protected void processEjbMethodSecurity(AnnotationInfo ainfo,
      *         MethodDescriptor md, EjbDescriptor ejbDesc)
      */
     @Override
     public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
         EjbDescriptor ejbDesc = ejbContext.getDescriptor();
-        Annotation authAnnotation = ainfo.getAnnotation();
 
         if (!ejbContext.isInherited() && ejbDesc.getMethodPermissionsFromDD().size() == 0) {
             for (MethodDescriptor md : getMethodAllDescriptors(ejbDesc)) {
-                processEjbMethodSecurity(authAnnotation, md, ejbDesc);
+                processEjbMethodSecurity(ainfo, md, ejbDesc);
             }
         } else {
-            Class classAn = (Class)ainfo.getAnnotatedElement();
+            String classAn = ainfo.getAnnotatedElement().asClass().name().toString();
             for (Object next : ejbDesc.getSecurityBusinessMethodDescriptors()) {
                 MethodDescriptor md = (MethodDescriptor)next;
-                // override by existing info
-                if (classAn.equals(ejbContext.getDeclaringClass(md)) &&
-                        !hasMethodPermissionsFromDD(md, ejbDesc)) {
-                    processEjbMethodSecurity(authAnnotation, md, ejbDesc);
+                // override by xml
+                if (classAn.equals(ejbContext.getDeclaringClass(md)) && !hasMethodPermissionsFromDD(md, ejbDesc)) {
+                    processEjbMethodSecurity(ainfo, md, ejbDesc);
                 }
             }
         }
     }
 
+    /**
+     * Indicates whether the annotation type should be processed for
+     * type level in super-class.
+     */
     @Override
     protected boolean supportTypeInheritance() {
         return true;
@@ -205,43 +198,28 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
      * @param ejbDesc
      * @return resulting MethodDescriptor
      */
-    private Set<MethodDescriptor> getMethodAllDescriptors(
-            EjbDescriptor ejbDesc) {
-        Set methodAlls = new HashSet();
-        if (ejbDesc.isRemoteInterfacesSupported() ||
-            ejbDesc.isRemoteBusinessInterfacesSupported()) {
-            methodAlls.add(
-                    new MethodDescriptor(MethodDescriptor.ALL_METHODS,
-                    "", MethodDescriptor.EJB_REMOTE));
+    private Set<MethodDescriptor> getMethodAllDescriptors(EjbDescriptor ejbDesc) {
+        Set<MethodDescriptor> methodAlls = new HashSet<>();
+        if (ejbDesc.isRemoteInterfacesSupported() || ejbDesc.isRemoteBusinessInterfacesSupported()) {
+            methodAlls.add(new MethodDescriptor(MethodDescriptor.ALL_METHODS, "", MethodDescriptor.EJB_REMOTE));
             if (ejbDesc.isRemoteInterfacesSupported()) {
-                methodAlls.add(
-                    new MethodDescriptor(MethodDescriptor.ALL_METHODS,
-                    "", MethodDescriptor.EJB_HOME));
+                methodAlls.add(new MethodDescriptor(MethodDescriptor.ALL_METHODS, "", MethodDescriptor.EJB_HOME));
             }
         }
 
-        if (ejbDesc.isLocalInterfacesSupported() ||
-                ejbDesc.isLocalBusinessInterfacesSupported()) {
-            methodAlls.add(
-                    new MethodDescriptor(MethodDescriptor.ALL_METHODS,
-                    "", MethodDescriptor.EJB_LOCAL));
+        if (ejbDesc.isLocalInterfacesSupported() || ejbDesc.isLocalBusinessInterfacesSupported()) {
+            methodAlls.add(new MethodDescriptor(MethodDescriptor.ALL_METHODS, "", MethodDescriptor.EJB_LOCAL));
             if (ejbDesc.isLocalInterfacesSupported()) {
-                methodAlls.add(
-                    new MethodDescriptor(MethodDescriptor.ALL_METHODS,
-                    "", MethodDescriptor.EJB_LOCALHOME));
+                methodAlls.add(new MethodDescriptor(MethodDescriptor.ALL_METHODS, "", MethodDescriptor.EJB_LOCALHOME));
             }
         }
 
         if (ejbDesc.isLocalBean()) {
-            methodAlls.add(
-                    new MethodDescriptor(MethodDescriptor.ALL_METHODS,
-                    "", MethodDescriptor.EJB_LOCAL));    
+            methodAlls.add(new MethodDescriptor(MethodDescriptor.ALL_METHODS, "", MethodDescriptor.EJB_LOCAL));
         }
 
         if (ejbDesc.hasWebServiceEndpointInterface()) {
-            methodAlls.add(
-                    new MethodDescriptor(MethodDescriptor.ALL_METHODS,
-                    "", MethodDescriptor.EJB_WEB_SERVICE));
+            methodAlls.add(new MethodDescriptor(MethodDescriptor.ALL_METHODS, "", MethodDescriptor.EJB_WEB_SERVICE));
         }
 
         return methodAlls;
@@ -252,8 +230,7 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
      * @param ejbDesc
      * @return whether the given methodDesc has permission defined in ejbDesc
      */
-    private boolean hasMethodPermissionsFromDD(MethodDescriptor methodDesc,
-            EjbDescriptor ejbDesc) {
+    private boolean hasMethodPermissionsFromDD(MethodDescriptor methodDesc, EjbDescriptor ejbDesc) {
         Map methodPermissionsFromDD = ejbDesc.getMethodPermissionsFromDD();
         Set allMethods = ejbDesc.getMethodDescriptors();
         for (Object mdObjsObj : methodPermissionsFromDD.values()) {
@@ -273,28 +250,27 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
 
     /**
      * This method checks whether annotations are compatible.
-     * One cannot have two or more of the @DenyAll, @PermitAll, @RoleAllowed.
+     * One cannot have two or more of the @DenyAll, @PermitAll, @RolesAllowed.
      *
      * @param ainfo
      * @return validity
      */
-    private boolean validateAccessControlAnnotations(AnnotationInfo ainfo)
-            throws AnnotationProcessorException {
-
+    private boolean validateAccessControlAnnotations(AnnotationInfo ainfo) throws AnnotationProcessorException {
         boolean validity = true;
-        AnnotatedElement ae = (AnnotatedElement)ainfo.getAnnotatedElement();
+        AnnotationTarget ae = ainfo.getAnnotatedElement();
+        IndexView index = ainfo.getIndex();
 
         int count = 0;
         boolean hasDenyAll = false;
 
-        count += (ae.isAnnotationPresent(RolesAllowed.class)? 1 : 0);
-        if (ae.isAnnotationPresent(DenyAll.class)) {
+        count += (ClassHierarchy.annotation(index, ae, RolesAllowed.class) != null ? 1 : 0);
+        if (ClassHierarchy.annotation(index, ae, DenyAll.class) != null) {
             count += 1;
             hasDenyAll = true;
         }
 
         // continue the checking if not already more than one
-        if (count < 2 && ae.isAnnotationPresent(PermitAll.class)) {
+        if (count < 2 && ClassHierarchy.annotation(index, ae, PermitAll.class) != null) {
             count++;
         }
 

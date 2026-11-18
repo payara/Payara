@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,45 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf;
 
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
+import java.util.Collection;
 import java.util.logging.Level;
 
 /**
- * <p>
  * The annotation processor is the core engine to process annotations.
  * All the processing configuration (input classes, error handlers, etc...)
- * is provided by the ProcessingContext which can be either created from the 
- * createContext method or through another mean. Once the ProcessingContext has 
+ * is provided by the ProcessingContext which can be either created from the
+ * createContext method or through another mean. Once the ProcessingContext has
  * been initialized, it is passed to the process(ProcessingContext ctx) method which
- * triggers the annotation processing. 
- * </p>
+ * triggers the annotation processing.
  *
- * <p>
- * Each class accessible from the ProcessingContext.getInputScanner instance, will be 
- * scanned for annotations. 
- * Each annotation will then be processed by invoking the corresponding AnnotationHandler
- * from its annotation type. 
- * </p>
+ * Each class accessible from the ProcessingContext.getInputScanner instance, will be
+ * scanned for annotations. Each annotation will then be passed to the registered
+ * AnnotationHandler for processing.
  *
- * <p>
- * The AnnotationProcessor can be configured by using the pushAnnotationHandler and 
- * popAnnotationHandler which allow new AnnotationHandler instances to be registered and 
- * unregistered for a particular annotation type.
- * </p>
+ * Even without a scanner, classes can be processed through the
+ * process(ProcessingContext, Collection) method.
  *
- * <p>
- * Even without reconfiguring the AnnotationProcessor instance with the above 
- * configuration methods, the AnnotationProcessor implementation cannot guarantee
- * to be thread safe, therefore, it is encouraged the make instanciation cheap
- * and users should not use the same instance concurrently.
- * </p>
- * 
  * @author Jerome Dochez
  */
 public interface AnnotationProcessor {
@@ -85,64 +73,60 @@ public interface AnnotationProcessor {
      * before invoking the process() method.
      * @return an empty ProcessingContext
      */
-    public ProcessingContext createContext();
-        
+    ProcessingContext createContext();
+
     /**
-     * Starts the annotation processing tool passing the processing context which 
-     * encapsulate all information necessary for the configuration of the tool. 
+     * Starts the annotation processing tool passing the processing context which
+     * encapsulate all information necessary for the configuration of the tool.
      * @param ctx is the initialized processing context
      * @return the result of the annotations processing
      */
-    public ProcessingResult process(ProcessingContext ctx) throws AnnotationProcessorException;
-        
+    ProcessingResult process(ProcessingContext ctx) throws AnnotationProcessorException;
+
     /**
-     * Process a set of classes from the parameter list rather than from the 
-     * processing context. This allow the annotation handlers to call be the
-     * annotation processing tool when classes need to be processed in a 
+     * Process a set of classes from the parameter list rather than from the
+     * processing context. This allows the annotation handlers to call the
+     * annotation processing tool when classes need to be processed in a
      * particular context rather than when they are picked up by the scanner.
-     * 
-     * @param ctx the processing context 
-     * @param classes the list of classes to process
+     *
+     * @param ctx the processing context
+     * @param classes the classes to process
      * @return the processing result for such classes
-     * @throws AnnotationProcessorException if handlers fail to process 
-     * an annotation
+     * @throws AnnotationProcessorException if handlers fail to process an annotation
      */
-    public ProcessingResult process(ProcessingContext ctx, Class[] classes) 
-        throws AnnotationProcessorException;
-    
+    ProcessingResult process(ProcessingContext ctx, Collection<ClassInfo> classes) throws AnnotationProcessorException;
+
     /**
      * Registers a new AnnotationHandler for a particular annotation type. New annotation handler
-     * are pushed on a List of annotation handlers for that particular annotation type, the last 
+     * are pushed on a List of annotation handlers for that particular annotation type, the last
      * annotation handler to be registered will be invoked first and so on.
-     * The annotation type handled by the AnnotationHandler instance is defined 
-     * by the getAnnotationType() method of the AnnotationHandler instance 
+     * The annotation type handled by the AnnotationHandler instance is defined
+     * by the getAnnotationType() method of the AnnotationHandler instance.
      *
-     * @param type the annotation type
-     * @param handler the annotation handler instance
+     * @param handler the new annotation handler
      */
-    public void pushAnnotationHandler(AnnotationHandler handler);
-    
+    void pushAnnotationHandler(AnnotationHandler handler);
+
     /**
      * @return the top annotation handler for a particular annotation type
      * @param type the annotation type
      */
-    public AnnotationHandler getAnnotationHandler(Class<? extends Annotation> type);
-    
+    AnnotationHandler getAnnotationHandler(Class<? extends Annotation> type);
+
     /**
      * Unregisters the last annotation handler registered for an annotation type.
-     * @param type the annotation type.
+     * @param type the annotation type
      */
-    public void popAnnotationHandler(Class<? extends Annotation> type);
-    
+    void popAnnotationHandler(Class<? extends Annotation> type);
+
     /**
-     * @return the most recent AnnotatedElement being processed which type is of the 
-     * given ElementType or null if there is no such element in the stack of 
-     * processed annotation elements.
+     * @return the most recent annotated element being processed of the given type, or null if
+     * no element of that type is being processed
      */
-    public AnnotatedElement getLastAnnotatedElement(ElementType type);
-    
+    AnnotationTarget getLastAnnotatedElement(ElementType type);
+
     /**
      * Log a message on the default logger
      */
-    public void log(Level level, AnnotationInfo locator, String localizedMessage);
+    void log(Level level, AnnotationInfo locator, String localizedMessage);
 }

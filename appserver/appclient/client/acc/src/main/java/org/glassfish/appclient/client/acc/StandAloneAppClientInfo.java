@@ -38,12 +38,12 @@
  * holder.
  */
 
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.appclient.client.acc;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.annotation.introspection.AppClientPersistenceDependencyAnnotationScanner;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
@@ -213,8 +213,7 @@ public class StandAloneAppClientInfo extends AppClientInfo implements PostConstr
         ApplicationClientDescriptor acDescr)
             throws MalformedURLException, ClassNotFoundException,
                    IOException, URISyntaxException {
-        AnnotationDetector annoDetector =
-                    new AnnotationDetector(new AppClientPersistenceDependencyAnnotationScanner());
+        AnnotationDetector annoDetector = new AnnotationDetector(AnnotationDetector.PERSISTENCE_UNIT_ANNOTATIONS);
 
         //e.g. FROM a.b.Foo or Foo TO a/b/Foo.class or Foo.class
         String mainClassEntryName =

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,35 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
-
+// Portions Copyright [2020-2026] Payara Foundation and/or affiliates
 package com.sun.enterprise.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import jakarta.persistence.PersistenceUnit;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.FieldInfo;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
-import jakarta.persistence.PersistenceUnit;
+
 import java.lang.annotation.ElementType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 
 /**
- * This handler is responsible for handling the 
+ * This handler is responsible for handling the
  * jakarta.persistence.PersistenceUnit annotation.
- *
  */
 @Service
 @AnnotationHandlerFor(PersistenceUnit.class)
-public class EntityManagerFactoryReferenceHandler 
-    extends AbstractResourceHandler {
-    
+public class EntityManagerFactoryReferenceHandler extends AbstractResourceHandler {
+
     public EntityManagerFactoryReferenceHandler() {
     }
 
@@ -74,47 +75,47 @@ public class EntityManagerFactoryReferenceHandler
      * one returned by @see getAnnotationType(). All information
      * pertinent to the annotation and its context is encapsulated
      * in the passed AnnotationInfo instance.
+     * This is a method in interface AnnotationHandler.
      *
      * @param ainfo the annotation information
      * @param rcContexts an array of ResourceContainerContext
-     * @param HandlerProcessingResult
+     * @return HandlerProcessingResult
      */
     @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-
-        PersistenceUnit emfRefAn = (PersistenceUnit)ainfo.getAnnotation();
-        return processEmfRef(ainfo, rcContexts, emfRefAn);
+        return processEmfRef(ainfo, rcContexts, ainfo.getAnnotation());
     }
 
-
     /**
-     * Process a particular annotation which type is the same as the
+     * Process a particular annotation whose type is the same as the
      * one returned by @see getAnnotationType(). All information
      * pertinent to the annotation and its context is encapsulated
      * in the passed AnnotationInfo instance.
-     *
      */
     protected HandlerProcessingResult processEmfRef(AnnotationInfo ainfo,
-            ResourceContainerContext[] rcContexts, PersistenceUnit emfRefAn)
+            ResourceContainerContext[] rcContexts, AnnotationInstance emfRefAn)
             throws AnnotationProcessorException {
-        EntityManagerFactoryReferenceDescriptor emfRefs[] = null;
+        IndexView index = ainfo.getIndex();
+        String name = AnnotationValues.string(index, emfRefAn, "name");
+        String unitName = AnnotationValues.string(index, emfRefAn, "unitName");
+        EntityManagerFactoryReferenceDescriptor[] emfRefs;
 
         if (ElementType.FIELD.equals(ainfo.getElementType())) {
-            Field f = (Field)ainfo.getAnnotatedElement();
-            String targetClassName = f.getDeclaringClass().getName();
+            FieldInfo f = ainfo.getAnnotatedElement().asField();
+            String targetClassName = f.declaringClass().name().toString();
 
-            String logicalName = emfRefAn.name();
-                
-            // applying with default 
+            String logicalName = name;
+
+            // applying with default
             if (logicalName.equals("")) {
-                logicalName = targetClassName + "/" + f.getName();
+                logicalName = targetClassName + "/" + f.name();
             }
 
             emfRefs = getEmfReferenceDescriptors(logicalName, rcContexts);
-            
+
             InjectionTarget target = new InjectionTarget();
-            target.setFieldName(f.getName());
+            target.setFieldName(f.name());
             target.setClassName(targetClassName);
             target.setMetadataSource(MetadataSource.ANNOTATION);
 
@@ -122,19 +123,18 @@ public class EntityManagerFactoryReferenceHandler
                 emfRef.addInjectionTarget(target);
 
                 if (emfRef.getName().length() == 0) { // a new one
-                    processNewEmfRefAnnotation(emfRef, logicalName, emfRefAn);
+                    processNewEmfRefAnnotation(emfRef, logicalName, unitName);
                 }
             }
         } else if (ElementType.METHOD.equals(ainfo.getElementType())) {
 
-            Method m = (Method)ainfo.getAnnotatedElement();
-            String targetClassName = m.getDeclaringClass().getName();
+            MethodInfo m = ainfo.getAnnotatedElement().asMethod();
+            String targetClassName = m.declaringClass().name().toString();
 
-            String logicalName = emfRefAn.name();
+            String logicalName = name;
             if( logicalName.equals("") ) {
                 // Derive javabean property name.
-                String propertyName = 
-                    getInjectionMethodPropertyName(m, ainfo);
+                String propertyName = getInjectionMethodPropertyName(m, ainfo);
 
                 // prefixing with fully qualified type name
                 logicalName = targetClassName + "/" + propertyName;
@@ -145,8 +145,8 @@ public class EntityManagerFactoryReferenceHandler
             emfRefs = getEmfReferenceDescriptors(logicalName, rcContexts);
 
             InjectionTarget target = new InjectionTarget();
-            target.setMethodName(m.getName());
-            target.setClassName(targetClassName);            
+            target.setMethodName(m.name());
+            target.setClassName(targetClassName);
             target.setMetadataSource(MetadataSource.ANNOTATION);
 
             for (EntityManagerFactoryReferenceDescriptor emfRef : emfRefs) {
@@ -155,13 +155,13 @@ public class EntityManagerFactoryReferenceHandler
 
                 if (emfRef.getName().length() == 0) { // a new one
 
-                    processNewEmfRefAnnotation(emfRef, logicalName, emfRefAn);
+                    processNewEmfRefAnnotation(emfRef, logicalName, unitName);
 
                 }
             }
         } else if( ElementType.TYPE.equals(ainfo.getElementType()) ) {
-            // name() is required for TYPE-level usage
-            String logicalName = emfRefAn.name();
+            // name() is required for TYPE-level @PersistenceUnit
+            String logicalName = name;
 
             if( "".equals(logicalName) ) {
                 log(Level.SEVERE, ainfo,
@@ -170,28 +170,28 @@ public class EntityManagerFactoryReferenceHandler
                     "TYPE-Level annotation symbol on class must specify name."));
                 return getDefaultFailedResult();
             }
-                               
+
             emfRefs = getEmfReferenceDescriptors(logicalName, rcContexts);
             for (EntityManagerFactoryReferenceDescriptor emfRef : emfRefs) {
                 if (emfRef.getName().length() == 0) { // a new one
 
-                    processNewEmfRefAnnotation(emfRef, logicalName, emfRefAn);
-                                            
+                    processNewEmfRefAnnotation(emfRef, logicalName, unitName);
+
                 }
             }
-        } 
+        }
 
         return getDefaultProcessedResult();
     }
 
     /**
-     * Return EntityManagerFactoryReferenceDescriptors with given name 
+     * Return EntityManagerFactoryReferenceDescriptors with given name
      * if exists or a new one without name being set.
      */
-    private EntityManagerFactoryReferenceDescriptor[] 
-        getEmfReferenceDescriptors(String logicalName, ResourceContainerContext[] rcContexts) {
-            
-        EntityManagerFactoryReferenceDescriptor emfRefs[] = new EntityManagerFactoryReferenceDescriptor[rcContexts.length];
+    private EntityManagerFactoryReferenceDescriptor[] getEmfReferenceDescriptors(String logicalName,
+            ResourceContainerContext[] rcContexts) {
+
+        EntityManagerFactoryReferenceDescriptor[] emfRefs = new EntityManagerFactoryReferenceDescriptor[rcContexts.length];
         for (int i = 0; i < rcContexts.length; i++) {
             EntityManagerFactoryReferenceDescriptor emfRef = rcContexts[i].getEntityManagerFactoryReference(logicalName);
             if (emfRef == null) {
@@ -204,12 +204,13 @@ public class EntityManagerFactoryReferenceHandler
         return emfRefs;
     }
 
-    private void processNewEmfRefAnnotation(EntityManagerFactoryReferenceDescriptor emfRef, String logicalName, PersistenceUnit annotation) {
-        
+    private void processNewEmfRefAnnotation(EntityManagerFactoryReferenceDescriptor emfRef, String logicalName,
+            String unitName) {
+
         emfRef.setName(logicalName);
-        
-        if( !(annotation.unitName().equals("")) ) {
-            emfRef.setUnitName(annotation.unitName());
+
+        if( !unitName.equals("") ) {
+            emfRef.setUnitName(unitName);
         }
 
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,13 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import jakarta.ejb.Stateful;
-
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -60,36 +57,32 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 @AnnotationHandlerFor(Stateful.class)
 public class StatefulHandler extends AbstractEjbHandler {
-    
-    /** Creates a new instance of StatefulHandler */
+
     public StatefulHandler() {
     }
 
     /**
      * Return the name attribute of given annotation.
-     * @param annotation
+     * @param ainfo the annotation
      * @return name
      */
-    protected String getAnnotatedName(Annotation annotation) {
-        Stateful sfAn = (Stateful)annotation;
-        return sfAn.name();
+    @Override
+    protected String getAnnotatedName(AnnotationInfo ainfo) {
+        return ainfo.stringValue("name");
     }
 
     /**
      * Check if the given EjbDescriptor matches the given Annotation.
      * @param ejbDesc
-     * @param annotation
+     * @param ainfo
      * @return boolean check for validity of EjbDescriptor
      */
-    protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc,
-            Annotation annotation) {
+    @Override
+    protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc, AnnotationInfo ainfo) {
         boolean isValid = EjbSessionDescriptor.TYPE.equals(ejbDesc.getType());
 
         if( isValid ) {
             EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejbDesc;
-            // Only check specific session-bean type if it's set in the descriptor.
-            // Otherwise it was probably populated with a sparse ejb-jar.xml and
-            // we'll set the type later.
             if( sessionDesc.isSessionTypeSet() && !sessionDesc.isStateful() ) {
                 isValid = false;
             }
@@ -104,14 +97,13 @@ public class StatefulHandler extends AbstractEjbHandler {
      * @param ainfo
      * @return a new EjbDescriptor
      */
-    protected EjbDescriptor createEjbDescriptor(String elementName,
-            AnnotationInfo ainfo) throws AnnotationProcessorException {
+    @Override
+    protected EjbDescriptor createEjbDescriptor(String elementName, AnnotationInfo ainfo)
+            throws AnnotationProcessorException {
 
-        AnnotatedElement ae = ainfo.getAnnotatedElement();
-        Class ejbClass = (Class)ae;
         EjbSessionDescriptor newDescriptor = new EjbSessionDescriptor();
         newDescriptor.setName(elementName);
-        newDescriptor.setEjbClassName(ejbClass.getName());
+        newDescriptor.setEjbClassName(ainfo.getAnnotatedElement().asClass().name().toString());
         newDescriptor.setSessionType(EjbSessionDescriptor.STATEFUL);
         return newDescriptor;
     }
@@ -124,24 +116,21 @@ public class StatefulHandler extends AbstractEjbHandler {
      * @param ainfo
      * @return HandlerProcessingResult
      */
-    protected HandlerProcessingResult setEjbDescriptorInfo(
-            EjbDescriptor ejbDesc, AnnotationInfo ainfo)
+    @Override
+    protected HandlerProcessingResult setEjbDescriptorInfo(EjbDescriptor ejbDesc, AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 
         EjbSessionDescriptor ejbSessionDesc = (EjbSessionDescriptor)ejbDesc;
 
-         // set session bean type in case it wasn't set in a sparse ejb-jar.xml.
+        // set session bean type in case it wasn't set in a sparse ejb-jar.xml.
         if( !ejbSessionDesc.isSessionTypeSet() ) {
             ejbSessionDesc.setSessionType(EjbSessionDescriptor.STATEFUL);
         }
 
-
-        Stateful sful = (Stateful) ainfo.getAnnotation();
-        doDescriptionProcessing(sful.description(), ejbDesc);
-        doMappedNameProcessing(sful.mappedName(), ejbDesc);
-        // set passivation capable property in case it wasn't set in ejb-jar.xml
+        doDescriptionProcessing(ainfo.stringValue("description"), ejbDesc);
+        doMappedNameProcessing(ainfo.stringValue("mappedName"), ejbDesc);
         if( !ejbSessionDesc.isPassivationCapableSet()) {
-            ejbSessionDesc.setPassivationCapable(sful.passivationCapable());
+            ejbSessionDesc.setPassivationCapable(ainfo.booleanValue("passivationCapable"));
         }
 
         return setBusinessAndHomeInterfaces(ejbDesc, ainfo);

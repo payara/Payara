@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,52 +37,62 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBs;
-
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import jakarta.ejb.EJBs;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
 import org.jvnet.hk2.annotations.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+
 /**
- * This handler is responsible for handling the jakarta.ejb.EJBs attribute
+ * This handler is responsible for handling the jakarta.ejb.EJBs
  *
+ * @author Shing Wai Chan
  */
 @Service
 @AnnotationHandlerFor(EJBs.class)
 public class EJBsHandler extends EJBHandler {
-    
+
     public EJBsHandler() {
     }
 
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
-            ResourceContainerContext[] rcContexts)
+    /**
+     * Process a particular annotation which type is the same as the
+     * one returned by @see getAnnotationType(). All information
+     * pertinent to the annotation and its context is encapsulated
+     * in the passed AnnotationInfo instance.
+     * This is a method in interface AnnotationHandler.
+     *
+     * @param ainfo the annotation information
+     * @param rcContexts an array of ResourceContainerContext
+     * @return HandlerProcessingResult
+     */
+    @Override
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
 
-        EJBs ejbsAnnotation = (EJBs) ainfo.getAnnotation();
-        
-        EJB[] ejbAnnotations = ejbsAnnotation.value();
+        AnnotationInstance[] ejbAnnotations = ainfo.nestedArrayValue("value");
 
         if(ejbAnnotations.length == 0) {
             String localizedMsg = localStrings.getLocalString(
                     "enterprise.deployment.annotation.handlers.emptyEJBs",
                     "No @EJB elements in @EJBs on " + ainfo.getAnnotatedElement(),
-                    new Object[]{ejbsAnnotation, ainfo.getAnnotatedElement()});
+                    new Object[]{ainfo.getAnnotation(), ainfo.getAnnotatedElement()});
             logger.log(Level.WARNING, localizedMsg);
         }
 
-        List<HandlerProcessingResult> results = new ArrayList<HandlerProcessingResult>();
+        List<HandlerProcessingResult> results = new ArrayList<>();
 
-        for(EJB ejb : ejbAnnotations) {
+        for(AnnotationInstance ejb : ejbAnnotations) {
             results.add(processEJB(ainfo, rcContexts, ejb));
         }
 

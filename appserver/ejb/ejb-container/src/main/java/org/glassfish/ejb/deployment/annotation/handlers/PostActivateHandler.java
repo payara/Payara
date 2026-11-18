@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,80 +37,78 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import jakarta.ejb.PostActivate;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.EjbInterceptorContext;
+import jakarta.ejb.PostActivate;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+
 /**
- * This handler is responsible for handling jakarta.ejb.PostActivate 
- *
+ * This handler is responsible for handling the jakarta.ejb.PostActivate annotation.
  */
 @Service
 @AnnotationHandlerFor(PostActivate.class)
 public class PostActivateHandler extends AbstractAttributeHandler {
-    
+
     public PostActivateHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
         for(EjbContext next : ejbContexts) {
-            
-            EjbSessionDescriptor ejbSessionDescriptor = 
-                (EjbSessionDescriptor) next.getDescriptor();
 
-            ejbSessionDescriptor.addPostActivateDescriptor(
-                getPostActivateDescriptor(ainfo));
-            
+            EjbSessionDescriptor ejbSessionDescriptor = (EjbSessionDescriptor) next.getDescriptor();
+
+            ejbSessionDescriptor.addPostActivateDescriptor(getPostActivateDescriptor(ainfo));
+
         }
 
-        return getDefaultProcessedResult();        
+        return getDefaultProcessedResult();
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbInterceptorContext ejbInterceptorContext)
             throws AnnotationProcessorException {
 
         EjbInterceptor ejbInterceptor =  ejbInterceptorContext.getDescriptor();
-        ejbInterceptor.addPostActivateDescriptor(
-            getPostActivateDescriptor(ainfo));
-        return getDefaultProcessedResult();        
+        ejbInterceptor.addPostActivateDescriptor(getPostActivateDescriptor(ainfo));
+        return getDefaultProcessedResult();
     }
 
-    private LifecycleCallbackDescriptor getPostActivateDescriptor(
-            AnnotationInfo ainfo) {
-        Method annotatedMethod = (Method) ainfo.getAnnotatedElement();
-        LifecycleCallbackDescriptor postActivate = 
-                new LifecycleCallbackDescriptor();
-        postActivate.setLifecycleCallbackClass(annotatedMethod.getDeclaringClass().getName());
-        postActivate.setLifecycleCallbackMethod(annotatedMethod.getName());
+    private LifecycleCallbackDescriptor getPostActivateDescriptor(AnnotationInfo ainfo) {
+        MethodInfo annotatedMethod = ainfo.getAnnotatedElement().asMethod();
+        LifecycleCallbackDescriptor postActivate = new LifecycleCallbackDescriptor();
+        postActivate.setLifecycleCallbackClass(annotatedMethod.declaringClass().name().toString());
+        postActivate.setLifecycleCallbackMethod(annotatedMethod.name());
         return postActivate;
     }
 
     /**
-     * @return an array of annotation types this annotation handler would 
-     * require to be processed (if present) before it processes it's own 
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
 
+    @Override
     protected boolean isDelegatee() {
         return true;
     }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2024-2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.annotation.factory;
 
@@ -131,7 +131,7 @@ public class SJSASFactory extends Factory {
             if (annotationTypeName == null) continue;
           
             systemProcessor.pushAnnotationHandler(annotationTypeName, new LazyAnnotationHandler(descriptor)); 
-            annotationClassNames.add("L" + annotationTypeName.replace('.', '/') + ";");
+            annotationClassNames.add(annotationTypeName);
         }
     }
     

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.deployment.archive;
 
@@ -55,7 +56,7 @@ import java.net.URI;
  *
  * @author Jerome Dochez
  */
-public interface Archive {
+public interface Archive extends AutoCloseable {
     
     /**
      * closes this archive and releases all resources

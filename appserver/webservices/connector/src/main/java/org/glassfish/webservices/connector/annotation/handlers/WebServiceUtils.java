@@ -37,60 +37,55 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.webservices.connector.annotation.handlers;
 
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
-import java.lang.reflect.AnnotatedElement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import jakarta.ejb.Singleton;
-import jakarta.ejb.Stateless;
 import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.webservices.connector.LogUtils;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 
 public final class WebServiceUtils {
 
-    private static final Logger logger = LogUtils.getLogger();
-    
-    static String getEjbName(AnnotatedElement annElem) {
-        Stateless stateless = null;
-        try {
-            stateless = annElem.getAnnotation(jakarta.ejb.Stateless.class);
-        } catch (Exception e) {
-            if (logger.isLoggable(Level.FINE)) {
-                //This can happen in the web.zip installation where there is no ejb
-                //Just logging the error
-                logger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, e);
-}
-        }
-        Singleton singleton = null;
-        try {
-            singleton = annElem.getAnnotation(jakarta.ejb.Singleton.class);
-        } catch (Exception e) {
-            if (logger.isLoggable(Level.FINE)) {
-                //This can happen in the web.zip installation where there is no ejb
-                //Just logging the error
-                logger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, e);
-            }
-        }
+    /** named rather than referenced, so that no EJB API is needed in an installation without ejb */
+    private static final DotName STATELESS = DotName.createSimple("jakarta.ejb.Stateless");
+    private static final DotName SINGLETON = DotName.createSimple("jakarta.ejb.Singleton");
+
+    /**
+     * @return the name of the session bean the class declares, defaulting to its simple name
+     */
+    static String getEjbName(IndexView index, ClassInfo annElem) {
+        AnnotationInstance stateless = ClassHierarchy.annotation(index, annElem, STATELESS);
+        AnnotationInstance singleton = ClassHierarchy.annotation(index, annElem, SINGLETON);
         String name;
 
-        if ((stateless != null) && ((stateless).name() == null || stateless.name().length() > 0)) {
-            name = stateless.name();
-        } else if ((singleton != null) && ((singleton).name() == null || singleton.name().length() > 0)) {
-            name = singleton.name();
-
+        if (stateless != null && AnnotationValues.string(index, stateless, "name").length() > 0) {
+            name = AnnotationValues.string(index, stateless, "name");
+        } else if (singleton != null && AnnotationValues.string(index, singleton, "name").length() > 0) {
+            name = AnnotationValues.string(index, singleton, "name");
         } else {
-            name = ((Class) annElem).getSimpleName();
+            name = ClassHierarchy.simpleName(annElem);
         }
         return name;
     }
-    
+
+    /**
+     * @return whether the class is annotated with the EJB component annotation, which marks an EJB
+     * web service packaged in a war
+     */
+    static boolean isStateless(IndexView index, AnnotationTarget annElem) {
+        return ClassHierarchy.annotation(index, annElem, STATELESS) != null;
+    }
+
     /**
      * If WEB-INF/sun-jaxws.xml exists and is not processed in EJB context , then it returns true.
      * @param annInfo
@@ -102,7 +97,7 @@ public final class WebServiceUtils {
         try {
             ReadableArchive moduleArchive = annInfo.getProcessingContext().getArchive();
             if (moduleArchive != null && moduleArchive.exists("WEB-INF/sun-jaxws.xml")
-                    && !((Class)annInfo.getAnnotatedElement()).isInterface()
+                    && !ClassHierarchy.isInterface(annInfo.getAnnotatedElement().asClass())
                     && ( (annCtx instanceof WebBundleContext) || (annCtx instanceof WebComponentContext))) {
                 riDeployment = true;
             }

@@ -37,9 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2019-2024 Payara Foundation and/or its affiliates
+// Portions Copyright [2019-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.descriptor;
+
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 
 import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.deployment.*;
@@ -57,6 +60,7 @@ import org.glassfish.ejb.deployment.util.InterceptorBindingTranslator;
 import org.glassfish.ejb.deployment.util.InterceptorBindingTranslator.TranslationResults;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.ClassHierarchy;
 import org.glassfish.security.common.Role;
 
 import jakarta.inject.Inject;
@@ -636,17 +640,21 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     }
 
     public boolean hasScheduledTimerMethodFromDD(Method timerMethod) {
-        boolean match = false;
+        return hasScheduledTimerMethodFromDD(timerMethod.getName(), timerMethod.getParameterTypes().length);
+    }
 
+    public boolean hasScheduledTimerMethodFromDD(MethodInfo timerMethod) {
+        return hasScheduledTimerMethodFromDD(timerMethod.name(), timerMethod.parametersCount());
+    }
+
+    private boolean hasScheduledTimerMethodFromDD(String name, int parameterCount) {
         for (MethodDescriptor next : timerMethodDescriptors) {
-            if (next.getName().equals(timerMethod.getName())
-                    && (next.getParameterClassNames() == null || next.getParameterClassNames().length == timerMethod.getParameterTypes().length)) {
-                match = true;
-                break;
+            if (next.getName().equals(name)
+                    && (next.getParameterClassNames() == null || next.getParameterClassNames().length == parameterCount)) {
+                return true;
             }
         }
-
-        return match;
+        return false;
     }
 
     public List<ScheduledTimerDescriptor> getScheduledTimerDescriptors() {
@@ -2445,16 +2453,16 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
      */
     @Override
     public Set<MethodDescriptor> getMethodDescriptors() {
-        ClassLoader classLoader = getEjbBundleDescriptor().getClassLoader();
-        Set<MethodDescriptor> methods = getBusinessMethodDescriptors();
+        IndexView index = getIndex();
+        Set<MethodDescriptor> methods = getBusinessMethodDescriptors(index);
 
         try {
             if (isRemoteInterfacesSupported()) {
-                addAllInterfaceMethodsIn(methods, classLoader.loadClass(getHomeClassName()), EJB_HOME);
+                addAllInterfaceMethodsIn(methods, index, getHomeClassName(), EJB_HOME);
             }
 
             if (isLocalInterfacesSupported()) {
-                addAllInterfaceMethodsIn(methods, classLoader.loadClass(getLocalHomeClassName()), EJB_LOCALHOME);
+                addAllInterfaceMethodsIn(methods, index, getLocalHomeClassName(), EJB_LOCALHOME);
             }
 
         } catch (Throwable t) {
@@ -2504,34 +2512,36 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
      * Returns the full set of business method descriptors
      */
     private Set<MethodDescriptor> getLocalRemoteBusinessMethodDescriptors() {
+        return getLocalRemoteBusinessMethodDescriptors(getIndex());
+    }
 
-        ClassLoader classLoader = getEjbBundleDescriptor().getClassLoader();
+    private Set<MethodDescriptor> getLocalRemoteBusinessMethodDescriptors(IndexView index) {
 
         Set<MethodDescriptor> methods = new HashSet<>();
 
         try {
             if (isRemoteInterfacesSupported()) {
-                addAllInterfaceMethodsIn(methods, classLoader.loadClass(getRemoteClassName()), EJB_REMOTE);
+                addAllInterfaceMethodsIn(methods, index, getRemoteClassName(), EJB_REMOTE);
             }
 
             if (isRemoteBusinessInterfacesSupported()) {
                 for (String remoteInterface : getRemoteBusinessClassNames()) {
-                    addAllInterfaceMethodsIn(methods, classLoader.loadClass(remoteInterface), EJB_REMOTE);
+                    addAllInterfaceMethodsIn(methods, index, remoteInterface, EJB_REMOTE);
                 }
             }
 
             if (isLocalInterfacesSupported()) {
-                addAllInterfaceMethodsIn(methods, classLoader.loadClass(getLocalClassName()), EJB_LOCAL);
+                addAllInterfaceMethodsIn(methods, index, getLocalClassName(), EJB_LOCAL);
             }
 
             if (isLocalBusinessInterfacesSupported()) {
                 for (String localInterface : getLocalBusinessClassNames()) {
-                    addAllInterfaceMethodsIn(methods, classLoader.loadClass(localInterface), EJB_LOCAL);
+                    addAllInterfaceMethodsIn(methods, index, localInterface, EJB_LOCAL);
                 }
             }
 
             if (isLocalBean()) {
-                addAllInterfaceMethodsIn(methods, classLoader.loadClass(getEjbClassName()), EJB_LOCAL);
+                addAllInterfaceMethodsIn(methods, index, getEjbClassName(), EJB_LOCAL);
             }
         } catch (Throwable t) {
             _logger.log(SEVERE, "enterprise.deployment.backend.methodClassLoadFailure",
@@ -2547,12 +2557,15 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
      * Returns the full set of business method descriptors
      */
     private Set<MethodDescriptor> getBusinessMethodDescriptors() {
-        ClassLoader classLoader = getEjbBundleDescriptor().getClassLoader();
-        Set<MethodDescriptor> methods = getLocalRemoteBusinessMethodDescriptors();
+        return getBusinessMethodDescriptors(getIndex());
+    }
+
+    private Set<MethodDescriptor> getBusinessMethodDescriptors(IndexView index) {
+        Set<MethodDescriptor> methods = getLocalRemoteBusinessMethodDescriptors(index);
 
         try {
             if (hasWebServiceEndpointInterface()) {
-                addAllInterfaceMethodsIn(methods, classLoader.loadClass(getWebServiceEndpointInterfaceName()), EJB_WEB_SERVICE);
+                addAllInterfaceMethodsIn(methods, index, getWebServiceEndpointInterfaceName(), EJB_WEB_SERVICE);
             }
         } catch (Throwable t) {
             _logger.log(Level.SEVERE, "enterprise.deployment.backend.methodClassLoadFailure",
@@ -2564,11 +2577,22 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
         return methods;
     }
 
-    protected void addAllInterfaceMethodsIn(Collection<MethodDescriptor> methodDescriptors, Class<?> clazz, String methodInterface) {
-        for (Method method : clazz.getMethods()) {
-            if (method.getDeclaringClass() != Object.class) {
-                methodDescriptors.add(new MethodDescriptor(method, methodInterface));
-            }
+    /**
+     * @return the index in which the bean's classes resolve without being loaded
+     */
+    protected IndexView getIndex() {
+        return BeanMethodCalculatorImpl.indexFor(getEjbBundleDescriptor().getClassLoader());
+    }
+
+    /**
+     * Adds the public methods of the class, inherited ones included and java.lang.Object's excluded.
+     *
+     * @throws ClassNotFoundException if the index does not know the class
+     */
+    protected void addAllInterfaceMethodsIn(Collection<MethodDescriptor> methodDescriptors, IndexView index,
+                                            String className, String methodInterface) throws ClassNotFoundException {
+        for (MethodInfo method : ClassHierarchy.publicMethods(index, BeanMethodCalculatorImpl.classInfo(index, className))) {
+            methodDescriptors.add(new MethodDescriptor(method, methodInterface));
         }
     }
 
@@ -2608,7 +2632,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
      */
     protected Collection<MethodDescriptor> getTransactionMethods(ClassLoader classLoader) {
         try {
-            return BeanMethodCalculatorImpl.getTransactionalMethodsFor(this, classLoader);
+            return BeanMethodCalculatorImpl.getTransactionalMethodsFor(this, BeanMethodCalculatorImpl.indexFor(classLoader));
         } catch (Throwable t) {
             _logger.log(Level.SEVERE, "enterprise.deployment.backend.methodClassLoadFailure", new Object[] { "(EjbDescriptor.getMethods())" });
             throw new RuntimeException(t);

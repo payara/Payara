@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,35 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.context;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import org.glassfish.apf.context.AnnotationContext;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
 
 import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
-
 
 /**
  * This provides a context for a collection of Ejbs with the ejb class name.
  *
  * @Author Shing Wai Chan
  */
-public class EjbsContext extends AnnotationContext 
-        implements ComponentContext {
-    
-    private EjbContext[] ejbContexts;
-    private String componentClassName;
+public class EjbsContext extends AnnotationContext implements ComponentContext {
 
-    public EjbsContext(EjbDescriptor[] ejbDescs, Class ejbClass) {
+    private final EjbContext[] ejbContexts;
+    private final String componentClassName;
+
+    public EjbsContext(EjbDescriptor[] ejbDescs, ClassInfo ejbClass, IndexView index) {
         ejbContexts = new EjbContext[ejbDescs.length];
         for (int i = 0; i < ejbDescs.length ; i++) {
-            ejbContexts[i] = new EjbContext(ejbDescs[i], ejbClass);
+            ejbContexts[i] = new EjbContext(ejbDescs[i], ejbClass, index);
         }
-        this.componentClassName = ejbClass.getName();
+        this.componentClassName = ejbClass.name().toString();
     }
-   
+
     /**
      * Create a new instance of EjbContext.
      * Note that, for performance, we don't make a safe copy of array here.
@@ -81,17 +81,17 @@ public class EjbsContext extends AnnotationContext
     public EjbContext[] getEjbContexts() {
         return ejbContexts;
     }
-    
-    public void endElement(ElementType type, AnnotatedElement element) {
-        
+
+    @Override
+    public void endElement(ElementType type, AnnotationTarget element) {
         if (ElementType.TYPE.equals(type)) {
             // done with processing this class, let's pop this context
             getProcessingContext().popHandler();
         }
     }
 
+    @Override
     public String getComponentClassName() {
         return componentClassName;
     }
-      
 }

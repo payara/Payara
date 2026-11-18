@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
 
@@ -46,13 +45,14 @@ import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.annotation.sql.DataSourceDefinition;
 import jakarta.annotation.sql.DataSourceDefinitions;
 
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
@@ -76,51 +76,31 @@ public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
     @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-        DataSourceDefinitions defns = (DataSourceDefinitions) ainfo.getAnnotation();
+        Set<String> duplicates = new HashSet<>();
+        for (AnnotationInstance defn : ainfo.nestedArrayValue("value")) {
+            String defnName = DataSourceDefinitionDescriptor.getJavaName(
+                    AnnotationValues.string(ainfo.getIndex(), defn, "name"));
 
-        DataSourceDefinition values[] = defns.value();
-        Set duplicates = new HashSet();
-        if(values != null && values.length >0){
-            for(DataSourceDefinition defn : values){
-                String defnName = DataSourceDefinitionDescriptor.getJavaName(defn.name());
-
-                if(duplicates.contains(defnName)){
-                String localString = localStrings.getLocalString(
-                        "enterprise.deployment.annotation.handlers.datasourcedefinitionsduplicates",
-                        "@DataSourceDefinitions cannot have multiple definitions with same name : ''{0}''",
-                        defnName);
-                    throw new IllegalStateException(localString);
-                    /*
-                    //TODO V3 should we throw exception or return failure result ?
-                    return getFailureResult(ainfo, "@DataSourceDefinitions cannot have multiple" +
-                            " definitions with same name [ "+defnName+" ]", true );
-                    */
-                }else{
-                    duplicates.add(defnName);
-                }
-                DataSourceDefinitionHandler handler = new DataSourceDefinitionHandler();
-                handler.processAnnotation(defn, ainfo, rcContexts);
+            if(duplicates.contains(defnName)){
+            String localString = localStrings.getLocalString(
+                    "enterprise.deployment.annotation.handlers.datasourcedefinitionsduplicates",
+                    "@DataSourceDefinitions cannot have multiple definitions with same name : ''{0}''",
+                    defnName);
+                throw new IllegalStateException(localString);
+                /*
+                //TODO V3 should we throw exception or return failure result ?
+                return getFailureResult(ainfo, "@DataSourceDefinitions cannot have multiple" +
+                        " definitions with same name [ "+defnName+" ]", true );
+                */
+            }else{
+                duplicates.add(defnName);
             }
-            duplicates.clear();
+            DataSourceDefinitionHandler handler = new DataSourceDefinitionHandler();
+            handler.processAnnotation(defn, ainfo, rcContexts);
         }
         return getDefaultProcessedResult();
     }
 
-/*    private HandlerProcessingResultImpl getFailureResult(AnnotationInfo element, String message, boolean doLog) {
-        HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
-        result.addResult(getAnnotationType(), ResultType.FAILED);
-        if (doLog) {
-            Class c = (Class) element.getAnnotatedElement();
-            String className = c.getName();
-            String localString = localStrings.getLocalString(
-                    "enterprise.deployment.annotation.handlers.datasourcedefinitionsfailure",
-                    "failed to handle annotation [ {0} ] on class [ {1} ] due to the following exception : ",
-                    element.getAnnotation(), className);
-            logger.log(Level.WARNING, localString, message);
-        }
-        return result;
-    }
-*/
     @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();

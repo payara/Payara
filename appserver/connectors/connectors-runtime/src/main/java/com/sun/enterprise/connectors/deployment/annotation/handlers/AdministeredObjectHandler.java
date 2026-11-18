@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
@@ -49,18 +50,17 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import jakarta.resource.spi.AdministeredObject;
 import jakarta.resource.spi.ResourceAdapterAssociation;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
-import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.Externalizable;
 import java.io.Serializable;
 
 import org.glassfish.apf.*;
-import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -75,27 +75,25 @@ public class AdministeredObjectHandler extends AbstractHandler {
     
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
-        AdministeredObject adminObject = (AdministeredObject) element.getAnnotation();
 
         if (aeHandler instanceof RarBundleContext) {
             RarBundleContext rarContext = (RarBundleContext) aeHandler;
             ConnectorDescriptor desc = rarContext.getDescriptor();
 
-            Class c = (Class) element.getAnnotatedElement();
-            String adminObjectClassName = c.getName();
+            ClassInfo c = element.getAnnotatedElement().asClass();
+            String adminObjectClassName = c.name().toString();
 
-            Class[] adminObjectInterfaceClasses = adminObject.adminObjectInterfaces();
+            String[] adminObjectInterfaceClasses = element.classArrayValue("adminObjectInterfaces");
             //When "adminObjectInterfaces()" is specified, add one admin-object entry per interface
-            if (adminObjectInterfaceClasses != null && adminObjectInterfaceClasses.length > 0) {
-                for (Class adminObjectInterface : adminObjectInterfaceClasses) {
-                    processAdminObjectInterface(adminObjectClassName, adminObjectInterface.getName(), desc);
+            if (adminObjectInterfaceClasses.length > 0) {
+                for (String adminObjectInterface : adminObjectInterfaceClasses) {
+                    processAdminObjectInterface(adminObjectClassName, adminObjectInterface, desc);
                 }
             } else {
-                List<Class> interfacesList = deriveAdminObjectInterfacesFromHierarchy(c);
+                List<String> interfacesList = deriveAdminObjectInterfacesFromHierarchy(c);
 
                 if (interfacesList.size() == 1) {
-                    Class intf = interfacesList.get(0);
-                    String intfName = intf.getName();
+                    String intfName = interfacesList.get(0);
                     processAdminObjectInterface(adminObjectClassName, intfName, desc);
                 } else {
                     //TODO V3 this case is, multiple interfaces implemented, no "adminObjectInterfaces()" attribute defined,
@@ -109,13 +107,18 @@ public class AdministeredObjectHandler extends AbstractHandler {
         return getDefaultProcessedResult();
     }
 
-    public static List<Class> deriveAdminObjectInterfacesFromHierarchy(Class c) {
-        Class interfaces[] = c.getInterfaces();
-
-        List<Class> interfacesList = new ArrayList<Class>(Arrays.asList(interfaces));
-        interfacesList.remove(Serializable.class);
-        interfacesList.remove(Externalizable.class);
-        interfacesList.remove(ResourceAdapterAssociation.class);
+    /**
+     * @return the names of the interfaces the class implements directly, except the marker interfaces
+     * and {@code ResourceAdapterAssociation}
+     */
+    public static List<String> deriveAdminObjectInterfacesFromHierarchy(ClassInfo c) {
+        List<String> interfacesList = new ArrayList<String>();
+        for (DotName name : c.interfaceNames()) {
+            interfacesList.add(name.toString());
+        }
+        interfacesList.remove(Serializable.class.getName());
+        interfacesList.remove(Externalizable.class.getName());
+        interfacesList.remove(ResourceAdapterAssociation.class.getName());
         return interfacesList;
     }
 
@@ -160,8 +163,7 @@ public class AdministeredObjectHandler extends AbstractHandler {
         HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
         result.addResult(getAnnotationType(), ResultType.FAILED);
         if (doLog) {
-            Class c = (Class) element.getAnnotatedElement();
-            String className = c.getName();
+            String className = element.getDeclaringClass().name().toString();
             Object args[] = new Object[]{
                 element.getAnnotation(),
                 className,

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,162 +37,136 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf.impl;
 
 import org.glassfish.apf.ComponentInfo;
 import org.glassfish.apf.factory.Factory;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.FieldInfo;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Objects;
 
 /**
- * This class represents the view of a class from annotation.
+ * This class represents the view of a class from annotation: its public constructors, declared
+ * fields and declared methods, including those of its superclasses outside {@code java.lang},
+ * with overridden methods counted once.
  *
  * @author Shing Wai Chan
  */
 public class ComponentDefinition implements ComponentInfo {
-    final private Class clazz;
-    final private List<Constructor> constructors = new ArrayList<Constructor>();
-    final private List<Class> classes = new ArrayList<Class>();
-    final private List<Field> fields = new ArrayList<Field>();
-    final private Map<MethodKey, Method> methodMap = new HashMap<MethodKey, Method>();
 
-    public ComponentDefinition(Class clazz) {
-        this.clazz = clazz;
-        constructClassList();
-        initializeConstructors();
-        initializeFields();
-        initializeMethods();
-    }
+    private final List<ClassInfo> classes = new ArrayList<>();
+    private final List<MethodInfo> constructors = new ArrayList<>();
+    private final List<FieldInfo> fields = new ArrayList<>();
+    private final Map<MethodKey, MethodInfo> methods = new LinkedHashMap<>();
 
-    @Override
-    public Field[] getFields() {
-        return fields.toArray(new Field[fields.size()]);
-    }
-
-    @Override
-    public Method[] getMethods() {
-        return methodMap.values().toArray(new Method[methodMap.size()]);
-    }
-
-    @Override
-    public Constructor[] getConstructors() {
-        return constructors.toArray(new Constructor[constructors.size()]);
-    }
-
-    private void constructClassList() {
-        // check whether this class is in the skip list
-        if (!Factory.isSkipAnnotationProcessing(clazz.getName())) {
-            classes.add(clazz);
-        }
-        Class parent = clazz;
-        while ((parent = parent.getSuperclass()) != null) {
-            if (parent.getPackage() == null ||
-                    !parent.getPackage().getName().startsWith("java.lang")) {
-                // always check whether this class is in the class list
-                // for skipping annotation processing
-                if (!Factory.isSkipAnnotationProcessing(parent.getName())) {
-                    classes.add(0, parent);
+    public ComponentDefinition(ClassInfo clazz, IndexView index) {
+        constructClassList(clazz, index);
+        for (ClassInfo cl : classes) {
+            for (MethodInfo constructor : cl.constructors()) {
+                if (Modifier.isPublic(constructor.flags())) {
+                    constructors.add(constructor);
                 }
-            } 
-        }
-    }
-
-    /**
-     * In P.148 of "The Java Langugage Specification 2/e", 
-     * Constructors, static initializers, and instance initializers are not
-     * members and therefore not inherited.
-     */
-    private void initializeConstructors() {
-        for (Class cl : classes) {
-            constructors.addAll(Arrays.asList(cl.getConstructors()));
-        }
-    }
-
-    private void initializeFields() {
-        for (Class cl : classes) {
-            fields.addAll(Arrays.asList(cl.getDeclaredFields()));
-        }
-    }
-
-    private void initializeMethods() {
-        for (Class cl : classes) {
-            for (Method method : cl.getDeclaredMethods()) {
-                if (!method.isBridge()) {
-                    methodMap.put(new MethodKey(method), method);
+            }
+            fields.addAll(cl.unsortedFields());
+            for (MethodInfo method : cl.unsortedMethods()) {
+                if (!method.isBridge() && !method.name().startsWith("<")) {
+                    methods.put(new MethodKey(method), method);
                 }
             }
         }
     }
 
-    private static class MethodKey {
-        private Method m = null;
-        private int hashCode;
-        private String className = null;
-        private Package classPackage = null;
+    @Override
+    public List<FieldInfo> getFields() {
+        return fields;
+    }
 
-        private MethodKey(Method m) {
-            this.m = m;
-            hashCode = m.getName().hashCode();
-            // store className and classPackage as getters are native
-            className = m.getDeclaringClass().getName();
-            classPackage = m.getDeclaringClass().getPackage();
+    @Override
+    public List<MethodInfo> getMethods() {
+        return new ArrayList<>(methods.values());
+    }
+
+    @Override
+    public List<MethodInfo> getConstructors() {
+        return constructors;
+    }
+
+    /**
+     * The class and its superclasses, topmost first, skipping {@code java.lang} and the classes
+     * listed in the skip-annotation-class-list.
+     */
+    private void constructClassList(ClassInfo clazz, IndexView index) {
+        if (!Factory.isSkipAnnotationProcessing(clazz.name().toString())) {
+            classes.add(clazz);
+        }
+        for (ClassInfo parent = ClassHierarchy.superClass(index, clazz); parent != null;
+             parent = ClassHierarchy.superClass(index, parent)) {
+            String packageName = parent.name().packagePrefix();
+            if ((packageName == null || !packageName.startsWith("java.lang"))
+                    && !Factory.isSkipAnnotationProcessing(parent.name().toString())) {
+                classes.add(0, parent);
+            }
+        }
+    }
+
+    /**
+     * Identifies a method by name and parameter types, so that a method overriding or hiding one of a
+     * superclass replaces it: private methods never override, package-private ones only within the
+     * same package.
+     */
+    private static final class MethodKey {
+        private final MethodInfo method;
+        private final String[] parameterTypes;
+        private final String className;
+        private final String packageName;
+        private final int hashCode;
+
+        private MethodKey(MethodInfo method) {
+            this.method = method;
+            this.parameterTypes = ClassHierarchy.javaParameterNames(method);
+            this.className = method.declaringClass().name().toString();
+            this.packageName = method.declaringClass().name().packagePrefix();
+            this.hashCode = method.name().hashCode();
         }
 
         @Override
-        public int hashCode() { 
-
+        public int hashCode() {
             return hashCode;
         }
 
-        /**
-         * This equals method is defined in terms of inheritance overriding.
-         * We depends on java compiler to rule out irrelevant cases here.
-         * @return true for overriding and false otherwise
-         */
         @Override
         public boolean equals(Object o) {
             if (!(o instanceof MethodKey)) {
                 return false;
             }
-
-            MethodKey mk2 = (MethodKey)o;
-            Method m2 = mk2.m;
-            if (m.getName().equals(m2.getName()) && Arrays.equals(
-                    m.getParameterTypes(), m2.getParameterTypes())) {
-                int modifiers = m.getModifiers();
-                int modifiers2 = m2.getModifiers();
-                boolean isPackageProtected2 = !Modifier.isPublic(modifiers2) &&
-                        !Modifier.isProtected(modifiers2) &&
-                        !Modifier.isPrivate(modifiers2);
-                boolean isSamePackage = 
-                        (classPackage == null && mk2.classPackage == null) ||
-                        (classPackage != null && mk2.classPackage != null &&
-                            classPackage.getName().equals(
-                            mk2.classPackage.getName()));
-                if (Modifier.isPrivate(modifiers)) {
-                    // need exact match
-                    return Modifier.isPrivate(modifiers2) && isSamePackage
-                            && className.equals(mk2.className);
-                } else { // public, protected, package protected
-                    return Modifier.isPublic(modifiers2) ||
-                            Modifier.isProtected(modifiers2) ||
-                            isPackageProtected2 && isSamePackage;
-                }
+            MethodKey other = (MethodKey) o;
+            if (!method.name().equals(other.method.name()) || !Arrays.equals(parameterTypes, other.parameterTypes)) {
+                return false;
             }
-
-            return false;
+            int modifiers = method.flags();
+            int otherModifiers = other.method.flags();
+            boolean otherPackageProtected = !Modifier.isPublic(otherModifiers)
+                    && !Modifier.isProtected(otherModifiers) && !Modifier.isPrivate(otherModifiers);
+            boolean samePackage = Objects.equals(packageName, other.packageName);
+            if (Modifier.isPrivate(modifiers)) {
+                // need exact match
+                return Modifier.isPrivate(otherModifiers) && samePackage && className.equals(other.className);
+            }
+            // public, protected, package protected
+            return Modifier.isPublic(otherModifiers) || Modifier.isProtected(otherModifiers)
+                    || otherPackageProtected && samePackage;
         }
     }
 }

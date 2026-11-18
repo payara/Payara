@@ -36,33 +36,36 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017] PAyara Foundation and/or affilliates
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.annotation.handlers;
 
-import org.glassfish.internal.deployment.AnnotationTypesProvider;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.apf.*;
-import org.glassfish.apf.impl.AnnotationUtils;
-import org.glassfish.apf.impl.HandlerProcessingResultImpl;
-import org.jvnet.hk2.annotations.Optional;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import org.glassfish.apf.AnnotatedElementHandler;
+import org.glassfish.apf.AnnotationHandler;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.ResultType;
+import org.glassfish.apf.impl.AnnotationUtils;
+import org.glassfish.apf.impl.HandlerProcessingResultImpl;
+import org.glassfish.internal.deployment.AnnotationTypesProvider;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.Type;
+import org.jvnet.hk2.annotations.Optional;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This is an abstract base class for Handlers.
- * Concrete subclass has to be annotated with {@link AnnotationHandlerFor} so that appropriate metadata
- * can be generated statically. Concrete subclass has to also implement the following method:
- *     public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo)
+ * This is an abstract base class for handlers; it shares the common
+ * logging, result reporting and injection-method validation helpers.
  *
  * @author Shing Wai Chan
  */
@@ -74,6 +77,9 @@ public abstract class AbstractHandler implements AnnotationHandler {
     @Inject @Named("EJB") @Optional
     protected AnnotationTypesProvider ejbProvider;
 
+    /**
+     * @return the annotation type this handler handles, as declared by {@link AnnotationHandlerFor}
+     */
     @Override
     public final Class<? extends Annotation> getAnnotationType() {
         return getClass().getAnnotation(AnnotationHandlerFor.class).value();
@@ -89,36 +95,31 @@ public abstract class AbstractHandler implements AnnotationHandler {
         return null;
     }
 
-    // ----- end of implements AnnotationHandler -----
-
     /**
      * @return a default processed result
      */
     protected HandlerProcessingResult getDefaultProcessedResult() {
-        return HandlerProcessingResultImpl.getDefaultResult(
-                getAnnotationType(), ResultType.PROCESSED);
+        return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.PROCESSED);
     }
 
     /**
      * @return a default failed result
      */
     protected HandlerProcessingResult getDefaultFailedResult() {
-        return HandlerProcessingResultImpl.getDefaultResult(
-                getAnnotationType(), ResultType.FAILED);
+        return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.FAILED);
     }
 
     /**
      * @param aeHandler
      * @param ainfo
      * @return a result for invalid AnnotatedElementHandler
-     * @throws AnnotationProcessorException
      */
     protected HandlerProcessingResult getInvalidAnnotatedElementHandlerResult(
             AnnotatedElementHandler aeHandler, AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 
         if (logger.isLoggable(Level.FINE)) {
-            log(Level.FINE, ainfo, 
+            log(Level.FINE, ainfo,
                 localStrings.getLocalString(
                 "enterprise.deployment.annotation.handlers.invalidaehandler",
                 "Invalid annotation symbol found for this type of class."));
@@ -130,13 +131,6 @@ public abstract class AbstractHandler implements AnnotationHandler {
         return getDefaultProcessedResult();
     }
 
-    /**
-     * Logs an error with the annotation processing logger
-     * @param level
-     * @param ainfo
-     * @param localizedMessage
-     * @throws AnnotationProcessorException 
-     */
     protected void log(Level level, AnnotationInfo ainfo,
             String localizedMessage) throws AnnotationProcessorException {
         if (Level.SEVERE.equals(level)) {
@@ -156,45 +150,33 @@ public abstract class AbstractHandler implements AnnotationHandler {
         }
     }
 
-    protected String getInjectionMethodPropertyName(Method method,
-            AnnotationInfo ainfo) throws AnnotationProcessorException
-    {
-        String methodName = method.getName();
-        String propertyName = null;
-
-        if( (methodName.length() > 3) &&
-            methodName.startsWith("set") ) {
-            // Derive javabean property name.
-            propertyName = 
-                methodName.substring(3, 4).toLowerCase(Locale.US) +
-                methodName.substring(4);
-        }  else {
-            throw new AnnotationProcessorException(
-                localStrings.getLocalString(
-                "enterprise.deployment.annotation.handlers.invalidinjectionmethodname",
-                "Injection method name must start with \"set\""),
-                ainfo);
+    protected String getInjectionMethodPropertyName(MethodInfo method, AnnotationInfo ainfo)
+            throws AnnotationProcessorException {
+        String methodName = method.name();
+        if (methodName.length() > 3 && methodName.startsWith("set")) {
+            return methodName.substring(3, 4).toLowerCase(Locale.US) + methodName.substring(4);
         }
-
-        return propertyName;
+        throw new AnnotationProcessorException(
+            localStrings.getLocalString(
+            "enterprise.deployment.annotation.handlers.invalidinjectionmethodname",
+            "Injection method name must start with \"set\""),
+            ainfo);
     }
 
     /**
      * Check if given method is a valid injection method.
      * Throw Exception if it is not.
-     * @exception AnnotationProcessorException
      */
-    protected void validateInjectionMethod(Method method, AnnotationInfo ainfo)
+    protected void validateInjectionMethod(MethodInfo method, AnnotationInfo ainfo)
             throws AnnotationProcessorException {
-        if (method.getParameterTypes().length!=1){
+        if (method.parametersCount() != 1) {
             throw new AnnotationProcessorException(
                 localStrings.getLocalString(
                 "enterprise.deployment.annotation.handlers.invalidinjectionmethod",
                 "Injection on a method requires a JavaBeans setter method type with one parameter "),
                 ainfo);
-                
         }
-        if (!void.class.equals(method.getReturnType())) {
+        if (method.returnType().kind() != Type.Kind.VOID) {
             throw new AnnotationProcessorException(
                 localStrings.getLocalString(
                 "enterprise.deployment.annotation.handlers.injectionmethodmustreturnvoid",
@@ -204,13 +186,10 @@ public abstract class AbstractHandler implements AnnotationHandler {
     }
 
     /**
-     * Returns the result with the highest result type where
-     *  FAILED > PROCESSED > UNPROCESSED
      * @param resultList
-     * @return 
+     * @return the overall processing result
      */
-    protected HandlerProcessingResult getOverallProcessingResult(
-            List<HandlerProcessingResult> resultList) {
+    protected HandlerProcessingResult getOverallProcessingResult(List<HandlerProcessingResult> resultList) {
         HandlerProcessingResult overallProcessingResult = null;
         for (HandlerProcessingResult result : resultList) {
             if (overallProcessingResult == null ||
@@ -224,7 +203,7 @@ public abstract class AbstractHandler implements AnnotationHandler {
 
     /**
      * This is called by getTypeDependencies().
-     * @return an array of all ejb annotation types 
+     * @return an array of all ejb annotation types
      */
     protected Class<? extends Annotation>[] getEjbAnnotationTypes() {
         if (ejbProvider!=null) {
@@ -236,7 +215,7 @@ public abstract class AbstractHandler implements AnnotationHandler {
 
     /**
      * This is called by getTypeDependencies().
-     * @return an array of all ejb and web types annotation
+     * @return an array of all ejb and web types annotations
      */
     protected Class<? extends Annotation>[] getEjbAndWebAnnotationTypes() {
         Class<? extends Annotation>[] weTypes = null;
@@ -255,7 +234,7 @@ public abstract class AbstractHandler implements AnnotationHandler {
 
     /**
      * This is called by getTypeDependencies().
-     * @return an array of all web types annotation
+     * @return an array of all web types annotations
      */
     protected Class<? extends Annotation>[] getWebAnnotationTypes() {
         return new Class[]{jakarta.servlet.annotation.WebServlet.class};
