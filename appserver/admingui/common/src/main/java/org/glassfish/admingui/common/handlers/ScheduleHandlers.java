@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import org.glassfish.admingui.common.util.RestUtil;
@@ -198,7 +199,7 @@ public class ScheduleHandlers {
         })
     public static void sortMonths(HandlerContext handlerContext) {
 
-        DateFormat formatter = new SimpleDateFormat("dd-MMM-yy");
+        DateFormat formatter = new SimpleDateFormat("dd-MMM-yy", Locale.ENGLISH);
 
         List<Date> dateList = new ArrayList();
         String months = (String) handlerContext.getInputValue("months");
