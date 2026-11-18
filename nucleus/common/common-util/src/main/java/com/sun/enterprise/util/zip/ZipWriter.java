@@ -282,18 +282,15 @@ public class ZipWriter {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private void addEntry(ZipItem item) throws ZipFileException, IOException {
-        int totalBytes = 0;
         ZipEntry ze = new ZipEntry(item.name);
+        long totalBytes = 0;
 
         zipStream.putNextEntry(ze);
         if (!item.name.endsWith("/")) {
             FileInputStream in = new FileInputStream(item.file);
 
             try {
-                for (int numBytes = in.read(buffer); numBytes > 0; numBytes = in.read(buffer)) {
-                    zipStream.write(buffer, 0, numBytes);
-                    totalBytes += numBytes;
-                }
+                totalBytes = in.transferTo(zipStream);
             }
             finally {
                 if (in != null)

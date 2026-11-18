@@ -44,8 +44,8 @@ package com.sun.enterprise.admin.servermgmt;
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -116,8 +116,8 @@ public class MasterPasswordFileManager extends KeystoreManager {
                 path = new File(potentialFolder, MASTERPASSWORD_FILE).getAbsolutePath();
             }
 
-            try (FileWriter writer = new FileWriter(mpLocation)) {
-                writer.write(path);
+            try {
+                Files.writeString(mpLocation.toPath(), path);
             } catch (IOException e) {
                 Logger.getAnonymousLogger().log(Level.SEVERE,
                     "Failed to write master-password-location file: ", e);

@@ -56,7 +56,6 @@ import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.admin.cli.cluster.NamingHelper;
 import fish.payara.util.cluster.PayaraServerNameGenerator;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -386,8 +385,8 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             }
 
             File mpLocationFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_LOCATION_FILE);
-            try (FileWriter writer = new FileWriter(mpLocationFile)) {
-                writer.write(mpLocation);
+            try {
+                Files.writeString(mpLocationFile.toPath(), mpLocation);
                 pwdFile = new File(mpLocation);
             } catch (IOException e) {
                 throw new CommandException(Strings.get("masterPasswordFileNotCreated", pwdFile), e);
