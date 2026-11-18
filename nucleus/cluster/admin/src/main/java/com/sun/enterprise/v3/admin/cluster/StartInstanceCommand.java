@@ -36,10 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
-
+ * 
+ * Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
  */
-// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
-
 package com.sun.enterprise.v3.admin.cluster;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -165,9 +164,10 @@ public class StartInstanceCommand implements AdminCommand {
      * Do NOT make this public!!
      * @author Byron Nevins
      */
-    StartInstanceCommand(ServiceLocator serviceLocator, String instanceName, boolean debug, ServerEnvironment env) {
+    StartInstanceCommand(ServiceLocator serviceLocator, String instanceName, boolean debug, int timeout, ServerEnvironment env) {
         this.instanceName = instanceName;
         this.debug = debug;
+        this.timeout = timeout;
         this.serviceLocator = serviceLocator;
         nodes = serviceLocator.getService(Nodes.class);
 
@@ -374,14 +374,13 @@ public class StartInstanceCommand implements AdminCommand {
 
         // If the timeout is reached, the instance isn't started so return false
         try {
-            instanceTimeout.await(timeout, SECONDS);
+            return instanceTimeout.await(timeout, SECONDS);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             return false;
         } finally {
             instancePollFuture.cancel(true);
         }
-        
-        return true;
     }
 
     private String makeCommandHuman(List<String> command) {
