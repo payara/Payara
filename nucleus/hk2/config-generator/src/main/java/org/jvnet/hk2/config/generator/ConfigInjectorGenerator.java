@@ -38,8 +38,6 @@
  * holder.
  */
 
-// Portions Copyright 2026 Payara Foundation and/or its affiliates
-
 package org.jvnet.hk2.config.generator;
 
 import com.sun.codemodel.*;
@@ -113,17 +111,12 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
         cm = new JCodeModel();
 
         for (TypeElement annotation : annotations) {
-            List<javax.lang.model.element.Element> processed = new ArrayList<>();
-
-            for (javax.lang.model.element.Element d : roundEnv.getElementsAnnotatedWith(annotation)) {
+            for(javax.lang.model.element.Element d : roundEnv.getElementsAnnotatedWith(annotation)) {
                 d.accept(visitor, null);
-                processed.add(d);
             }
 
             try {
-                javax.lang.model.element.Element[] origins =
-                        processed.toArray(new javax.lang.model.element.Element[0]);
-                cm.build(new FilerCodeWriter(processingEnv.getFiler(), origins));
+                cm.build(new FilerCodeWriter(processingEnv.getFiler()));
             } catch (IOException e) {
                 throw new Error(e);
             }
@@ -1012,11 +1005,9 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
     public static final class FilerCodeWriter extends CodeWriter {
 
         private final Filer filer;
-        private final javax.lang.model.element.Element[] originatingElements;
 
-        public FilerCodeWriter(Filer filer, javax.lang.model.element.Element... originatingElements) {
+        public FilerCodeWriter(Filer filer) {
             this.filer = filer;
-            this.originatingElements = originatingElements;
         }
 
         public OutputStream openBinary(JPackage pkg, String fileName) throws IOException {
@@ -1041,9 +1032,7 @@ public class ConfigInjectorGenerator extends AbstractProcessor {
 
             name = name.substring(0,name.length()-5);   // strip ".java"
 
-            // Pass originating elements so javac can resolve the correct JPMS module
-            // when this Annotation Processor (AP) runs in module-aware compilation mode.
-            return filer.createSourceFile(name, originatingElements).openWriter();
+            return filer.createSourceFile(name).openWriter();
         }
 
         public void close() {}

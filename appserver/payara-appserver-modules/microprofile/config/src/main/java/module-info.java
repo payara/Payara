@@ -45,10 +45,9 @@
  * bytecode and pom.xml, so both MANIFEST.MF (OSGi) and module-info.class (JPMS) are
  * present in the produced JAR — the dual-presence strategy.
  *
- * Automatic-module note: several dependencies below (hk2-api, class-model, Payara internal
- * modules) do not yet have their own module-info.java and appear on the module path as
- * automatic modules with the derived names used here. microprofile-config-api ships an
- * explicit module-info.class since 3.1.2.
+ * Automatic-module note: several dependencies below (microprofile-config-api, hk2-api,
+ * class-model, Payara internal modules) do not yet have their own module-info.java and
+ * appear on the module path as automatic modules with the derived names used here.
  *
  * SPI note: this module keeps META-INF/services/org.eclipse.microprofile.config.spi.ConfigProviderResolver
  * pointing to ConfigProviderResolverSync (which lives in microprofile-config-service).
@@ -63,7 +62,7 @@
 module fish.payara.microprofile.config {
 
     // ── Spec and standard Jakarta APIs ───────────────────────────────────────
-    // named module since 3.1.2: microprofile-config-api-*.jar ships module-info.class
+    // automatic module: microprofile-config-api-*.jar → org.eclipse.microprofile.config
     requires org.eclipse.microprofile.config;
     // named modules
     requires jakarta.annotation;
