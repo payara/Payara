@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2026] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.internal.api;
@@ -67,7 +67,7 @@ public class Globals {
     private static volatile ServiceLocator defaultHabitat;
 
     private static Object staticLock = new Object();
-
+    
     // dochez : remove this once we can get rid of ConfigBeanUtilities class
     @SuppressWarnings("unused")
     @Inject
