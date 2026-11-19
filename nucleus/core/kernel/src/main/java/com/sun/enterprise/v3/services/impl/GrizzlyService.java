@@ -559,8 +559,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             System.setProperty(ALLOW_BACKSLASH_PROPERTY, "true");
         }
         if (Boolean.getBoolean(ALLOW_BACKSLASH_PROPERTY) != GrizzlyUriPolicy.ALLOW_BACKSLASH) {
-            throw new IllegalStateException("Grizzly URI decoder was initialized before " + ALLOW_BACKSLASH_PROPERTY
-                    + " was configured, or the property changed after decoder initialization");
+            throw new IllegalStateException(ALLOW_BACKSLASH_PROPERTY + " was read before the Grizzly service initialized it");
         }
         events.register(this);
 
