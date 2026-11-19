@@ -125,8 +125,7 @@ public class CoyoteAdapter extends HttpHandler {
 
     private Collection<ServletContainerInterceptor> interceptors = null;
 
-    protected static final boolean ALLOW_BACKSLASH =
-        GrizzlyUriPolicy.ALLOW_BACKSLASH;
+    protected static final boolean ALLOW_BACKSLASH = GrizzlyUriPolicy.ALLOW_BACKSLASH;
 
     private static final boolean COLLAPSE_ADJACENT_SLASHES =
         Boolean.valueOf(System.getProperty(
