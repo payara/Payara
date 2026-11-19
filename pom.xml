@@ -262,7 +262,7 @@
         <woodstock-external.prototype.version>6.0.3</woodstock-external.prototype.version>
         <angus-activation.version>2.0.3</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>4.4.8</jline.version>
+        <jline.version>4.5.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>7.1</microprofile-release.version>
         <payara-arquillian-container.version>4.0.alpha4</payara-arquillian-container.version>
@@ -280,7 +280,7 @@
         <osgi.dto.version>1.1.1</osgi.dto.version>
         <soteria.version>4.0.2</soteria.version>
         <cdi-api.version>4.1.0</cdi-api.version>
-        <grizzly.version>5.0.3</grizzly.version>
+        <grizzly.version>5.0.3.payara-p1</grizzly.version>
         <servlet-api.version>6.1.0</servlet-api.version>
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
         <expressly.version>6.0.0</expressly.version>
@@ -340,7 +340,7 @@
         <epicyro.version>3.1.2</epicyro.version>
         <mail.version>2.1.5</mail.version>
         <angus.mail.version>2.0.5</angus.mail.version>
-        <opentelemetry.version>1.66.0</opentelemetry.version>
+        <opentelemetry.version>1.68.0</opentelemetry.version>
         <opentelemetry-semconv.version>1.44.0</opentelemetry-semconv.version>
         <opentelemetry-instrumentation-annotations.version>2.33.1</opentelemetry-instrumentation-annotations.version>
         <opentelemetry-instrumentation-annotation-support.version>2.33.1-alpha</opentelemetry-instrumentation-annotation-support.version>

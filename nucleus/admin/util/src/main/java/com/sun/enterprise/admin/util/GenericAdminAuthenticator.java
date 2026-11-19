@@ -151,12 +151,15 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     private AuthenticationService authService;
 
     @Inject
+    private AuthenticationAttemptTrackerFactory attemptTrackerFactory;
+
     private AuthenticationAttemptTracker attemptTracker;
 
     @Override
     public synchronized void postConstruct() {
         secureAdmin = domain.getSecureAdmin();
-        
+        attemptTracker = attemptTrackerFactory.getDefault();
+
         // Ensure that the admin password is set as required
         if (as.usesFileRealm()) {
             try {
@@ -595,6 +598,9 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
 
         try {
             return loginAsAdmin(user, password, realm, host);
+        } catch (AuthenticationAttemptTracker.TooManyRequestsException e) {
+            // Carry only the message: the exception is serialized to the JMX client, which does not have this class
+            throw new SecurityException(e.getMessage());
         } catch (LoginException e) {
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
                 ADMSEC_LOGGER.log(Level.FINE, "*** LoginException during JMX auth\n  user={0}\n  host={1}\n  realm={2}",

@@ -899,8 +899,13 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                 }
                                 logger.log(Level.FINER, "---- END PAYLOAD ----");
                             }
+                            /*
+                             * Unconfined: the DAS echoes back, as file-xfer-root,
+                             * local paths the user asked for (e.g. deploy --retrieve
+                             * <dir>), which need not be under fileOutputDir.
+                             */
                             PayloadFilesManager downloadedFilesMgr =
-                                    new PayloadFilesManager.Perm(fileOutputDir, null, logger, null);
+                                    PayloadFilesManager.Perm.unconfined(fileOutputDir, null, logger, null);
                             try {
                                 downloadedFilesMgr.processParts(inbound);
                             } catch (CommandException cex) {

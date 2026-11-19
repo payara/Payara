@@ -17,39 +17,31 @@
 
 package com.sun.enterprise.admin.util;
 
-import com.sun.enterprise.util.net.NetUtils;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
 import javax.security.auth.login.LoginException;
-
-import org.jvnet.hk2.annotations.Service;
 
 /**
  * Tracks failed authentication attempts and enforces exponential delay to prevent brute-force attacks.
  * <p>
- * This service tracks failed login attempts per (username, remoteHost) tuple and applies exponential
+ * This class tracks failed login attempts per (username, remoteHost) tuple and applies exponential
  * delays after failures. If too many concurrent requests are being delayed for the same user/host,
  * additional requests are rejected immediately with HTTP 429 (Too Many Requests).
+ * <p>
+ * Instances are normally obtained from {@link AuthenticationAttemptTrackerFactory}, which provides the
+ * server-wide tracker and cleans up old entries periodically. One constructed directly has no such cleanup.
  *
  * @author Ondro Mihalyi
  */
-@Service
-@Singleton
 public class AuthenticationAttemptTracker {
 
     private static final Logger LOG = System.getLogger(AuthenticationAttemptTracker.class.getName());
@@ -67,23 +59,18 @@ public class AuthenticationAttemptTracker {
     static final int MAX_CONCURRENT_DELAYS = 3;
     static final int WARN_THRESHOLD_FAILURES = 5;
 
-    @Inject
-    private ScheduledExecutorService scheduledExecutor;
+    private final Predicate<String> isExemptHost;
 
     private final Map<AttemptKey, AttemptData> attempts = new ConcurrentHashMap<>();
 
-    @PostConstruct
-    public void init() {
-        // Schedule periodic cleanup of old entries
-        scheduledExecutor.scheduleAtFixedRate(
-                this::cleanupOldEntries,
-                MAX_DELAY_SECONDS,
-                MAX_DELAY_SECONDS,
-                TimeUnit.SECONDS);
+    /**
+     * @param isExemptHost tests whether attempts from a remote host are exempt from tracking
+     */
+    public AuthenticationAttemptTracker(Predicate<String> isExemptHost) {
+        this.isExemptHost = isExemptHost;
     }
 
-    @PreDestroy
-    public void shutdown() {
+    void clear() {
         attempts.clear();
     }
 
@@ -91,9 +78,9 @@ public class AuthenticationAttemptTracker {
      * Checks whether authentication should be rejected for the given user and host because too many
      * concurrent requests are already being delayed. Must be called BEFORE attempting authentication.
      * <p>
-     * Skips tracking for localhost — those are server-side proxy calls (Admin Console calling
-     * /management/sessions on behalf of a browser). The real remote host is passed via
-     * X-GlassFish-Remote-Host header in that case.
+     * Skips tracking for exempt hosts. For the {@linkplain AuthenticationAttemptTrackerFactory#getDefault() default
+     * tracker} that is localhost — those are server-side proxy calls (Admin Console calling /management/sessions on
+     * behalf of a browser). The real remote host is passed via X-GlassFish-Remote-Host header in that case.
      *
      * @param username the username attempting to authenticate
      * @param remoteHost the remote host from which the request originated
@@ -101,7 +88,7 @@ public class AuthenticationAttemptTracker {
      * @throws TooManyRequestsException if too many concurrent delays are active for this user/host
      */
     public void checkBeforeAuthentication(String username, String remoteHost, char[] password) throws TooManyRequestsException {
-        // Skip tracking for null/empty inputs and localhost (server-side proxy calls)
+        // Skip tracking for null/empty inputs and exempt hosts (localhost: server-side proxy calls)
         if (shouldIgnoreCheckes(username, remoteHost, password)) {
             return;
         }
@@ -118,8 +105,8 @@ public class AuthenticationAttemptTracker {
         }
     }
 
-    private static boolean shouldIgnoreCheckes(String username, String remoteHost, char[] password) {
-        return username == null || remoteHost == null || isEmptyPassword(password) || NetUtils.isLocal(remoteHost);
+    private boolean shouldIgnoreCheckes(String username, String remoteHost, char[] password) {
+        return username == null || remoteHost == null || isEmptyPassword(password) || isExemptHost.test(remoteHost);
     }
 
     /**
@@ -131,7 +118,7 @@ public class AuthenticationAttemptTracker {
      * @param password the password that was used (empty passwords are ignored for tracking)
      */
     public void recordSuccess(String username, String remoteHost, char[] password) {
-        // Skip tracking for null/empty inputs and localhost
+        // Skip tracking for null/empty inputs and exempt hosts
         if (shouldIgnoreCheckes(username, remoteHost, password)) {
             return;
         }
@@ -151,7 +138,7 @@ public class AuthenticationAttemptTracker {
      * @param password the password that was used (empty passwords are ignored for tracking)
      */
     public void recordFailureAndDelay(String username, String remoteHost, char[] password) {
-        // Skip tracking for null/empty inputs and localhost
+        // Skip tracking for null/empty inputs and exempt hosts
         if (shouldIgnoreCheckes(username, remoteHost, password)) {
             return;
         }
@@ -196,7 +183,7 @@ public class AuthenticationAttemptTracker {
         }
     }
 
-    private void cleanupOldEntries() {
+    void cleanupOldEntries() {
         long cutoffTime = System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(MAX_DELAY_SECONDS);
         attempts.entrySet().removeIf(entry -> entry.getValue().lastFailureTime.get() < cutoffTime);
         LOG.log(Level.DEBUG, () -> "Cleaned up old authentication attempt entries. Remaining entries: " + attempts.size());

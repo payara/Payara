@@ -74,6 +74,13 @@ import java.util.concurrent.TimeUnit;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED;
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Brute-force protection for the REST management interface.
+ *
+ * <p>The same rate limiting scenario is covered for the JMX connector by
+ * {@code GenericAdminAuthenticatorJmxRateLimitTest} in nucleus/admin/util. Both depend on the limits and
+ * delays of {@code AuthenticationAttemptTracker}, so keep them in step when those change.
+ */
 @RunWith(PayaraArquillianTestRunner.class)
 @NotMicroCompatible
 public class RestAuthenticationTest {
