@@ -52,7 +52,6 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import java.util.Objects;
 
 /**
  * Global class for storing the service locator for all hk2 services
@@ -69,8 +68,6 @@ public class Globals {
 
     private static Object staticLock = new Object();
 
-    private static volatile Boolean allowBackslash;
-    
     // dochez : remove this once we can get rid of ConfigBeanUtilities class
     @SuppressWarnings("unused")
     @Inject
@@ -99,22 +96,6 @@ public class Globals {
      */
     public static ServiceLocator getDefaultHabitat() {
         return defaultHabitat;
-    }
-
-    /**
-     * Records whether a backslash in a request URI is allowed, as resolved by the Grizzly service.
-     * @param allow
-     */
-    public static void initAllowBackslash(boolean allow) {
-        allowBackslash = allow;
-    }
-
-    /**
-     * @return whether a backslash in a request URI is allowed, see {@link #initAllowBackslash(boolean)}
-     * @throws NullPointerException if called before the Grizzly service initialized the value
-     */
-    public static boolean isAllowBackslash() {
-        return Objects.requireNonNull(allowBackslash, "allowBackslash read before the Grizzly service initialized it");
     }
 
     /**

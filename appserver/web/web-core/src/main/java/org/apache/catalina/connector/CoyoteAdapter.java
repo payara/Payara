@@ -90,6 +90,7 @@ import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.GrizzlyUriPolicy;
 import org.glassfish.web.valve.GlassFishValve;
 import org.glassfish.web.valve.ServletContainerInterceptor;
 
@@ -125,7 +126,7 @@ public class CoyoteAdapter extends HttpHandler {
     private Collection<ServletContainerInterceptor> interceptors = null;
 
     protected static final boolean ALLOW_BACKSLASH =
-        org.glassfish.internal.api.Globals.isAllowBackslash();
+        GrizzlyUriPolicy.ALLOW_BACKSLASH;
 
     private static final boolean COLLAPSE_ADJACENT_SLASHES =
         Boolean.valueOf(System.getProperty(

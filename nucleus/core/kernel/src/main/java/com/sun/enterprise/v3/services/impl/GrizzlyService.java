@@ -108,7 +108,7 @@ import org.glassfish.grizzly.http.util.HttpRequestURIDecoder;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.utils.Futures;
 import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.GrizzlyUriPolicy;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -554,11 +554,14 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
      */
     @Override
     public void postConstruct() {
-        // must happen before HttpRequestURIDecoder is loaded, as it reads the property once
+        // Set the default before initializing Grizzly's decoder.
         if (System.getProperty(ALLOW_BACKSLASH_PROPERTY) == null) {
             System.setProperty(ALLOW_BACKSLASH_PROPERTY, "true");
         }
-        Globals.initAllowBackslash(Boolean.getBoolean(ALLOW_BACKSLASH_PROPERTY));
+        if (Boolean.getBoolean(ALLOW_BACKSLASH_PROPERTY) != GrizzlyUriPolicy.ALLOW_BACKSLASH) {
+            throw new IllegalStateException("Grizzly URI decoder was initialized before " + ALLOW_BACKSLASH_PROPERTY
+                    + " was configured, or the property changed after decoder initialization");
+        }
         events.register(this);
 
         final NetworkConfig networkConfig = config.getNetworkConfig();
