@@ -41,4 +41,4 @@ Discussions works best when users help users. Anyone can answer.
 
 Maintainers may edit, move, lock or delete posts and comments that break these guidelines, are spam, or are off topic. Repeated or serious breaches may lead to a block from the Payara organisation on GitHub.
 
-If you see something that doesn't belong, use GitHub's report option on the post, or contact a maintainer. To raise a concern privately, email community@payara.fish.
+If you see something that doesn't belong, use GitHub's report option on the post, or contact a maintainer. To raise a concern privately, email community@azul.com.
