@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright 2022-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2022-2026 Payara Foundation and/or its affiliates
 package org.apache.catalina.connector;
 
 import java.nio.charset.Charset;
@@ -90,6 +90,7 @@ import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.GrizzlyUriPolicy;
 import org.glassfish.web.valve.GlassFishValve;
 import org.glassfish.web.valve.ServletContainerInterceptor;
 
@@ -124,8 +125,7 @@ public class CoyoteAdapter extends HttpHandler {
 
     private Collection<ServletContainerInterceptor> interceptors = null;
 
-    protected static final boolean ALLOW_BACKSLASH =
-        Boolean.valueOf(System.getProperty("org.glassfish.grizzly.tcp.tomcat5.CoyoteAdapter.ALLOW_BACKSLASH", "false"));
+    protected static final boolean ALLOW_BACKSLASH = GrizzlyUriPolicy.ALLOW_BACKSLASH;
 
     private static final boolean COLLAPSE_ADJACENT_SLASHES =
         Boolean.valueOf(System.getProperty(
