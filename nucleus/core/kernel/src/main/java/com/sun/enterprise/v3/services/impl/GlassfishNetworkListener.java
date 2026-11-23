@@ -348,6 +348,30 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         return list;
     }
 
+    /**
+     * FISH-14432: validate a request's Transfer-Encoding transfer-codings per RFC 9112 6.1/6.3.
+     * The {@code teLines} are the raw value(s) of every {@code Transfer-Encoding} header line on the
+     * request; they are folded into a single ordered list of transfer-codings (comma-separated,
+     * OWS trimmed). The value is conformant only when it is exactly "chunked" (case-insensitive) --
+     * the single transfer-coding Grizzly can decode. It rejects any other coding ("gzip, chunked",
+     * "gzip"), an obfuscated token ("chunkedX"), a non-final chunked ("chunked, gzip", including when
+     * split across two header lines), and repeated or empty tokens.
+     *
+     * @param teLines the raw Transfer-Encoding header line value(s) of the request (may be empty)
+     * @return {@code true} if the Transfer-Encoding is absent or conformant, {@code false} if it must be rejected
+     */
+    static boolean isConformantTransferEncoding(final List<String> teLines) {
+        final List<String> codings = new ArrayList<>();
+        for (final String line : teLines) {
+            for (final String token : line.split(",", -1)) {
+                codings.add(token.trim());
+            }
+        }
+        // The only transfer-coding Grizzly can decode is chunked, so a conformant request either
+        // omits Transfer-Encoding or uses exactly "chunked". Anything else is rejected.
+        return codings.isEmpty() || (codings.size() == 1 && codings.get(0).equalsIgnoreCase("chunked"));
+    }
+
     protected static class HttpAdapterImpl implements HttpAdapter {
         private final VirtualServer virtualServer;
         private final ContainerMapper containerMapper;
@@ -439,10 +463,21 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
 
             final HttpRequestPacket request = (HttpRequestPacket) httpHeader;
 
-            // Here we can add extra validation to prevent Http Server invalid use of headers
+            // FISH-11415 / FISH-14432: reject ambiguous or unsupported request framing. A request may
+            // carry Content-Length or Transfer-Encoding, not both, and the only transfer-coding Grizzly
+            // can decode is "chunked" (RFC 9112 6.1/6.3) -- so "gzip, chunked", a non-final or obfuscated
+            // chunked ("chunked, gzip", "chunkedX"), or chunked split across multiple Transfer-Encoding
+            // lines are all rejected. Logged at FINE: these are client input errors, and an
+            // unauthenticated client must not be able to flood the log.
             if (request.containsHeader(Header.ContentLength) && request.containsHeader(Header.TransferEncoding)) {
-                KernelLoggerInfo.getLogger().log(Level.SEVERE,
+                KernelLoggerInfo.getLogger().log(Level.FINE,
                         "Can't use both headers Content-Length and Transfer-Encoding from the same request");
+                request.getProcessingState().setError(true);
+                result = true;
+            } else if (request.containsHeader(Header.TransferEncoding)
+                    && !isValidTransferEncoding(request.getHeaders())) {
+                KernelLoggerInfo.getLogger().log(Level.FINE,
+                        "Invalid Transfer-Encoding: only the 'chunked' transfer-coding is supported");
                 request.getProcessingState().setError(true);
                 result = true;
             }
@@ -456,7 +491,22 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
 
             return result;
         }
-        
+
+        /**
+         * FISH-14432: collect every {@code Transfer-Encoding} header line of the request and validate
+         * them with {@link GlassfishNetworkListener#isConformantTransferEncoding(List)}.
+         *
+         * @param headers the request's parsed MIME headers
+         * @return {@code true} if the Transfer-Encoding is absent or conformant, {@code false} if it must be rejected
+         */
+        private static boolean isValidTransferEncoding(final MimeHeaders headers) {
+            final List<String> teLines = new ArrayList<>();
+            for (final String line : headers.values(Header.TransferEncoding)) {
+                teLines.add(line);
+            }
+            return isConformantTransferEncoding(teLines);
+        }
+
         @Override
         protected void onInitialLineEncoded(HttpHeader httpHeader, FilterChainContext ctx) {
             // Set response "X-Frame-Options" header
