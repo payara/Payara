@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
+// Portions Copyright 2016-2026 [Payara Foundation and/or affiliates]
 package com.sun.enterprise.server.logging;
 
 import java.util.logging.Logger;
@@ -121,4 +121,6 @@ public class LogFacade {
             action="Take appropriate action based on the exception message.")
     public static final String ERROR_PLACEHOLDERS_REPLACEMENT = "NCLS-LOGGING-00014";
 
+    @LogMessageInfo(message = "Viewing logs is not supported for instances on nodes of type {0}.", level="INFO")
+    public static final String LOG_VIEWING_NOT_SUPPORTED = "NCLS-LOGGING-00015";
 }

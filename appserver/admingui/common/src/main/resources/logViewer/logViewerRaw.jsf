@@ -105,6 +105,10 @@ function logViewerRaw(url) {
     var timeout = 1000;
     
     var success = function(xhr, targetId, requestedUrl) {
+        if (xhr.status >= 400) {
+            document.getElementById(targetId).appendChild(document.createTextNode(xhr.responseText));
+            return;
+        }
         if (xhr.status === 200 && xhr.getResponseHeader('Content-Type').indexOf("text/plain") !== -1) {
             if (xhr.responseText ) {
                 var records = document.createTextNode(xhr.responseText);
