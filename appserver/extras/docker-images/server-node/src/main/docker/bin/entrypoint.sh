@@ -47,8 +47,8 @@ ASADMIN="${PAYARA_DIR}/bin/asadmin"
 echo "Docker Container ID is: ${DOCKER_CONTAINER_ID}"
 
 if [ -z "${DOCKER_CONTAINER_IP}" ]; then
-    echo "No Docker container IP override given, setting to first result from 'hostname -I'"
-    DOCKER_CONTAINER_IP="$(hostname -I | cut -f1 -d ' ')"
+    echo "No Docker container IP override given, setting to first global IPv4 address of the container"
+    DOCKER_CONTAINER_IP="$(ip -4 -o addr show scope global | awk '{print $4}' | cut -d/ -f1 | head -n 1)"
     echo "Hostname is ${DOCKER_CONTAINER_IP}"
 fi
 
