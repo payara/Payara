@@ -108,8 +108,8 @@ public class SSHConnection implements AutoCloseable {
      */
     public int runCommand(List<String> command, OutputStream out, List<String> stdinLines)
             throws IOException, InterruptedException {
-        String cmd = SFTPClient.normalizePath(SSHCommandUtils.commandListToQuotedString(command));
-        return launcher.exec(session, cmd, out, SSHCommandUtils.listInputStream(stdinLines));
+        return launcher.exec(session, SSHLauncher.toWireCommand(command), SSHLauncher.toDisplayCommand(command), out,
+                SSHCommandUtils.listInputStream(stdinLines));
     }
 
     /**

@@ -423,7 +423,7 @@ public class SSHLauncher {
 
     public int runCommand(List<String> command, OutputStream os, List<String> stdinLines)
             throws IOException, InterruptedException {
-        return runCommand(commandListToQuotedString(command), os, stdinLines);
+        return runCommandAsIs(toWireCommand(command), toDisplayCommand(command), os, stdinLines);
     }
 
     public int runCommand(List<String> command, OutputStream os)
@@ -441,18 +441,23 @@ public class SSHLauncher {
     public int runCommand(String command, OutputStream os, List<String> stdinLines)
             throws IOException, InterruptedException {
         command = SFTPClient.normalizePath(command);
-        return runCommandAsIs(command, os, stdinLines);
+        return runCommandAsIs(command, command, os, stdinLines);
     }
 
-    private int runCommandAsIs(String command, OutputStream os, List<String> stdinLines)
+    /**
+     * @param command        the command to execute
+     * @param displayCommand the form of {@code command} that is safe to log
+     */
+    private int runCommandAsIs(String command, String displayCommand, OutputStream os,
+                               List<String> stdinLines)
             throws IOException, InterruptedException {
-        logger.fine("Running command on " + host + ": " + SSHUtil.redactCommand(command));
+        logger.fine("Running command on " + host + ": " + displayCommand);
 
         SshClient client = buildClient();
         try {
             ClientSession session = openSession(client);
             try {
-                int result = exec(session, command, os, listInputStream(stdinLines));
+                int result = exec(session, command, displayCommand, os, listInputStream(stdinLines));
                 logger.fine("Command completed with exit status: " + result);
                 return result;
             } finally {
@@ -470,21 +475,26 @@ public class SSHLauncher {
     public int runCommandAsIs(List<String> command, OutputStream os,
                               List<String> stdinLines, String[] env)
             throws IOException, InterruptedException {
-        return runCommandAsIs(commandListToQuotedString(command), os, stdinLines, env);
+        return runCommandAsIs(commandListToQuotedString(command), toDisplayCommand(command),
+                os, stdinLines, env);
     }
 
-    private int runCommandAsIs(String command, OutputStream os,
+    /**
+     * @param command        the command to execute
+     * @param displayCommand the form of {@code command} that is safe to log
+     */
+    private int runCommandAsIs(String command, String displayCommand, OutputStream os,
                                List<String> stdinLines, String[] env)
             throws IOException, InterruptedException {
         if (logger.isLoggable(Level.FINER)) {
-            logger.finer("Running command " + SSHUtil.redactCommand(command) + " on host: " + host);
+            logger.finer("Running command " + displayCommand + " on host: " + host);
         }
 
         SshClient client = buildClient();
         try {
             ClientSession session = openSession(client);
             try {
-                StringBuilder fullCommand = new StringBuilder();
+                StringBuilder envPrefix = new StringBuilder();
                 if (env != null && env.length > 0) {
                     ByteArrayOutputStream shellOut = new ByteArrayOutputStream();
                     exec(session, "ps -p $$ | tail -1 | awk '{print $NF}'", shellOut, null);
@@ -493,11 +503,11 @@ public class SSHLauncher {
                     String prefix = isCsh ? "setenv" : "export";
                     logger.fine((isCsh ? "CSH" : "BASH") + " shell detected");
                     for (String envVar : env) {
-                        fullCommand.append(prefix).append(" ").append(envVar).append(";");
+                        envPrefix.append(prefix).append(" ").append(envVar).append(";");
                     }
                 }
-                fullCommand.append(command);
-                return exec(session, fullCommand.toString(), os, listInputStream(stdinLines));
+                return exec(session, envPrefix + command, envPrefix + displayCommand,
+                        os, listInputStream(stdinLines));
             } finally {
                 try { session.close(false).await(5000L); } catch (Exception ignored) { }
             }
@@ -510,7 +520,18 @@ public class SSHLauncher {
 
     int exec(ClientSession session, String command, OutputStream os, InputStream is)
             throws IOException, InterruptedException {
-        logger.finer("Executing: " + SSHUtil.redactCommand(command));
+        return exec(session, command, command, os, is);
+    }
+
+    /**
+     * Executes {@code command} on an open session.
+     *
+     * @param displayCommand the form of {@code command} that is safe to log;
+     *                       {@code command} itself is never logged
+     */
+    int exec(ClientSession session, String command, String displayCommand, OutputStream os, InputStream is)
+            throws IOException, InterruptedException {
+        logger.finer("Executing: " + displayCommand);
         ChannelExec channel = session.createExecChannel(command);
         try {
             channel.setOut(os);
@@ -538,7 +559,7 @@ public class SSHLauncher {
             logger.finer("waitFor returned events=" + events);
 
             if (events.contains(ClientChannelEvent.TIMEOUT)) {
-                logger.warning("Command timed out: " + SSHUtil.redactCommand(command));
+                logger.warning("Command timed out: " + displayCommand);
             }
 
             Integer exitStatus = channel.getExitStatus();
@@ -990,6 +1011,19 @@ public class SSHLauncher {
 
     private static String commandListToQuotedString(List<String> command) {
         return SSHCommandUtils.commandListToQuotedString(command);
+    }
+
+    /** The command string actually sent over the SSH exec channel. */
+    static String toWireCommand(List<String> command) {
+        return SFTPClient.normalizePath(commandListToQuotedString(command));
+    }
+
+    /**
+     * The command string for logs and error messages: identical to
+     * {@link #toWireCommand(List)} except that sensitive option values are masked.
+     */
+    static String toDisplayCommand(List<String> command) {
+        return toWireCommand(SSHUtil.redactCommand(command));
     }
 
     private void stopClientGracefully(SshClient client) {

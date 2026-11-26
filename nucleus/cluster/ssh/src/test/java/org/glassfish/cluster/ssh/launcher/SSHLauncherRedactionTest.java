@@ -154,6 +154,18 @@ public class SSHLauncherRedactionTest {
                 + " --windowspassword " + MARKER + " inst1", sent.getValue());
     }
 
+    /**
+     * What is logged must be exactly what is executed, apart from the masked value,
+     * so admins can rely on logged paths and arguments.
+     */
+    @Test
+    public void displayCommandMatchesWireCommandExceptForMaskedValue() {
+        List<String> cmd = List.of("C:\\payara\\glassfish\\lib\\nadmin.bat", "start-local-instance",
+                "--nodedir", "C:\\payara\\nodes", "--windowspassword", MARKER, "inst1");
+        String wire = SSHLauncher.toWireCommand(cmd);
+        assertEquals(wire.replace(MARKER, "********"), SSHLauncher.toDisplayCommand(cmd));
+    }
+
     private static List<String> startInstanceCommand(String sensitiveValue) {
         return List.of("/opt/payara/glassfish/lib/nadmin", "--_auxinput", "-",
                 "start-local-instance", "--sync", "normal",
