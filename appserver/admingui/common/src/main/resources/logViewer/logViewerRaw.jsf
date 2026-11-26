@@ -106,7 +106,28 @@ function logViewerRaw(url) {
     
     var success = function(xhr, targetId, requestedUrl) {
         if (xhr.status >= 400) {
-            document.getElementById(targetId).appendChild(document.createTextNode(xhr.responseText));
+            var error = document.createElement('span');
+            error.setAttribute('role', 'alert');
+            error.style.display = 'block';
+            error.style.padding = '8px 12px';
+            error.style.backgroundColor = '#c00';
+            error.style.color = '#fff';
+            error.style.fontWeight = 'bold';
+            var icon = document.createElement('span');
+            icon.setAttribute('aria-hidden', 'true');
+            icon.style.display = 'inline-block';
+            icon.style.width = '1.4em';
+            icon.style.height = '1.4em';
+            icon.style.lineHeight = '1.4em';
+            icon.style.marginRight = '10px';
+            icon.style.borderRadius = '50%';
+            icon.style.textAlign = 'center';
+            icon.style.backgroundColor = '#fff';
+            icon.style.color = '#c00';
+            icon.appendChild(document.createTextNode('!'));
+            error.appendChild(icon);
+            error.appendChild(document.createTextNode(xhr.responseText));
+            document.getElementById(targetId).appendChild(error);
             return;
         }
         if (xhr.status === 200 && xhr.getResponseHeader('Content-Type').indexOf("text/plain") !== -1) {
