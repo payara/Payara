@@ -52,6 +52,7 @@ import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
 import org.glassfish.common.util.admin.AuthTokenManager;
+import org.glassfish.cluster.ssh.util.SSHUtil;
 import org.glassfish.hk2.api.ServiceLocator;
 
 public class NodeRunner {
@@ -138,7 +139,7 @@ public class NodeRunner {
 
         logger.fine("runAdminCommandOnNode: node=" + node.getName()
                 + " host=" + node.getNodeHost()
-                + " args=" + args);
+                + " args=" + SSHUtil.redactCommand(args));
 
         List<String> stdinLines = new ArrayList<>();
         stdinLines.add(AsadminInput.versionSpecifier());
@@ -176,7 +177,7 @@ public class NodeRunner {
         if (!asadmin.canExecute())
             throw new ProcessManagerException(asadmin.getAbsolutePath() + " is not executable.");
 
-        lastCommandRun = commandListToString(fullcommand);
+        lastCommandRun = commandListToString(SSHUtil.redactCommand(fullcommand));
 
         trace("Running command locally: " + lastCommandRun);
         ProcessManager pm = new ProcessManager(fullcommand);

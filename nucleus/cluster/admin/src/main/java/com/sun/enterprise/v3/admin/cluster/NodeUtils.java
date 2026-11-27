@@ -68,6 +68,7 @@ import java.util.HashMap;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import org.glassfish.cluster.ssh.connect.NodeRunner;
+import org.glassfish.cluster.ssh.util.SSHUtil;
 
 /**
  * Utility methods for operating on Nodes
@@ -460,7 +461,7 @@ public class NodeUtils {
 
         NodeRunner nr = new NodeRunner(habitat, logger);
         logger.fine("runAdminCommandOnNode: node=" + nodeName
-                + " host=" + nodeHost + " command=" + command);
+                + " host=" + nodeHost + " command=" + SSHUtil.redactCommand(command));
         try {
             int status = nr.runAdminCommandOnNode(node, output, waitForReaderThreads,
                     command, context);

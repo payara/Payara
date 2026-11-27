@@ -45,7 +45,9 @@ import com.sun.enterprise.util.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.glassfish.api.admin.CommandException;
 
@@ -55,6 +57,55 @@ import org.glassfish.api.admin.CommandException;
 public class SSHUtil {
 
     private static final String NL = System.getProperty("line.separator");
+    /**
+     * Options whose following value (or {@code =value} suffix) must never be
+     * written to logs or error messages.
+     */
+    private static final List<String> SENSITIVE_OPTIONS = List.of("--windowspassword");
+    private static final String REDACTED = "********";
+
+    /**
+     * Returns a copy of {@code command} suitable for logging, with the value of
+     * every {@link #SENSITIVE_OPTIONS sensitive option} replaced by a mask.
+     * <p>
+     * Redaction is positional, on the unquoted argument list, so it does not
+     * depend on how the value is later quoted into a shell command string.
+     * Both {@code --opt value} and {@code --opt=value} forms are handled.
+     * The input list is not modified.
+     *
+     * @param command the command arguments, may be {@code null}
+     * @return a redacted copy, or {@code null} if {@code command} is {@code null}
+     */
+    public static List<String> redactCommand(List<String> command) {
+        if (command == null) {
+            return null;
+        }
+        List<String> redacted = new ArrayList<>(command.size());
+        boolean redactNext = false;
+        for (String arg : command) {
+            if (redactNext) {
+                redacted.add(REDACTED);
+                redactNext = false;
+            } else if (arg != null && SENSITIVE_OPTIONS.contains(arg)) {
+                redacted.add(arg);
+                redactNext = true;
+            } else {
+                redacted.add(redactInlineValue(arg));
+            }
+        }
+        return redacted;
+    }
+
+    private static String redactInlineValue(String arg) {
+        if (arg != null) {
+            for (String option : SENSITIVE_OPTIONS) {
+                if (arg.startsWith(option + "=")) {
+                    return option + "=" + REDACTED;
+                }
+            }
+        }
+        return arg;
+    }
 
     /**
      * Convert empty string to null.
