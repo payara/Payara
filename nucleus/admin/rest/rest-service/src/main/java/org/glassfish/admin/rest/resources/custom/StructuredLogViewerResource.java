@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
+// Portions Copyright 2017-2026 Payara Foundation and/or affiliates
 package org.glassfish.admin.rest.resources.custom;
 
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
+import com.sun.enterprise.server.logging.logviewer.backend.LogViewingNotSupportedException;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -53,6 +54,7 @@ import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.Serializable;
@@ -98,16 +100,19 @@ public class StructuredLogViewerResource {
             @QueryParam("anySearch") @DefaultValue("") String anySearch,
             @QueryParam("listOfModules") String listOfModules, //default value is empty for List
             @QueryParam("instanceName") @DefaultValue("") String instanceName) throws IOException {
-
-        return getWithType(
-                logFileName,
-                startIndex,
-                searchForward,
-                maximumNumberOfResults,
-                fromTime,
-                toTime,
-                logLevel, onlyLevel, anySearch, listOfModules, instanceName);
-
+        try {
+            return getWithType(
+                    logFileName,
+                    startIndex,
+                    searchForward,
+                    maximumNumberOfResults,
+                    fromTime,
+                    toTime,
+                    logLevel, onlyLevel, anySearch, listOfModules, instanceName);
+        } catch (LogViewingNotSupportedException logViewingNotSupportedException) {
+            throw new WebApplicationException(logViewingNotSupportedException,
+                    LogViewerErrors.notSupported(logViewingNotSupportedException));
+        }
     }
 
     private LogRecordList getWithType(

@@ -158,6 +158,8 @@ public class LogFilterForInstance {
                     }
                 }
             }
+        } else {
+            throw new LogViewingNotSupportedException(node.getType());
         }
 
         return instanceLogFile;
@@ -328,6 +330,8 @@ public class LogFilterForInstance {
             }
 
 
+        } else {
+            throw new LogViewingNotSupportedException(node.getType());
         }
 
         return instanceLogFileNamesAsString;
@@ -389,5 +393,9 @@ public class LogFilterForInstance {
         }
 
         return loggingDir;
+    }
+
+    static boolean isLogViewingSupported(Node node) {
+        return node.isLocal() || "SSH".equals(node.getType());
     }
 }

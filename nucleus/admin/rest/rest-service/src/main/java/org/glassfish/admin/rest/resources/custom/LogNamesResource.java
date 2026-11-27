@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
+// Portions Copyright 2017-2026 Payara Foundation and/or affiliates
 package org.glassfish.admin.rest.resources.custom;
 
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
 
+import com.sun.enterprise.server.logging.logviewer.backend.LogViewingNotSupportedException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.LogManager;
@@ -72,10 +73,13 @@ public class LogNamesResource {
         if (instanceName == null || instanceName.equals(""))  {
             return Response.serverError().entity("instanceName is a required attribute").build();
         }
-        
-        LogNameList returnedNames = getInstanceLogFileNames(instanceName);
-        
-        return Response.ok(returnedNames).build();
+
+        try {
+            LogNameList returnedNames = getInstanceLogFileNames(instanceName);
+            return Response.ok(returnedNames).build();
+        } catch (LogViewingNotSupportedException logViewingNotSupportedException) {
+            return LogViewerErrors.notSupported(logViewingNotSupportedException);
+        }
     }
 
     private LogNameList getInstanceLogFileNames(String instanceName) throws IOException {

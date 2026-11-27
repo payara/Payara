@@ -276,6 +276,8 @@ public class LogFilter {
                 // getting log file attribute value from logging.properties file
                 String instanceLogFileDetails = getInstanceLogFileDetails(targetServer);
                 allInstanceFileNames = new LogFilterForInstance().getInstanceLogFileNames(habitat, targetServer, domain, LOGGER, instanceName, instanceLogFileDetails);
+            } catch (LogViewingNotSupportedException logViewingNotSupportedException) {
+                throw logViewingNotSupportedException;
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, ex);
                 return new ArrayList<>();
@@ -323,6 +325,9 @@ public class LogFilter {
             // getting log file for instance from logging.properties
             String logFileDetailsForInstance = getInstanceLogFileDetails(targetServer);
             Node node = domain.getNodes().getNode(serverNode);
+            if (!LogFilterForInstance.isLogViewingSupported(node)) {
+                throw new LogViewingNotSupportedException(node.getType());
+            }
             String loggingDir = "";
             String loggingFile = "";
 
@@ -381,6 +386,9 @@ public class LogFilter {
 
             String serverNode = targetServer.getNodeRef();
             Node node = domain.getNodes().getNode(serverNode);
+            if (!LogFilterForInstance.isLogViewingSupported(node)) {
+                throw new LogViewingNotSupportedException(node.getType());
+            }
             String loggingDir = "";
             String instanceLogFileName = "";
             try {

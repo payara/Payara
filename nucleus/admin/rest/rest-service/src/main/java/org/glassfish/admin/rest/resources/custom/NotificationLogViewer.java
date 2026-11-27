@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 [Payara Foundation and/or its affiliates]
 package org.glassfish.admin.rest.resources.custom;
 
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
@@ -54,6 +54,7 @@ import java.io.RandomAccessFile;
 import java.io.Writer;
 import java.nio.charset.Charset;
 
+import com.sun.enterprise.server.logging.logviewer.backend.LogViewingNotSupportedException;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Produces;
@@ -116,8 +117,14 @@ public class NotificationLogViewer extends LogViewerResource {
         // getting logFilter object from habitat
         LogFilter logFilter = habitat.getRemoteLocator().getService(LogFilter.class);
 
-        // getting log file location on DAS for server/local instance/remote instance
-        String logLocation = logFilter.getLogFileForGivenTarget(instanceName);
+        String logLocation;
+        try {
+            // getting log file location on DAS for server/local instance/remote instance
+            logLocation = logFilter.getLogFileForGivenTarget(instanceName);
+        } catch (LogViewingNotSupportedException logViewingNotSupportedException) {
+            return Response.status(Response.Status.NOT_IMPLEMENTED)
+                    .type("text/plain;charset=UTF-8").entity(logViewingNotSupportedException.getMessage()).build();
+        }
 
         readServerLogFile(logLocation);
         String logFolderLocation = logLocation.replace("server.log", "");

@@ -41,13 +41,16 @@
 
 package org.glassfish.admingui.common.servlet;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.Response;
 
 import org.glassfish.admingui.common.util.RestUtil;
@@ -93,9 +96,19 @@ public class LogViewerContentSource  implements DownloadServlet.ContentSource {
             attrsMap.put("start", start);
             attrsMap.put("instanceName", instanceName);
             Response cr = RestUtil.getRequestFromServlet(request, endpoint, attrsMap);
+            if (cr.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL &&
+                ctx.getServletResponse() instanceof HttpServletResponse httpServletResponse) {
+                httpServletResponse.setStatus(cr.getStatus());
+                var contentType = cr.getHeaderString("Content-Type");
+                if (contentType != null && contentType.startsWith("text/plain")) {
+                    return cr.readEntity(InputStream.class); // view-log (501)
+                }
+                return new ByteArrayInputStream(("Unable to view the log (HTTP " + cr.getStatus() + ").")
+                        .getBytes(StandardCharsets.UTF_8));
+            }
             Map<String, String> headers = new HashMap<String, String>();
             String xTextAppendNextHeader = cr.getHeaderString("X-Text-Append-Next");
-            if (!xTextAppendNextHeader.isEmpty()) {
+            if (xTextAppendNextHeader != null && !xTextAppendNextHeader.isEmpty()) {
                 StringTokenizer tokenizer = new StringTokenizer(xTextAppendNextHeader, ",");
                 if (tokenizer.hasMoreElements()) {
                     headers.put("X-Text-Append-Next", tokenizer.nextToken());
