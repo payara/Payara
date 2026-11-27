@@ -61,11 +61,7 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
 ENV PAYARA_PASSWORD_FILE=${PAYARA_PASSWORD_FILE_DIR}/passwordfile.txt
 
 RUN true \
-    && apt-get update \
-    # OpenSSL contains security vulnerabilities and is unused by Payara. To prevent recurring issues simply remove OpenSSL
-    && apt-get remove -y openssl \
-    && apt-get install -y tini \
-    && rm -rf /var/lib/apt/lists/* \
+    && apk add --no-cache tini bash \
     && mkdir -p ${HOME_DIR} \
     && addgroup --gid 1000 payara \
     && adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara \
