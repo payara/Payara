@@ -564,6 +564,12 @@
                                 Read all the configuration from osgi.bundle file, if it exists.
                             -->
                             <_include>-osgi.bundle</_include>
+                            <!--
+                                No uses:= directives on exported packages: the Felix resolver spends most of
+                                its time merging them, and the server ships a fixed set of bundles whose
+                                wiring is determined by the package version ranges.
+                            -->
+                            <_nouses>true</_nouses>
                         </instructions>
                         <excludeDependencies>tools-jar</excludeDependencies>
                         <supportedProjectTypes>

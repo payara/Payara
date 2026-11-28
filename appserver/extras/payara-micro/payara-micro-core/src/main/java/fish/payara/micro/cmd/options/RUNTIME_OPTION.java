@@ -54,6 +54,7 @@ public enum RUNTIME_OPTION {
     group(true),
     mcaddress(true, new MulticastValidator()),
     mcport(true, new PortValidator()),
+    mctimeout(true, new IntegerValidator(0, Integer.MAX_VALUE)),
     clustername(true),
     hostaware(false),
     nohostaware(false),
