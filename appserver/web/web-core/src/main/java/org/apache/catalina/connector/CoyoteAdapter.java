@@ -418,7 +418,7 @@ public class CoyoteAdapter extends HttpHandler {
         DataChunk decodedURI;
         try {
             decodedURI = req.getRequest().getRequestURIRef().getDecodedRequestURIBC();
-        } catch (CharConversionException cce) {
+        } catch (CharConversionException | IllegalArgumentException | IllegalStateException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid URI");
             return false;
         }
