@@ -41,8 +41,8 @@
 package org.glassfish.uberjar.builder.instanceroot;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -98,12 +98,7 @@ public class InstanceRootBuilderUtil {
                 // create directory.
                 if (!f.exists() || overwrite) {
                     f.getParentFile().mkdirs();
-                    FileOutputStream fos = new FileOutputStream(new File(destDir, path));
-                    byte[] data = new byte[2048];
-                    int count = 0;
-                    while ((count = stream.read(data)) != -1) {
-                        fos.write(data, 0, count);
-                    }
+                    Files.copy(stream, f.toPath());
                     logger.fine("Created " + f);
                 }
             } catch (Exception ex) {

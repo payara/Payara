@@ -3027,7 +3027,6 @@ public class WebappClassLoader
     }
 
     private void extractResource(JarFile jarFile) {
-        byte[] buf = new byte[1024];
         Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
             JarEntry jarEntry2 = entries.nextElement();
@@ -3056,13 +3055,7 @@ public class WebappClassLoader
                 try {
                     is = jarFile.getInputStream(jarEntry2);
                     os = new FileOutputStream(resourceFile);
-                    while (true) {
-                        int n = is.read(buf);
-                        if (n <= 0) {
-                            break;
-                        }
-                        os.write(buf, 0, n);
-                    }
+                    is.transferTo(os);
                 } catch (IOException e) {
                     // Ignore
                 } finally {

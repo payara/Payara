@@ -49,6 +49,8 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -120,10 +122,7 @@ public class Util {
      * @param fout the destination file
      */
     static void copyFile(File fin, File fout) throws IOException {
-
-        InputStream inStream = new BufferedInputStream(new FileInputStream(fin));
-        FileOutputStream fos = new FileOutputStream(fout);
-        copy(inStream, fos, fin.length());
+        Files.copy(fin.toPath(), fout.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     static void copyWithoutClose(InputStream in, FileOutputStream out, long size) throws IOException {

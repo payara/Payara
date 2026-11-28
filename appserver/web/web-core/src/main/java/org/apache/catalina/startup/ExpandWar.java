@@ -459,13 +459,7 @@ public class ExpandWar {
         try {
             output =
                 new BufferedOutputStream(new FileOutputStream(file));
-            byte buffer[] = new byte[2048];
-            while (true) {
-                int n = input.read(buffer);
-                if (n <= 0)
-                    break;
-                output.write(buffer, 0, n);
-            }
+            input.transferTo(output);
         } finally {
             if (output != null) {
                 try {

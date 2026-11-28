@@ -58,6 +58,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1027,7 +1028,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         resetLogging(loggingProperty);
         // If it's been enabled, watch the log file for changes
         if (enableDynamicLogging) {
-            PayaraFileWatcher.watch(new File(loggingProperty).toPath(), () -> {
+            PayaraFileWatcher.watch(Path.of(loggingProperty), () -> {
                 LOGGER.info("Logging file modified, resetting logging");
                 resetLogging(loggingProperty);
             });
@@ -2148,13 +2149,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     void generateLogo() {
         try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(bootImage);) {
-            byte[] buffer = new byte[1024];
-            for (int length; (length = is.read(buffer)) != -1;) {
-
-                System.err.write(buffer, 0, length);
-                System.err.flush();
-
-            }
+            is.transferTo(System.err);
+            System.err.flush();
         } catch (IOException | NullPointerException ex) {
             LOGGER.log(Level.WARNING, "Problems displaying Boot Image", ex);
         }

@@ -96,9 +96,7 @@ public class MemoryMappedArchive extends JarArchive implements ReadableArchive {
     }
     
     private void read(InputStream is) throws IOException{
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ArchivistUtils.copy(is,baos);
-        file = baos.toByteArray();
+        file = is.readAllBytes();
         
     }
     

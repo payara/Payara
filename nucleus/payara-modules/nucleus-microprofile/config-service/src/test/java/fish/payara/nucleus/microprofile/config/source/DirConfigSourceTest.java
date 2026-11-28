@@ -527,7 +527,7 @@ public class DirConfigSourceTest {
     
     public static BasicFileAttributes writeFile(Path filepath, String content) throws IOException {
         Files.createDirectories(filepath.getParent());
-        Files.write(filepath, content.getBytes(StandardCharsets.UTF_8));
+        Files.writeString(filepath, content, StandardCharsets.UTF_8);
         return Files.readAttributes(filepath, BasicFileAttributes.class);
     }
     

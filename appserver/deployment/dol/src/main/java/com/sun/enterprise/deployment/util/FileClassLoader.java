@@ -45,8 +45,8 @@ package com.sun.enterprise.deployment.util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Hashtable;
 
 /**
@@ -77,34 +77,13 @@ public class FileClassLoader extends ClassLoader {
 		file = wf;
 	    }
 	}
-	FileInputStream fis = null;
-        byte[] buf = null;
-        try {
-          fis = new FileInputStream(file);
-          int avail = fis.available();
-          buf = new byte[avail];
-          fis.read(buf);
-        } finally {
-          if (fis != null)
-            fis.close();
-        }
+        byte[] buf = Files.readAllBytes(file.toPath());
 	return buf;
     }
     
     String getClassName(File f) throws IOException, ClassFormatError {
-	FileInputStream fis = null;
-        byte[] buf = null;
-        int avail = 0;
-        try {
-          fis = new FileInputStream(f);
-          avail = fis.available();
-          buf = new byte[avail];
-          fis.read(buf);
-        } finally {
-          if (fis != null)
-            fis.close();
-        }
-	Class c = super.defineClass(null, buf, 0, avail);
+        byte[] buf = Files.readAllBytes(f.toPath());
+	Class c = super.defineClass(null, buf, 0, buf.length);
 	return c.getName();
     }
 
