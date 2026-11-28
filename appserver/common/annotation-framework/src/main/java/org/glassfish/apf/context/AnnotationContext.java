@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,48 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf.context;
-
-import java.lang.reflect.AnnotatedElement;
-import java.lang.annotation.ElementType;
 
 import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.ProcessingContext;
+import org.jboss.jandex.AnnotationTarget;
+
+import java.lang.annotation.ElementType;
 
 /**
- * Convenient superclass implementation of Context objects responsible
- * for holding references to the DOL objects
+ * Convenient superclass for all annotation handlers' contexts.
  *
  * @author Jerome Dochez
  */
 public class AnnotationContext implements AnnotatedElementHandler {
-   
+
     ProcessingContext processingContext;
-    
-    /** Creates a new instance of AnnotationContext */
+
     public AnnotationContext() {
     }
-    
+
     public void setProcessingContext(ProcessingContext processingContext) {
-        this.processingContext = processingContext;        
+        this.processingContext = processingContext;
     }
-    
+
     public ProcessingContext getProcessingContext() {
         return processingContext;
     }
-    
-    @Override
-    public void startElement(ElementType type, AnnotatedElement element) 
-        throws AnnotationProcessorException {
-    }
-   
-    @Override
-    public void endElement(ElementType type, AnnotatedElement element)
-        throws AnnotationProcessorException {
-    }     
-    
 
+    @Override
+    public void startElement(ElementType type, AnnotationTarget element) throws AnnotationProcessorException {
+    }
+
+    @Override
+    public void endElement(ElementType type, AnnotationTarget element) throws AnnotationProcessorException {
+    }
 }

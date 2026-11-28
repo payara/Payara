@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -47,6 +47,8 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.cdi.CDILoggerInfo;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -66,13 +68,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
@@ -95,7 +94,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
     private final List<String> moduleClassNames; // Names of classes in the module
     private final List<String> beanClassNames; // Names of bean classes in the module
     private transient List<Class<?>> moduleClasses; // Classes in the module
-    private transient List<Class<?>> beanClasses; // Classes identified as Beans through Weld SPI
+    private transient List<Class<?>> beanClasses; // Bean classes that are already loaded, see getLoadedBeanClasses()
     private final List<URL> beansXmlURLs;
     private transient Collection<EjbDescriptor<?>> ejbDescImpls;
     private transient Set<BeanDeploymentArchive> beanDeploymentArchives;
@@ -267,11 +266,6 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
             Thread.currentThread().setContextClassLoader(this.moduleClassLoaderForBDA);
         }
         return beanClassNames;
-    }
-
-    public Collection<Class<?>> getBeanClassObjects() {
-        initializeFromOriginal();
-        return beanClasses;
     }
 
     public Collection<String> getModuleBeanClasses() {
@@ -502,33 +496,10 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
 
             if (webinfbda) {
                 bdaType = BDAType.WAR;
-                Enumeration<String> entries = archive.entries();
-                while (entries.hasMoreElements()) {
-                    String entry = entries.nextElement();
-                    if (legalClassName(entry)) {
-                        if (entry.contains(WEB_INF_CLASSES)) {
-                            //Workaround for incorrect WARs that bundle classes above WEB-INF/classes
-                            //[See. GLASSFISH-16706]
-                            entry = entry.substring(WEB_INF_CLASSES.length() + 1);
-                        }
-                        String className = filenameToClassname(entry);
-                        try {
-                            if (hasBeansXml || isCDIAnnotatedClass(className)) {
-                                beanClassNames.add(className);
-                                beanClasses.add(getClassLoader().loadClass(className));
-                            }
-                            moduleClassNames.add(className);
-                        } catch (Throwable t) {
-                            if (logger.isLoggable(Level.WARNING)) {
-                                logger.log(Level.WARNING, CDILoggerInfo.ERROR_LOADING_BEAN_CLASS,
-                                        new Object[]{className, t.toString()});
-                            }
-                        }
-                    } else if (entry.endsWith(BEANS_XML_FILENAME)) {
-                        addBeansXMLURL(archive, entry);
-                    }
+                addClassNamesFromIndex(archive, true, hasBeansXml);
+                if (beansXMLURL != null) {
+                    addBeansXMLURL(archive, beansXMLURL);
                 }
-                archive.close();
             }
 
             // If this archive has WEB-INF/lib entry..
@@ -703,88 +674,49 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, CDILoggerInfo.COLLECTING_JAR_INFO, new Object[]{archive.getURI()});
             }
-            Enumeration<String> entries = archive.entries();
-            while (entries.hasMoreElements()) {
-                String entry = entries.nextElement();
-                handleEntry(archive, entry, isBeanArchive, hasBeansXml);
+            addClassNamesFromIndex(archive, isBeanArchive, hasBeansXml);
+            if (archive.exists(META_INF_BEANS_XML)) {
+                addBeansXMLURL(archive, META_INF_BEANS_XML);
             }
         }
     }
 
-    private void handleEntry(ReadableArchive archive,
-                             String entry,
-                             boolean isBeanArchive,
-                             boolean hasBeansXml) throws ClassNotFoundException {
-        if (legalClassName(entry)) {
-            String className = filenameToClassname(entry);
-            try {
-                if (isBeanArchive) {
-                    // If the jar is a bean archive, or the individual class should be managed,
-                    // based on its annotation(s)
-                    if (hasBeansXml || isCDIAnnotatedClass(className)) {
-                        beanClasses.add(getClassLoader().loadClass(className));
-                        beanClassNames.add(className);
-                    }
-                }
-                // Add the class as a module class
-                moduleClassNames.add(className);
-            } catch (Throwable t) {
-                if (logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING,
-                               CDILoggerInfo.ERROR_LOADING_BEAN_CLASS,
-                               new Object[]{className, t.toString()});
-                }
+    /**
+     * Adds the classes of the archive, taken from its class index, as module classes and, if the archive
+     * is a bean archive, those that are beans as bean classes. Classes are not loaded here: Weld loads the
+     * ones it needs through its fast bootstrap path, see {@link org.glassfish.weld.services.JandexClassFileServices}.
+     */
+    private void addClassNamesFromIndex(ReadableArchive archive, boolean isBeanArchive, boolean hasBeansXml) {
+        JandexIndexer.Index index = Globals.get(JandexIndexer.class).getIndex(context, archive.getURI());
+        if (index == null) {
+            logger.log(SEVERE, CDILoggerInfo.SEVERE_ERROR_READING_ARCHIVE,
+                    new Object[]{"No class index available for " + archive.getURI()});
+            return;
+        }
+        for (String className : index.getKnownClassNames()) {
+            if (isBeanArchive && (hasBeansXml || isCDIAnnotatedClass(className))) {
+                beanClassNames.add(className);
             }
-        } else if (entry.endsWith("/beans.xml")) {
-            try {
-                // use a throwaway classloader to load the application's beans.xml
-                ClassLoader throwAwayClassLoader =
-                                      new URLClassLoader(new URL[]{archive.getURI().toURL()}, null);
-                URL beansXmlUrl = forceNonCachedJarURL(throwAwayClassLoader.getResource(entry));
-                if (beansXmlUrl != null && !beansXmlURLs.contains(beansXmlUrl)) { // http://java.net/jira/browse/GLASSFISH-17157
-                    beansXmlURLs.add(beansXmlUrl);
-                }
-            } catch (MalformedURLException e) {
-                if (logger.isLoggable(Level.SEVERE)) {
-                    logger.log(Level.SEVERE,
-                               CDILoggerInfo.SEVERE_ERROR_READING_ARCHIVE,
-                               new Object[]{e.getMessage()});
-                }
-            }
+            moduleClassNames.add(className);
         }
     }
-
-
-    private boolean legalClassName(String className) {
-        return className.endsWith(CLASS_SUFFIX) && !className.startsWith(WEB_INF_LIB);
-    }
-
 
     private void collectRarInfo(ReadableArchive archive) throws IOException, ClassNotFoundException {
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, CDILoggerInfo.COLLECTING_RAR_INFO, new Object[]{archive.getURI()});
         }
         Enumeration<String> entries = archive.entries();
+        addClassNamesFromIndex(archive, true, true);
+        if (archive.exists(META_INF_BEANS_XML)) {
+            addBeansXMLURL(archive, META_INF_BEANS_XML);
+        }
         while (entries.hasMoreElements()) {
             String entry = entries.nextElement();
             if (entry.endsWith(JAR_SUFFIX)) {
                 ReadableArchive jarArchive = archive.getSubArchive(entry);
                 collectJarInfo(jarArchive, true, true);
-            } else {
-                handleEntry(archive, entry, true, true);
             }
         }
-    }
-
-    private static String filenameToClassname(String filename) {
-        String className = null;
-        if (filename.indexOf(File.separatorChar) >= 0) {
-            className = filename.replace(File.separatorChar, '.');
-        } else {
-            className = filename.replace(SEPARATOR_CHAR, '.');
-        }
-        className = className.substring(0, className.length() - 6);
-        return className;
     }
 
     private ClassLoader getClassLoader() {
@@ -873,7 +805,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
             file = new File(file, beansXMLPath);
             url = file.toURI().toURL();
         } else {
-            url = new URL("jar:" + file.toURI() + "!/" + beansXMLPath);
+            url = forceNonCachedJarURL(new URL("jar:" + file.toURI() + "!/" + beansXMLPath));
         }
 
         return url;
@@ -930,11 +862,11 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
         if (this == o) return true;
         if (!(o instanceof BeanDeploymentArchiveImpl)) return false;
         BeanDeploymentArchiveImpl that = (BeanDeploymentArchiveImpl) o;
-        return Objects.equals(id, that.id) && Objects.equals(beanClasses, that.beanClasses);
+        return Objects.equals(id, that.id) && Objects.equals(beanClassNames, that.beanClassNames);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, beanClasses);
+        return Objects.hash(id, beanClassNames);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,36 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
 
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.Local;
 import jakarta.ejb.Remote;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Stateful;
 import jakarta.ejb.Stateless;
-
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.util.logging.Level;
+
 /**
- * This handler is responsible for handling the jakarta.ejb.Asynchronous
- * annotation on the Bean class.
- *
- * @author Marina Vatkina
+ * This handler is responsible for handling the jakarta.ejb.Asynchronous annotation on
+ * a Bean class or method.
  */
 @Service
 @AnnotationHandlerFor(Asynchronous.class)
@@ -76,16 +75,18 @@ public class AsynchronousHandler extends AbstractAttributeHandler
     public AsynchronousHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
-        
+
         for (EjbContext ejbContext : ejbContexts) {
             EjbDescriptor ejbDesc = (EjbDescriptor) ejbContext.getDescriptor();
 
             if (ElementType.TYPE.equals(ainfo.getElementType())) {
+                // delay processing Class-level default until after methods are processed
                 ejbContext.addPostProcessInfo(ainfo, this);
             } else {
-                Method annMethod = (Method) ainfo.getAnnotatedElement();
+                MethodInfo annMethod = ainfo.getAnnotatedElement().asMethod();
                 setAsynchronous(annMethod, ejbDesc);
             }
         }
@@ -94,17 +95,17 @@ public class AsynchronousHandler extends AbstractAttributeHandler
     }
 
     /**
-     * @return an array of annotation types this annotation handler would 
-     * require to be processed (if present) before it processes it's own 
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
-        
         return new Class[] {
             Local.class, Remote.class, Stateful.class, Stateless.class, Singleton.class};
-                
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }
@@ -112,42 +113,34 @@ public class AsynchronousHandler extends AbstractAttributeHandler
     /**
      * Set the default value (from class type annotation) on all
      * methods that don't have a value.
-     * Class type annotation applies to all EJB 3.x Local/Remote/no-interface 
-     * views in which  that  business method is exposed for that bean. 
      */
+    @Override
     public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
         EjbDescriptor ejbDesc = (EjbDescriptor) ejbContext.getDescriptor();
-        Class classAn = (Class)ainfo.getAnnotatedElement();
+        ClassInfo classAn = ainfo.getAnnotatedElement().asClass();
 
-        Method[] methods = classAn.getDeclaredMethods();
-        for (Method m0 : methods) {
-            setAsynchronous(m0, ejbDesc);
+        for (MethodInfo m0 : classAn.methods()) {
+            if (!m0.name().startsWith("<")) {
+                setAsynchronous(m0, ejbDesc);
+            }
         }
     }
 
-    private void setAsynchronous(Method m0, EjbDescriptor ejbDesc)
-            throws AnnotationProcessorException {
-
-        // All methods processed on bean class / superclass apply to all local/remote
-        // business interfaces
+    private void setAsynchronous(MethodInfo m0, EjbDescriptor ejbDesc) throws AnnotationProcessorException {
         setAsynchronous(m0, ejbDesc, null);
     }
 
     /**
-     * Designate a method as asynchronous in the deployment descriptor
-     * @param methodIntf  null if processed on bean class / superclass.  Otherwise,
-     *                    set to the remote/local client view of the associated interface
-     * @throws AnnotationProcessorException
+     * Designate a method as asynchronous.
      */
-    private void setAsynchronous(Method m0, EjbDescriptor ejbDesc, String methodIntf)
+    private void setAsynchronous(MethodInfo m0, EjbDescriptor ejbDesc, String methodIntf)
             throws AnnotationProcessorException {
 
         if( !ejbDesc.getType().equals(EjbSessionDescriptor.TYPE)) {
             throw new AnnotationProcessorException("Invalid asynchronous method " + m0 +
                  "@Asynchronous is only permitted for session beans");
         }
-
 
         EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejbDesc;
 
@@ -158,10 +151,9 @@ public class AsynchronousHandler extends AbstractAttributeHandler
             logger.fine("Adding asynchronous method " + methodDesc);
         }
 
-
         // There is no way to "turn off" the asynchronous designation in the
         // deployment descriptor, so we don't need to do any override checks
-        // here.  Just always add any async methods.  
+        // here.  Just always add any async methods.
         sessionDesc.addAsynchronousMethod(methodDesc);
 
     }

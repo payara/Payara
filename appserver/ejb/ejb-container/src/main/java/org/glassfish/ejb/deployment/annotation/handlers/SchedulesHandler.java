@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,41 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
 
-import java.util.ArrayList;
-import java.util.List;
-import jakarta.ejb.Schedule;
-import jakarta.ejb.Schedules;
-
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import jakarta.ejb.Schedules;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
 import org.jvnet.hk2.annotations.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * This handler is responsible for handling the jakarta.ejb.Schedules attribute
+ * This handler is responsible for handling the jakarta.ejb.Schedules annotation on methods of a Bean class.
  *
+ * @author Marina Vatkina
  */
 @Service
 @AnnotationHandlerFor(Schedules.class)
 public class SchedulesHandler extends ScheduleHandler {
-    
+
     public SchedulesHandler() {
     }
-    
+
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
-        Schedules annotation = (Schedules) ainfo.getAnnotation();
-        
-        Schedule[] schAnnotations = annotation.value();
-        List<HandlerProcessingResult> results = new ArrayList<HandlerProcessingResult>();
+        List<HandlerProcessingResult> results = new ArrayList<>();
 
-        for(Schedule sch : schAnnotations) {
+        for (AnnotationInstance sch : ainfo.nestedArrayValue("value")) {
             results.add(processSchedule(sch, ainfo, ejbContexts));
         }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,43 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf;
 
-import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
+import org.jboss.jandex.AnnotationTarget;
 
+import java.lang.annotation.ElementType;
 
 /**
- * Provides notification when the annotation processor is visiting a 
- * new AnnotatedElement.
+ * This interface defines the protocol associated with all the handlers
+ * for annotated elements.
  *
  * @author Jerome Dochez
  */
 public interface AnnotatedElementHandler {
-  
+
     /**
-     * Before annotations for an annotated element are processed, the 
-     * startElement is called with the annotated element value and its type
-     * 
-     * @param type the annotated element type (class, field, method...)
-     * @param element the annotated element we are starting to visit.
+     * Before annotations for an annotated element are processed, the startElement
+     * is called with the annotated element value and type.
      *
-     * @exception AnnotationProcessorException;
+     * @param type the annotated element type (class, method, field...)
+     * @param element the annotated element we start processing
      */
-    public void startElement(ElementType type, AnnotatedElement element)
-        throws AnnotationProcessorException;
-    
+    void startElement(ElementType type, AnnotationTarget element) throws AnnotationProcessorException;
+
     /**
-     * After annotations for an annotated element are processed, the
-     * endElement is called with the annotated element value and its type
+     * After annotations for an annotated element are processed, the endElement
+     * is called with the annotated element value and type.
      *
-     * @param type the annotated element type (class, field, method...)
-     * @param element the annotated element we are done visiting.
-     *
-     * @exception AnnotationProcessorException;
+     * @param type the annotated element type (class, method, field...)
+     * @param element the annotated element we finished processing
      */
-    public void endElement(ElementType type, AnnotatedElement element)
-        throws AnnotationProcessorException;
-    
+    void endElement(ElementType type, AnnotationTarget element) throws AnnotationProcessorException;
 }

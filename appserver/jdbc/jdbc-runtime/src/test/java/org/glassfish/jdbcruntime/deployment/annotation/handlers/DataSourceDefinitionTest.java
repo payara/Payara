@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,18 +40,18 @@
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
 import jakarta.annotation.sql.DataSourceDefinition;
-import org.mockito.MockitoAnnotations;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.IndexView;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.mockito.Mockito.when;
 
 /**
  * Test for DataSourceDefinition processing in DataSourceDefinitionHandler
@@ -59,21 +59,31 @@ import static org.mockito.Mockito.when;
  */
 public class DataSourceDefinitionTest {
 
-    @Mock
-    private DataSourceDefinition dataSourceDefinition;
+    @DataSourceDefinition(name = "${ENV=DB_NAME}", className = "${ENV=DB_CLASS_NAME}", description = "${ENV=DB_DESCRIPTION}",
+            url = "${ENV=DB_URL}", serverName = "${ENV=DB_SERVER_NAME}", databaseName = "${ENV=DB_DATABASE_NAME}",
+            user = "${ENV=DB_USER}", password = "${ENV=DB_PASSWORD}",
+            properties = {"property1=${ENV=DB_PROPERTY1}", "property2=${ENV=DB_PROPERTY2}"})
+    private static class EnvironmentVariables {
+    }
 
-    @Before
-    public void before() {
-        MockitoAnnotations.initMocks(this);
-        when(dataSourceDefinition.portNumber()).thenReturn(-1);
-        when(dataSourceDefinition.isolationLevel()).thenReturn(-1);
-        when(dataSourceDefinition.transactional()).thenReturn(false);
-        when(dataSourceDefinition.initialPoolSize()).thenReturn(-1);
-        when(dataSourceDefinition.maxPoolSize()).thenReturn(-1);
-        when(dataSourceDefinition.minPoolSize()).thenReturn(-1);
-        when(dataSourceDefinition.maxIdleTime()).thenReturn(-1);
-        when(dataSourceDefinition.maxStatements()).thenReturn(-1);
-        when(dataSourceDefinition.loginTimeout()).thenReturn(-1);
+    @DataSourceDefinition(name = "java:app/jdbc/demo", className = "org.h2.jdbcx.JdbcDataSource",
+            url = "http://database:5432/demo", serverName = "localhost")
+    private static class UrlAndServerName {
+    }
+
+    @DataSourceDefinition(name = "java:app/jdbc/demo", className = "org.h2.jdbcx.JdbcDataSource", serverName = "localhost")
+    private static class ServerNameOnly {
+    }
+
+    private static IndexView index;
+
+    @BeforeClass
+    public static void indexDefinitions() throws IOException {
+        index = Index.of(DataSourceDefinition.class, EnvironmentVariables.class, UrlAndServerName.class, ServerNameOnly.class);
+    }
+
+    private static AnnotationInstance definition(Class<?> annotatedClass) {
+        return ClassHierarchy.annotation(index, index.getClassByName(annotatedClass), DataSourceDefinition.class);
     }
 
     @Test
@@ -103,17 +113,7 @@ public class DataSourceDefinitionTest {
         EnvironmentUtil.setEnv(env);
         DataSourceDefinitionHandler handler = new DataSourceDefinitionHandler();
 
-        when(dataSourceDefinition.url()).thenReturn("${ENV=DB_URL}");
-        when(dataSourceDefinition.serverName()).thenReturn("${ENV=DB_SERVER_NAME}");
-        when(dataSourceDefinition.className()).thenReturn("${ENV=DB_CLASS_NAME}");
-        when(dataSourceDefinition.name()).thenReturn("${ENV=DB_NAME}");
-        when(dataSourceDefinition.description()).thenReturn("${ENV=DB_DESCRIPTION}");
-        when(dataSourceDefinition.user()).thenReturn("${ENV=DB_USER}");
-        when(dataSourceDefinition.password()).thenReturn("${ENV=DB_PASSWORD}");
-        when(dataSourceDefinition.databaseName()).thenReturn("${ENV=DB_DATABASE_NAME}");
-        when(dataSourceDefinition.properties()).thenReturn(new String[]{"property1=${ENV=DB_PROPERTY1}", "property2=${ENV=DB_PROPERTY2}"});
-
-        DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(dataSourceDefinition);
+        DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(index, definition(EnvironmentVariables.class));
 
         Assert.assertEquals(url,descriptor.getUrl());
         Assert.assertNull(descriptor.getServerName()); // because url is set
@@ -135,21 +135,13 @@ public class DataSourceDefinitionTest {
     public void testServerAndURL() {
         DataSourceDefinitionHandler handler = new DataSourceDefinitionHandler();
 
-        String url = "http://database:5432/demo";
-        String serverName = "localhost";
-
         //Check url overrides serverName and sets it to null
-        when(dataSourceDefinition.url()).thenReturn(url);
-        when(dataSourceDefinition.serverName()).thenReturn(serverName);
-
-        DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(dataSourceDefinition);
+        DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(index, definition(UrlAndServerName.class));
 
         Assert.assertNull(descriptor.getServerName());
 
         //Check if url is not set then serverName is left as-is
-        when(dataSourceDefinition.url()).thenReturn(null);
-
-        descriptor = handler.createDescriptor(dataSourceDefinition );
+        descriptor = handler.createDescriptor(index, definition(ServerNameOnly.class));
 
         Assert.assertEquals("localhost", descriptor.getServerName());
     }

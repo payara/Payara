@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,15 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import jakarta.ejb.ConcurrencyManagement;
-import jakarta.ejb.ConcurrencyManagementType;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -53,10 +51,10 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+
 /**
- * This handler is responsible for handling the jakarta.ejb.ConcurrencyManagement.
- *
- * @author Kenneth Saks
+ * This handler is responsible for handling the jakarta.ejb.ConcurrencyManagement annotation.
  */
 @Service
 @AnnotationHandlerFor(ConcurrencyManagement.class)
@@ -65,12 +63,11 @@ public class ConcurrencyManagementHandler extends AbstractAttributeHandler {
     public ConcurrencyManagementHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
-        ConcurrencyManagement cmAn = (ConcurrencyManagement) ainfo.getAnnotation();
-
-        ConcurrencyManagementType cmType = cmAn.value();
+        ConcurrencyManagementType cmType = ainfo.enumValue("value", ConcurrencyManagementType.class);
 
         for (EjbContext ejbContext : ejbContexts) {
             EjbDescriptor ejbDesc = ejbContext.getDescriptor();
@@ -93,7 +90,7 @@ public class ConcurrencyManagementHandler extends AbstractAttributeHandler {
 
                 EjbSessionDescriptor sDesc = (EjbSessionDescriptor) ejbDesc;
 
-                // Set value on descriptor unless it has been set by .xml
+                // Only set value if it hasn't already been set via ejb-jar.xml
                 sDesc.setConcurrencyManagementTypeIfNotSet(descCMType);
 
             }
@@ -107,10 +104,12 @@ public class ConcurrencyManagementHandler extends AbstractAttributeHandler {
      * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }

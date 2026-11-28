@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.util;
 
@@ -48,12 +49,16 @@ import com.sun.enterprise.deployment.util.DefaultDOLVisitor;
 import com.sun.logging.LogDomains;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.glassfish.internal.deployment.ClassLoaderIndex;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
 import jakarta.resource.spi.ActivationSpec;
-import jakarta.resource.spi.Connector;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Collection;
@@ -75,8 +80,11 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
 
     public void accept(ConnectorDescriptor descriptor) {
 
+        // the classes of the resource adapter, read through its class loader without loading them
+        IndexView index = new ClassLoaderIndex(ConfigPropertyHandler.classLoader(descriptor));
+
         //make sure that the ActivationSpec class implement ActivationSpec interface.
-        validateActivationSpec(descriptor);
+        validateActivationSpec(descriptor, index);
 
         //validate & process annotations if a valid connector annotation is not already processed
         if (!descriptor.getValidConnectorAnnotationProcessed()) {
@@ -91,10 +99,10 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
             if (annotations.size() == 1) {
                 Iterator<AnnotationInfo> it = annotations.iterator();
                 AnnotationInfo annotationInfo = it.next();
-                Class claz = (Class) annotationInfo.getAnnotatedElement();
-                Connector connector = (Connector) annotationInfo.getAnnotation();
-                ConnectorAnnotationHandler.processDescriptor(claz, connector, descriptor);
-                Collection<AnnotationInfo> configProperties = descriptor.getConfigPropertyAnnotations(claz.getName());
+                ClassInfo claz = annotationInfo.getAnnotatedElement().asClass();
+                String className = claz.name().toString();
+                ConnectorAnnotationHandler.processDescriptor(claz, annotationInfo, descriptor);
+                Collection<AnnotationInfo> configProperties = descriptor.getConfigPropertyAnnotations(className);
                 if (configProperties != null) {
                     for (AnnotationInfo ai : configProperties) {
                         ConfigPropertyHandler handler = new ConfigPropertyHandler();
@@ -102,7 +110,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
                             handler.processAnnotation(ai);
                         } catch (AnnotationProcessorException e) {
                             RuntimeException re = new RuntimeException("Unable to process ConfigProperty " +
-                                    "annotation in class ["+claz.getName()+"] : " + e.getMessage());
+                                    "annotation in class ["+className+"] : " + e.getMessage());
                             re.initCause(e);
                             throw re;
                         }
@@ -135,7 +143,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
             _logger.log(Level.FINEST, descriptor.toString());
         }
 
-        processConfigProperties(descriptor);
+        processConfigProperties(descriptor, index);
 
         //processed all annotations, clear from book-keeping
         descriptor.getConnectorAnnotations().clear();
@@ -143,7 +151,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
         descriptor.getConfigPropertyProcessedClasses().clear();
     }
 
-    private void validateActivationSpec(ConnectorDescriptor descriptor) {
+    private void validateActivationSpec(ConnectorDescriptor descriptor, IndexView index) {
         if (descriptor.getInBoundDefined()) {
             InboundResourceAdapter ira = descriptor.getInboundResourceAdapter();
             Set messageListeners = ira.getMessageListeners();
@@ -152,13 +160,8 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
                 MessageListener ml = (MessageListener) it.next();
                 String activationSpecClass = ml.getActivationSpecClass();
                 if (activationSpecClass != null && !activationSpecClass.equals("")) {
-                    Class clazz = getClass(descriptor, activationSpecClass);
-                    boolean validClass =  false;
-                    if(clazz != null){
-                        if(ActivationSpec.class.isAssignableFrom(clazz)){
-                            validClass = true;
-                        }
-                    }
+                    ClassInfo clazz = getClass(index, activationSpecClass);
+                    boolean validClass = ClassHierarchy.isSubtype(index, clazz, ActivationSpec.class);
                     if(!validClass){
                         throw new IllegalArgumentException("Class ["+activationSpecClass+"] does not " +
                                 "implement jakarta.resource.spi.ActivationSpec interface, but " +
@@ -178,14 +181,15 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
      * ConfigProperty annotations in non-concrete rar artifacts during
      * annotation processing phase
      * @param desc ConnectorDescriptor
+     * @param index the classes of the resource adapter
      */
-    private void processConfigProperties(ConnectorDescriptor desc)  {
+    private void processConfigProperties(ConnectorDescriptor desc, IndexView index)  {
 
         String raClass = desc.getResourceAdapterClass();
         if (raClass != null && !raClass.equals("")) {
             if (!desc.getConfigPropertyProcessedClasses().contains(raClass)) {
-                Class claz = getClass(desc, raClass);
-                ConfigPropertyHandler.processParent(claz, desc.getConfigProperties());
+                ClassInfo claz = getClass(index, raClass);
+                ConfigPropertyHandler.processParent(index, claz, desc.getConfigProperties(), desc);
             }
         }
         if (desc.getOutBoundDefined()) {
@@ -198,8 +202,8 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
                 String connectionFactoryClass = connectionDef.getConnectionFactoryIntf();
                 if (connectionFactoryClass != null && !connectionFactoryClass.equals("")) {
                     if (!desc.getConfigPropertyProcessedClasses().contains(connectionFactoryClass)) {
-                        Class claz = getClass(desc, connectionDef.getManagedConnectionFactoryImpl());
-                        ConfigPropertyHandler.processParent(claz, connectionDef.getConfigProperties());
+                        ClassInfo claz = getClass(index, connectionDef.getManagedConnectionFactoryImpl());
+                        ConfigPropertyHandler.processParent(index, claz, connectionDef.getConfigProperties(), desc);
                     }
                 }
             }
@@ -214,8 +218,8 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
                 String activationSpecClass = ml.getActivationSpecClass();
                 if (activationSpecClass != null && !activationSpecClass.equals("")) {
                     if (!desc.getConfigPropertyProcessedClasses().contains(activationSpecClass)) {
-                        Class claz = getClass(desc, activationSpecClass);
-                        ConfigPropertyHandler.processParent(claz, ml.getConfigProperties());
+                        ClassInfo claz = getClass(index, activationSpecClass);
+                        ConfigPropertyHandler.processParent(index, claz, ml.getConfigProperties(), desc);
                     }
                 }
             }
@@ -227,24 +231,16 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
             AdminObject ao = (AdminObject) it.next();
             String uniqueName = ao.getAdminObjectInterface() + "_" + ao.getAdminObjectClass();
             if (!desc.getConfigPropertyProcessedClasses().contains(uniqueName)) {
-                Class claz = getClass(desc, ao.getAdminObjectClass());
-                ConfigPropertyHandler.processParent(claz, ao.getConfigProperties());
+                ClassInfo claz = getClass(index, ao.getAdminObjectClass());
+                ConfigPropertyHandler.processParent(index, claz, ao.getConfigProperties(), desc);
             }
         }
     }
 
-    private Class getClass(ConnectorDescriptor desc, String className) {
-        Class claz = null;
-        try {
-            if (desc.getClassLoader() != null) {
-                //Use the descriptor's ClassLoader as the TCL in DAS will not have a
-                // resource adapter that is not targetted to DAS
-                claz = desc.getClassLoader().loadClass(className);
-            } else {
-                claz = Thread.currentThread().getContextClassLoader().loadClass(className);
-            }
-        } catch (ClassNotFoundException e) {
-            _logger.log(Level.WARNING, "Unable to load class [ " + className + " ]", e.getMessage());
+    private ClassInfo getClass(IndexView index, String className) {
+        ClassInfo claz = index.getClassByName(DotName.createSimple(className));
+        if (claz == null) {
+            _logger.log(Level.WARNING, "Unable to load class [ " + className + " ]");
             throw new RuntimeException("Unable to load class [ " + className + " ]");
         }
         return claz;

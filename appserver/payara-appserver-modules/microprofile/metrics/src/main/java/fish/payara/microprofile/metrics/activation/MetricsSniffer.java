@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.microprofile.connector.MicroProfileSniffer;
@@ -66,6 +66,8 @@ public class MetricsSniffer extends MicroProfileSniffer {
 
     @Inject
     private ServerEnvironment serverEnv;
+    @Inject
+    JandexIndexer jandexIndexer;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -85,16 +87,8 @@ public class MetricsSniffer extends MicroProfileSniffer {
 
     @Override
     public boolean handles(DeploymentContext context) {
-        final Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
-
-        if (types != null) {
-            if (types.getBy(MetricRegistry.class.getName()) != null) {
-                return true;
-            }
-
-            if (types.getBy(Metric.class.getName()) != null) {
-                return true;
-            }
+        if (jandexIndexer.references(context, MetricRegistry.class.getName(), Metric.class.getName())) {
+            return true;
         }
 
         return super.handles(context);

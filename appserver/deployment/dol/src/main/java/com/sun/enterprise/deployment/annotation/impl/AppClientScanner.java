@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2024-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2024-2026] [Payara Foundation and/or its affiliates]
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package com.sun.enterprise.deployment.annotation.impl;
@@ -50,13 +50,8 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.internal.deployment.JandexIndexer.Index;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
-import org.glassfish.hk2.classmodel.reflect.AnnotationType;
-import org.glassfish.hk2.classmodel.reflect.Member;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.ParsingContext;
-import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.internal.deployment.AnnotationTypesProvider;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
@@ -65,8 +60,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -89,8 +84,7 @@ public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor>
     protected AnnotationTypesProvider ejbProvider;
 
     @Override
-    public void process(ReadableArchive archive, ApplicationClientDescriptor bundleDesc, ClassLoader classLoader, Parser parser) throws IOException {
-        setParser(parser);
+    public void process(ReadableArchive archive, ApplicationClientDescriptor bundleDesc, ClassLoader classLoader) throws IOException {
         doProcess(archive, bundleDesc, classLoader);
         completeProcess(bundleDesc, archive);
         calculateResults(bundleDesc);
@@ -190,23 +184,12 @@ public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor>
             ejbAnnotations = new Class[] {jakarta.ejb.Stateful.class, jakarta.ejb.Stateless.class,
                     jakarta.ejb.MessageDriven.class, jakarta.ejb.Singleton.class};
         }
-        Set<String> toBeRemoved = new HashSet<>();
-        ParsingContext context = classParser.getContext();
+        List<String> ejbAnnotationNames = new ArrayList<>();
         for (Class<?> ejbAnnotation : ejbAnnotations) {
-            Type type = context.getTypes().getBy(ejbAnnotation.getName());
-            if (type != null && type instanceof AnnotationType) {
-                AnnotationType at = (AnnotationType) type;
-                for (AnnotatedElement ae : at.allAnnotatedTypes()) {
-                    Type t = (ae instanceof Member ? ((Member) ae).getDeclaringType() : (Type) ae);
-                    if (t.wasDefinedIn(scannedURI)) {
-                        toBeRemoved.add(t.getName());
-                    }
-                }
-            }
+            ejbAnnotationNames.add(ejbAnnotation.getName());
         }
-
-        for (String element : toBeRemoved) {
-            entries.remove(element);
+        for (Index index : getIndexes()) {
+            entries.removeAll(index.getAnnotatedClassNames(ejbAnnotationNames));
         }
     }
 }

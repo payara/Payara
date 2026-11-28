@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
@@ -48,12 +49,11 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import jakarta.resource.spi.Connector;
 import jakarta.resource.spi.SecurityPermission;
 import java.lang.annotation.Annotation;
-import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import org.glassfish.apf.*;
-import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
+import org.glassfish.internal.deployment.ClassHierarchy;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -68,7 +68,6 @@ public class SecurityPermissionHandler extends AbstractHandler {
     
     public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
-        SecurityPermission securityPermission = (SecurityPermission) element.getAnnotation();
 
         if (aeHandler instanceof RarBundleContext) {
             boolean isConnectionDefinition = hasConnectorAnnotation(element);
@@ -76,13 +75,14 @@ public class SecurityPermissionHandler extends AbstractHandler {
                 RarBundleContext rarContext = (RarBundleContext) aeHandler;
                 ConnectorDescriptor desc = rarContext.getDescriptor();
                 //XXX: Siva : For now use the first provided description
+                String[] description = element.stringArrayValue("description");
                 String firstDesc = "";
-                if (securityPermission.description().length > 0) {
-                    firstDesc = securityPermission.description()[0];
+                if (description.length > 0) {
+                    firstDesc = description[0];
                 }
                 com.sun.enterprise.deployment.SecurityPermission permission =
                         new com.sun.enterprise.deployment.SecurityPermission(firstDesc,
-                                securityPermission.permissionSpec());
+                                element.stringValue("permissionSpec"));
                 desc.addSecurityPermission(permission);
             } else {
                 getFailureResult(element, "Not a @Connector annotation : @SecurityPermission must " +
@@ -107,16 +107,14 @@ public class SecurityPermissionHandler extends AbstractHandler {
     }
 
     private boolean hasConnectorAnnotation(AnnotationInfo element) {
-        Class c = (Class) element.getAnnotatedElement();
-        return c.getAnnotation(Connector.class) != null;
+        return ClassHierarchy.annotation(element.getIndex(), element.getAnnotatedElement(), Connector.class) != null;
     }
 
     private HandlerProcessingResultImpl getFailureResult(AnnotationInfo element, String message, boolean doLog) {
         HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
         result.addResult(getAnnotationType(), ResultType.FAILED);
         if (doLog) {
-            Class c = (Class) element.getAnnotatedElement();
-            String className = c.getName();
+            String className = element.getDeclaringClass().name().toString();
             Object args[] = new Object[]{
                 element.getAnnotation(),
                 className,

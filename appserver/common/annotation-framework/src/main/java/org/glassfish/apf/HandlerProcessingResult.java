@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,41 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf;
 
 import java.util.Map;
-import java.lang.annotation.Annotation;
 
 /**
- * This interface defines the result of an annotation processing 
- * returned by an annotation handler. Annotation handlers are supposed
- * to handle ONE annotation at a time. However, this simplistic 
- * approach does not always work as annotations on a element can have 
- * interdependencies. 
+ * This interface defines the result of an annotation processing
+ * returned by an annotation handler. Annotation handlers are supposed to
+ * handle ONE annotation at a time. However, this simplistic approach does
+ * not always work as annotations on a element can have interdependencies.
  *
- * This could be resolved trough sophisticated caching in the context
- * for instance but it is usually easier to notify the processor that 
- * a particular annotation handler has processed more than one annotation 
- * (which shouldn't be reprocessed subsequently...)
+ * This could be resolved by ordering the annotations processing but it would
+ * complicate the annotation handlers implementation and it would also hurt
+ * performance since the annotation handler would have to check that all
+ * annotations it depends on have been processed before processing its own
+ * annotation.
+ *
+ * To solve this, we allow annotation handlers to process more than one
+ * annotation at a time, and return the list of processed annotations in
+ * the HandlerProcessingResult, keyed by annotation type name.
  *
  * @author Jerome Dochez
  */
 public interface HandlerProcessingResult {
-    
-    /** 
-     * Returns a map of annotation types processed by this handler as keys 
-     * and a ResultType as a value to communicate the result of the annotation 
-     * processing for each processed annotation types.
-     * @return the map of processed annoation types and result.
-     */
-    public Map<Class<? extends Annotation>,ResultType> processedAnnotations();    
-    
+
     /**
-     * @return the overall result for this handler processing. Since handlers 
-     * can process more than one annotation, this overall result will contain
-     * the most severe error the haandler encountered while processing the
-     * annotations.
+     * Returns a map of annotation type names to result of the annotation processing.
      */
-     public ResultType getOverallResult();
+    Map<String, ResultType> processedAnnotations();
+
+    /**
+     * @return the overall result for this handler. Usually, the overall result is the
+     * worst result of all annotations processing results.
+     */
+    ResultType getOverallResult();
 }

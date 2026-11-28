@@ -78,7 +78,6 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EarType;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.io.ApplicationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
@@ -397,7 +396,7 @@ public class ApplicationArchivist extends Archivist<Application> {
         }
 
         if (unknowns.size() > 0) {
-            AnnotationDetector detector = new AnnotationDetector(new EjbComponentAnnotationScanner());
+            AnnotationDetector detector = new AnnotationDetector(AnnotationDetector.EJB_COMPONENT_ANNOTATIONS);
             for (int i = 0; i < unknowns.size(); i++) {
                 File jarFile = new File(unknowns.get(i).getURI().getSchemeSpecificPart());
                 try {

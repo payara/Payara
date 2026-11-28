@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
@@ -50,13 +49,14 @@ import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.jms.JMSDestinationDefinition;
 import jakarta.jms.JMSDestinationDefinitions;
 
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
@@ -73,26 +73,22 @@ public class JMSDestinationDefinitionsHandler extends AbstractResourceHandler {
     @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,  ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-    	JMSDestinationDefinitions defns = (JMSDestinationDefinitions) ainfo.getAnnotation();
-    	JMSDestinationDefinition values[] = defns.value();
         Set<String> duplicates = new HashSet<String>();
-        if (values != null && values.length > 0) {
-            for (JMSDestinationDefinition defn : values) {
-                String defnName = JMSDestinationDefinitionDescriptor.getJavaName(defn.name());
+        for (AnnotationInstance defn : ainfo.nestedArrayValue("value")) {
+            String defnName = JMSDestinationDefinitionDescriptor.getJavaName(
+                    AnnotationValues.string(ainfo.getIndex(), defn, "name"));
 
-                if (duplicates.contains(defnName)) {
-                    String localString = localStrings.getLocalString(
-                            "enterprise.deployment.annotation.handlers.jmsdestinationdefinitionsduplicates",
-                            "@JMSDestinationDefinition cannot have multiple definitions with same name : ''{0}''",
-                            defnName);
-                    throw new IllegalStateException(localString);
-                } else {
-                    duplicates.add(defnName);
-                }
-                JMSDestinationDefinitionHandler handler = new JMSDestinationDefinitionHandler();
-                handler.processAnnotation(defn, ainfo, rcContexts);
+            if (duplicates.contains(defnName)) {
+                String localString = localStrings.getLocalString(
+                        "enterprise.deployment.annotation.handlers.jmsdestinationdefinitionsduplicates",
+                        "@JMSDestinationDefinition cannot have multiple definitions with same name : ''{0}''",
+                        defnName);
+                throw new IllegalStateException(localString);
+            } else {
+                duplicates.add(defnName);
             }
-            duplicates.clear();
+            JMSDestinationDefinitionHandler handler = new JMSDestinationDefinitionHandler();
+            handler.processAnnotation(defn, ainfo, rcContexts);
         }
         return getDefaultProcessedResult();
     }
@@ -102,4 +98,3 @@ public class JMSDestinationDefinitionsHandler extends AbstractResourceHandler {
         return getEjbAndWebAnnotationTypes();
     }
 }
-

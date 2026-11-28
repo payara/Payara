@@ -791,5 +791,19 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
             e = null;
         }
     }
-}
 
+    /**
+     * @return the sum of the CRCs of all entries, used to validate cached class indexes,
+     * or -1 for an embedded archive
+     */
+    public long getArchiveCrc() {
+        if (jarFile == null) {
+            return -1;
+        }
+        long crc = 0;
+        for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
+            crc += entries.nextElement().getCrc();
+        }
+        return crc;
+    }
+}

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld.connector;
 
 import org.glassfish.api.deployment.DeploymentContext;
@@ -245,7 +245,7 @@ public class WeldSniffer extends GenericSniffer {
     }
 
     // make sure it's not an extension
-    if ( ! WeldUtils.isValidBdaBasedOnExtensionAndBeansXml( context.getSource() )) {
+    if ( ! WeldUtils.isValidBdaBasedOnExtensionAndBeansXml(context, context.getSource() )) {
       return null;
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,17 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or its affiliates
 
 package org.glassfish.apf.impl;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.lang.reflect.AnnotatedElement;
-
+import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.apf.ProcessingResult;
 import org.glassfish.apf.ResultType;
-import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationTarget;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implementation of the ProcessingResult interface
@@ -55,49 +55,39 @@ import org.glassfish.apf.HandlerProcessingResult;
  * @author Jerome Dochez
  */
 public class ProcessingResultImpl implements ProcessingResult {
-    
-    Map<AnnotatedElement, HandlerProcessingResult> results;
-    ResultType overallResult = ResultType.UNPROCESSED;
-    
-    /** Creates a new instance of ProcessingResultImpl */
-    public ProcessingResultImpl() {
-        results = new HashMap<AnnotatedElement, HandlerProcessingResult>();
-    }
-    
+
+    private final Map<AnnotationTarget, HandlerProcessingResult> results = new HashMap<>();
+    private ResultType overallResult = ResultType.UNPROCESSED;
+
     public void add(ProcessingResult pr) {
-        
-        Map<AnnotatedElement, HandlerProcessingResult> results = pr.getResults();
-        for (Map.Entry<AnnotatedElement, HandlerProcessingResult> element : results.entrySet()) {
+        for (Map.Entry<AnnotationTarget, HandlerProcessingResult> element : pr.getResults().entrySet()) {
             add(element.getKey(), element.getValue());
         }
     }
-    
-    public void add(AnnotatedElement element, HandlerProcessingResult elementResult) {
 
-        if (elementResult.getOverallResult().compareTo(overallResult)>0) {
+    public void add(AnnotationTarget element, HandlerProcessingResult elementResult) {
+        if (elementResult.getOverallResult().compareTo(overallResult) > 0) {
             overallResult = elementResult.getOverallResult();
         }
-        if (results.containsKey(element)) {
-            HandlerProcessingResultImpl previousResult = (HandlerProcessingResultImpl) results.get(element);
-            previousResult.addAll(elementResult);
+        HandlerProcessingResult previousResult = results.get(element);
+        if (previousResult != null) {
+            ((HandlerProcessingResultImpl) previousResult).addAll(elementResult);
+        } else if (elementResult instanceof HandlerProcessingResultImpl) {
+            results.put(element, elementResult);
         } else {
-            if (elementResult instanceof HandlerProcessingResultImpl) {
-                results.put(element, elementResult);
-            } else {
-                HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
-                result.addAll(elementResult);
-                results.put(element, result);
-            }
+            HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
+            result.addAll(elementResult);
+            results.put(element, result);
         }
     }
-    
+
     @Override
-    public Map<AnnotatedElement,HandlerProcessingResult> getResults() {
+    public Map<AnnotationTarget, HandlerProcessingResult> getResults() {
         return results;
     }
-    
+
     @Override
-    public ResultType getOverallResult(){
+    public ResultType getOverallResult() {
         return overallResult;
     }
 }

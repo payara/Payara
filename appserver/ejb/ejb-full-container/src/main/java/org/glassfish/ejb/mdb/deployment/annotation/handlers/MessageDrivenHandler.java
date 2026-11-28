@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,31 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.mdb.deployment.annotation.handlers;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.util.logging.Level;
-import jakarta.ejb.ActivationConfigProperty;
-import jakarta.ejb.MessageDriven;
-
 import com.sun.enterprise.deployment.DescriptorConstants;
-import org.glassfish.ejb.deployment.annotation.handlers.AbstractEjbHandler;
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.NameValuePairDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
+import jakarta.ejb.MessageDriven;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.AnnotationValues;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.ejb.deployment.annotation.handlers.AbstractEjbHandler;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
 import org.jvnet.hk2.annotations.Service;
+
+import java.util.logging.Level;
 
 /**
  * This handler is responsible for handling the jakarta.ejb.MessageDriven
@@ -71,29 +72,28 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 @AnnotationHandlerFor(MessageDriven.class)
 public class MessageDrivenHandler extends AbstractEjbHandler {
-    
-    /** Creates a new instance of MessageDrivenHandler */
+
     public MessageDrivenHandler() {
     }
-    
+
     /**
      * Return the name attribute of given annotation.
-     * @param annotation
+     * @param ainfo the annotation
      * @return name
      */
-    protected String getAnnotatedName(Annotation annotation) {
-        MessageDriven mdAn = (MessageDriven)annotation;
-        return mdAn.name();
+    @Override
+    protected String getAnnotatedName(AnnotationInfo ainfo) {
+        return ainfo.stringValue("name");
     }
 
     /**
      * Check if the given EjbDescriptor matches the given Annotation.
      * @param ejbDesc
-     * @param annotation
+     * @param ainfo
      * @return boolean check for validity of EjbDescriptor
      */
-    protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc,
-            Annotation annotation) {
+    @Override
+    protected boolean isValidEjbDescriptor(EjbDescriptor ejbDesc, AnnotationInfo ainfo) {
         return EjbMessageBeanDescriptor.TYPE.equals(ejbDesc.getType());
     }
 
@@ -103,14 +103,13 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
      * @param ainfo
      * @return a new EjbDescriptor
      */
-    protected EjbDescriptor createEjbDescriptor(String elementName,
-            AnnotationInfo ainfo) throws AnnotationProcessorException {
+    @Override
+    protected EjbDescriptor createEjbDescriptor(String elementName, AnnotationInfo ainfo)
+            throws AnnotationProcessorException {
 
-        AnnotatedElement ae = ainfo.getAnnotatedElement();
         EjbMessageBeanDescriptor newDescriptor = new EjbMessageBeanDescriptor();
-        Class ejbClass = (Class)ae;
         newDescriptor.setName(elementName);
-        newDescriptor.setEjbClassName(ejbClass.getName());
+        newDescriptor.setEjbClassName(ainfo.getAnnotatedElement().asClass().name().toString());
         return newDescriptor;
     }
 
@@ -122,29 +121,25 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
      * @param ainfo
      * @return HandlerProcessingResult
      */
-    protected HandlerProcessingResult setEjbDescriptorInfo(
-            EjbDescriptor ejbDesc, AnnotationInfo ainfo)
+    @Override
+    protected HandlerProcessingResult setEjbDescriptorInfo(EjbDescriptor ejbDesc, AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 
-        MessageDriven mdAn = (MessageDriven)ainfo.getAnnotation();
-        Class ejbClass = (Class)ainfo.getAnnotatedElement();
-        EjbMessageBeanDescriptor ejbMsgBeanDesc =
-                (EjbMessageBeanDescriptor)ejbDesc;
-   
-        HandlerProcessingResult procResult = 
-            setMessageListenerInterface(
-                    mdAn, ejbMsgBeanDesc, ejbClass, ainfo);
+        IndexView index = ainfo.getIndex();
+        AnnotationInstance mdAn = ainfo.getAnnotation();
+        ClassInfo ejbClass = ainfo.getAnnotatedElement().asClass();
+        EjbMessageBeanDescriptor ejbMsgBeanDesc = (EjbMessageBeanDescriptor)ejbDesc;
 
-        doDescriptionProcessing(mdAn.description(), ejbMsgBeanDesc);
-        doMappedNameProcessing(mdAn.mappedName(), ejbMsgBeanDesc);
+        HandlerProcessingResult procResult = setMessageListenerInterface(mdAn, ejbMsgBeanDesc, ejbClass, ainfo);
 
-        for (ActivationConfigProperty acProp : mdAn.activationConfig()) {
-            EnvironmentProperty envProp = new EnvironmentProperty(
-                    acProp.propertyName(), 
-                    TranslatedConfigView.expandValue(acProp.propertyValue()), "");
-                                                // with empty description
-            // xml override
-            switch (acProp.propertyName()) {
+        doDescriptionProcessing(AnnotationValues.string(index, mdAn, "description"), ejbMsgBeanDesc);
+        doMappedNameProcessing(AnnotationValues.string(index, mdAn, "mappedName"), ejbMsgBeanDesc);
+
+        for (AnnotationInstance acProp : AnnotationValues.nestedArray(index, mdAn, "activationConfig")) {
+            String propertyName = AnnotationValues.string(index, acProp, "propertyName");
+            EnvironmentProperty envProp = new EnvironmentProperty(propertyName,
+                    TranslatedConfigView.expandValue(AnnotationValues.string(index, acProp, "propertyValue")), "");
+            switch (propertyName) {
                 case "resourceAdapter":
                     ejbMsgBeanDesc.setResourceAdapterMid(envProp.getValue());
                     break;
@@ -175,6 +170,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
                     ejbMsgBeanDesc.getEjbBundleDescriptor().addEnterpriseBeansProperty(singletonProperty);
                     break;
                 default:
+                    // xml override
                     if (ejbMsgBeanDesc.getActivationConfigValue(envProp.getName()) == null) {
                         ejbMsgBeanDesc.putActivationConfigProperty(envProp);
                     }
@@ -185,32 +181,32 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
         return procResult;
     }
 
-    private HandlerProcessingResult setMessageListenerInterface(
-            MessageDriven mdAn, EjbMessageBeanDescriptor msgEjbDesc,
-            Class ejbClass, AnnotationInfo ainfo)
+    private HandlerProcessingResult setMessageListenerInterface(AnnotationInstance mdAn,
+            EjbMessageBeanDescriptor msgEjbDesc, ClassInfo ejbClass, AnnotationInfo ainfo)
             throws AnnotationProcessorException {
 
         String intfName = null;
 
-        // If @MessageDriven contains message listener interface, that takes
-        // precedence.  Otherwise, the message listener interface is derived
-        // from the implements clause.  
-
-        if( mdAn.messageListenerInterface() != Object.class ) {
-            intfName = mdAn.messageListenerInterface().getName();
+        // If @MessageDriven.messageListenerInterface() is set, use that
+        String messageListenerInterface = AnnotationValues.className(ainfo.getIndex(), mdAn, "messageListenerInterface");
+        if( !messageListenerInterface.equals(Object.class.getName()) ) {
+            intfName = messageListenerInterface;
         } else {
-            for(Class next : ejbClass.getInterfaces()) {
+            // Otherwise, look at the implements clause.  There can only be
+            // one interface on the implements clause that is not one of the
+            // "excluded" interfaces.
+            for(DotName next : ejbClass.interfaceNames()) {
                 if( !excludedFromImplementsClause(next) ) {
                     if( intfName == null ) {
-                        intfName = next.getName();
+                        intfName = next.toString();
                     } else {
                         EjbBundleDescriptorImpl currentBundle = (EjbBundleDescriptorImpl)
                         ((EjbBundleContext)ainfo.getProcessingContext().getHandler()).getDescriptor();
-                        log(Level.SEVERE, ainfo, 
+                        log(Level.SEVERE, ainfo,
                             localStrings.getLocalString(
                             "enterprise.deployment.annotation.handlers.ambiguousimplementsclausemdb",
                             "Implements clause for 3.x message driven bean class {0} in {1} declares more than one potential message-listener interface.  In this case, the @MessageDriven.messageListenerInterface() attribute must be used to specify the message listener interface.",
-                             new Object[] { ejbClass,
+                             new Object[] { ejbClass.name().toString(),
                              currentBundle.getModuleDescriptor().getArchiveUri() }));
                         return getDefaultFailedResult();
                     }
@@ -218,11 +214,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
             }
         }
 
-        // if it's still null, check whether it's defined through
-        // deployment descriptor
-        // note: the descriptor class has a default value 
-        // for the interface: jakarta.jms.MessageListener
-        // so intfName after this set, will never be null
+        // if it's still null, check whether it was set in the xml descriptor
         if (intfName == null) {
             intfName = msgEjbDesc.getMessageListenerType();
         }

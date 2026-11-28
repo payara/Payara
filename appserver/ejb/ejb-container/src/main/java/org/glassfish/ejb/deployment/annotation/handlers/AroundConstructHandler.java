@@ -37,73 +37,71 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-
-import jakarta.interceptor.AroundConstruct;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.EjbInterceptorContext;
+import jakarta.interceptor.AroundConstruct;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
+import java.util.logging.Level;
+
 /**
- * This handler is responsible for handling jakarta.intercept.AroundConstruct 
- *
+ * This handler is responsible for handling the jakarta.interceptor.AroundConstruct annotation.
  */
 @Service
 @AnnotationHandlerFor(AroundConstruct.class)
 public class AroundConstructHandler extends AbstractAttributeHandler {
-    
+
     public AroundConstructHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
         logger.log(Level.WARNING, "Bean class should not define AroundConstruct interceptor method");
-        return getDefaultProcessedResult();        
+        return getDefaultProcessedResult();
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbInterceptorContext ejbInterceptorContext)
             throws AnnotationProcessorException {
 
         EjbInterceptor ejbInterceptor =  ejbInterceptorContext.getDescriptor();
-        ejbInterceptor.addAroundConstructDescriptor(
-            getAroundConstructDescriptor(ainfo));
-        return getDefaultProcessedResult();        
+        ejbInterceptor.addAroundConstructDescriptor(getAroundConstructDescriptor(ainfo));
+        return getDefaultProcessedResult();
     }
 
-    private LifecycleCallbackDescriptor getAroundConstructDescriptor(
-            AnnotationInfo ainfo) {
-        Method annotatedMethod = (Method) ainfo.getAnnotatedElement();
-        LifecycleCallbackDescriptor aroundConstruct = 
-                new LifecycleCallbackDescriptor();
-        aroundConstruct.setLifecycleCallbackClass(annotatedMethod.getDeclaringClass().getName());
-        aroundConstruct.setLifecycleCallbackMethod(annotatedMethod.getName());
+    private LifecycleCallbackDescriptor getAroundConstructDescriptor(AnnotationInfo ainfo) {
+        MethodInfo annotatedMethod = ainfo.getAnnotatedElement().asMethod();
+        LifecycleCallbackDescriptor aroundConstruct = new LifecycleCallbackDescriptor();
+        aroundConstruct.setLifecycleCallbackClass(annotatedMethod.declaringClass().name().toString());
+        aroundConstruct.setLifecycleCallbackMethod(annotatedMethod.name());
         return aroundConstruct;
     }
 
     /**
-     * @return an array of annotation types this annotation handler would 
-     * require to be processed (if present) before it processes it's own 
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
 
+    @Override
     protected boolean isDelegatee() {
         return true;
     }

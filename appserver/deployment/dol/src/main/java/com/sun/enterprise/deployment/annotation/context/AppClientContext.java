@@ -41,6 +41,8 @@
 
 package com.sun.enterprise.deployment.annotation.context;
 
+import org.jboss.jandex.ClassInfo;
+
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.types.HandlerChainContainer;
@@ -64,7 +66,7 @@ public class AppClientContext extends ResourceContainerContextImpl {
     }
     
     @Override
-    public HandlerChainContainer[] getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
+    public HandlerChainContainer[] getHandlerChainContainers(boolean serviceSideHandlerChain, ClassInfo declaringClass) {
         if(serviceSideHandlerChain) {
             // We should not come here at all - anyway return null
             return null;

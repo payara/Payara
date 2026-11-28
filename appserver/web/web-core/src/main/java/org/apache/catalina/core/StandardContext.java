@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.apache.catalina.core;
 
@@ -193,7 +193,7 @@ import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
-import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.valve.GlassFishValve;
@@ -5805,7 +5805,11 @@ public class StandardContext
         }
     }
 
-    protected Types getTypes() {
+    /**
+     * @return the class indexes of the deployed application, keyed by archive URI, or null when not deployed through
+     * the deployment framework (the web application is then scanned directly)
+     */
+    protected Map<String, JandexIndexer.Index> getClassIndexes() {
         return null;
     }
 
@@ -5824,7 +5828,7 @@ public class StandardContext
         Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList =
             ServletContainerInitializerUtil.getInitializerList(
                 servletContainerInitializers, interestList,
-                getTypes(),
+                getClassIndexes(),
                 getClassLoader(), isStandalone());
         if (initializerList == null) {
             return;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,50 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
-
+// Portions Copyright [2020-2026] Payara Foundation and/or affiliates
 package com.sun.enterprise.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import jakarta.annotation.Resources;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.jboss.jandex.AnnotationInstance;
 import org.jvnet.hk2.annotations.Service;
 
-import jakarta.annotation.Resource;
-import jakarta.annotation.Resources;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This handler is responsible for handling jakarta.annotation.Resources
+ * This handler is responsible for handling the jakarta.annotation.Resources
  *
+ * @author Shing Wai Chan
  */
 @Service
 @AnnotationHandlerFor(Resources.class)
 public class ResourcesHandler extends ResourceHandler {
-    
+
     public ResourcesHandler() {
     }
 
-    /**
-     * This entry point is used both for a single @EJB and iteratively
-     * from a compound @EJBs processor.
-     */
     @Override
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts) throws AnnotationProcessorException {
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
+            throws AnnotationProcessorException {
 
-        Resources resourcesAn = (Resources)ainfo.getAnnotation();
-        
-        Resource[] resourceAns = resourcesAn.value();
         List<HandlerProcessingResult> results = new ArrayList<>();
-        
-        for(Resource res : resourceAns) {
+        for (AnnotationInstance res : ainfo.nestedArrayValue("value")) {
             results.add(processResource(ainfo, rcContexts, res));
         }
 
         return getOverallProcessingResult(results);
     }
-
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -49,7 +49,6 @@ import javax.xml.namespace.QName;
 import java.io.File;
 import java.net.URL;
 import java.util.*;
-import java.lang.annotation.Annotation;
 
 /**
  * Information about a Jakarta EE web service client.
@@ -135,21 +134,21 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty implements H
      *  mtomThreshold */
     private int mtomThreshold;
 
-    public Map<Class<? extends Annotation>, Annotation> getOtherAnnotations() {
+    public Map<String, Map<String, Object>> getOtherAnnotations() {
         return otherAnnotations;
     }
 
-    public void setOtherAnnotations(Map<Class<? extends Annotation>, Annotation> otherAnnotations) {
+    public void setOtherAnnotations(Map<String, Map<String, Object>> otherAnnotations) {
         this.otherAnnotations = otherAnnotations;
     }
 
     /**
-     * In addition to MTOM,Addressing , RespectBinding
-     * pass over other annotations too.
+     * In addition to MTOM, Addressing and RespectBinding pass over other annotations too: the
+     * attribute values of every annotation on the reference whose type is a
+     * {@code jakarta.xml.ws.spi.WebServiceFeatureAnnotation}, keyed by annotation type name and
+     * then by attribute name, as {@code org.glassfish.apf.AnnotationValues#attributes} records them.
      */
-
-   private Map<Class<? extends Annotation>, Annotation> otherAnnotations =
-            new HashMap<>();
+    private Map<String, Map<String, Object>> otherAnnotations = new HashMap<>();
 
     public boolean isRespectBindingEnabled() {
         return respectBinding.isEnabled();

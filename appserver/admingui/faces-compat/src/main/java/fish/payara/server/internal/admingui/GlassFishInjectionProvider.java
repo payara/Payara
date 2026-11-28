@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2025 Payara Foundation and/or its affiliates 
+// Portions Copyright 2025-2026 Payara Foundation and/or its affiliates 
 
 package fish.payara.server.internal.admingui;
 
@@ -71,9 +71,9 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
-import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.deployment.JandexIndexer;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
 
 import static com.sun.enterprise.web.Constants.DEPLOYMENT_CONTEXT_ATTRIBUTE;
 import static java.security.AccessController.doPrivileged;
@@ -94,6 +94,7 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
     private InjectionManager injectionManager;
     private InvocationManager invocationManager;
     private JCDIService cdiService;
+    private JandexIndexer jandexIndexer;
 
     /**
      * <p>
@@ -104,6 +105,7 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
      */
     public GlassFishInjectionProvider(ServletContext servletContext) {
         ServiceLocator defaultServices = (ServiceLocator) servletContext.getAttribute(HABITAT_ATTRIBUTE);
+        jandexIndexer = defaultServices.getService(JandexIndexer.class);
         
         compEnvManager = defaultServices.getService(ComponentEnvManager.class);
         invocationManager = defaultServices.getService(InvocationManager.class);
@@ -114,68 +116,55 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
     @Override
     public Map<String, List<ScannedAnnotation>> getAnnotatedClassesInCurrentModule(ServletContext servletContext) throws InjectionProviderException {
 
-        Map<String, List<ScannedAnnotation>> classesByAnnotation = new HashMap<String, List<ScannedAnnotation>>();
-        
-        Collection<Type> allTypes = ((DeploymentContext) 
-                servletContext.getAttribute(DEPLOYMENT_CONTEXT_ATTRIBUTE))
-                              .getTransientAppMetaData(Types.class.getName(), Types.class)
-                              .getAllTypes();
-        
-        for (Type type : allTypes) {
-            
-            for (AnnotationModel annotationModel : type.getAnnotations()) {
-                String annotationName = annotationModel.getType().getName();
-                
-                List<ScannedAnnotation> classesWithThisAnnotation = classesByAnnotation.get(annotationName);
-                
-                if (classesWithThisAnnotation == null) {
-                    classesWithThisAnnotation = new ArrayList<ScannedAnnotation>();
-                    classesByAnnotation.put(annotationName, classesWithThisAnnotation);
-                }
-                
-                ScannedAnnotation toAdd = new ScannedAnnotation() {
+        Map<String, List<ScannedAnnotation>> classesByAnnotation = new HashMap<>();
 
-                    @Override
-                    public boolean equals(Object obj) {
-                        boolean result = false;
-                        if (obj instanceof ScannedAnnotation) {
-                            String otherName = ((ScannedAnnotation) obj).getFullyQualifiedClassName();
-                            if (otherName != null) {
-                                result = type.getName().equals(otherName);
-                            }
-                        }
-
-                        return result;
+        DeploymentContext deploymentContext = (DeploymentContext) servletContext.getAttribute(DEPLOYMENT_CONTEXT_ATTRIBUTE);
+        for (Map.Entry<String, JandexIndexer.Index> index : jandexIndexer.getAllIndexes(deploymentContext).entrySet()) {
+            Collection<URI> definingURIs = List.of(URI.create(index.getKey()));
+            for (ClassInfo classInfo : index.getValue().getIndex().getKnownClasses()) {
+                for (AnnotationInstance annotation : classInfo.declaredAnnotations()) {
+                    List<ScannedAnnotation> classesWithThisAnnotation = classesByAnnotation
+                            .computeIfAbsent(annotation.name().toString(), key -> new ArrayList<>());
+                    ScannedAnnotation toAdd = new ScannedClass(classInfo.name().toString(), definingURIs);
+                    if (!classesWithThisAnnotation.contains(toAdd)) {
+                        classesWithThisAnnotation.add(toAdd);
                     }
-
-                    @Override
-                    public int hashCode() {
-                        String str = getFullyQualifiedClassName();
-                        Collection<URI> obj = getDefiningURIs();
-                        int result = str != null ? str.hashCode() : 0;
-                        result = 31 * result + (obj != null ? obj.hashCode() : 0);
-                        return result;
-                    }
-
-                    @Override
-                    public String getFullyQualifiedClassName() {
-                        return type.getName();
-                    }
-
-                    @Override
-                    public Collection<URI> getDefiningURIs() {
-                        return type.getDefiningURIs();
-                    }
-
-                };
-                
-                if (!classesWithThisAnnotation.contains(toAdd)) {
-                    classesWithThisAnnotation.add(toAdd);
                 }
             }
         }
-        
+
         return classesByAnnotation;
+    }
+
+    private static final class ScannedClass implements ScannedAnnotation {
+        private final String className;
+        private final Collection<URI> definingURIs;
+
+        private ScannedClass(String className, Collection<URI> definingURIs) {
+            this.className = className;
+            this.definingURIs = definingURIs;
+        }
+
+        @Override
+        public String getFullyQualifiedClassName() {
+            return className;
+        }
+
+        @Override
+        public Collection<URI> getDefiningURIs() {
+            return definingURIs;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof ScannedAnnotation
+                    && className.equals(((ScannedAnnotation) obj).getFullyQualifiedClassName());
+        }
+
+        @Override
+        public int hashCode() {
+            return className.hashCode();
+        }
     }
 
     /**

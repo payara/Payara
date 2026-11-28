@@ -37,13 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.loader;
 
 import fish.payara.web.loader.ServletContainerInitializerBlacklist;
 import org.glassfish.deployment.common.ClassDependencyBuilder;
-import org.glassfish.hk2.classmodel.reflect.*;
+import org.glassfish.internal.deployment.JandexIndexer;
+import org.glassfish.internal.deployment.JandexIndexer.Index;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.IndexView;
 
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.annotation.HandlesTypes;
@@ -245,7 +249,7 @@ public class ServletContainerInitializerUtil {
     public  static Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> getInitializerList(
             Iterable<ServletContainerInitializer> initializers,
             Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
-            Types types,
+            Map<String, Index> indexes,
             ClassLoader cl, boolean isStandalone) {
 
         if (interestList == null) {
@@ -281,7 +285,7 @@ public class ServletContainerInitializerUtil {
              * the information for every class in this app
              *
              */
-            if (types==null || Boolean.getBoolean("org.glassfish.web.parsing")) {
+            if (indexes == null || indexes.isEmpty() || Boolean.getBoolean("org.glassfish.web.parsing")) {
                 ClassDependencyBuilder classInfo = new ClassDependencyBuilder();
                 if (cl instanceof URLClassLoader) {
                     URLClassLoader ucl = (URLClassLoader) cl;
@@ -350,7 +354,7 @@ public class ServletContainerInitializerUtil {
 
                 initializerList = checkAgainstInterestList(classInfo, interestList, initializerList, cl, isStandalone);
             } else {
-                initializerList = checkAgainstInterestList(types, interestList, initializerList, cl, isStandalone);
+                initializerList = checkAgainstInterestList(indexes, interestList, initializerList, cl, isStandalone);
             }
         }
 
@@ -434,77 +438,53 @@ public class ServletContainerInitializerUtil {
     }
 
     /**
-     * Given the interestList, checks in the Types metadata if a given class
+     * Given the interestList, checks in the class indexes of the application if a given class
      * uses any of the annotations, subclasses any of the type; If so, builds
      * the initializer list
      *
      */
     private static Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> checkAgainstInterestList(
-                                Types classInfo,
+                                Map<String, Index> indexes,
                                 Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
                                 Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList,
                                 ClassLoader cl, boolean isStandalone) {
 
-        if (classInfo==null) {
-            return initializerList;
-        }
+        IndexView index = JandexIndexer.compositeIndex(indexes.values());
         for (Map.Entry<Class<?>, List<Class<? extends ServletContainerInitializer>>> e:
                 interestList.entrySet()) {
 
             Class<?> c = e.getKey();
-            Type type = classInfo.getBy(c.getName());
-            if (type==null)
-                continue;
-
-            Set<Class<?>> resultSet = new HashSet<Class<?>>();
-            if (type instanceof AnnotationType) {
-                for (AnnotatedElement ae : ((AnnotationType) type).allAnnotatedTypes()) {
-                    if (ae instanceof Member) {
-                        ae = ((Member) ae).getDeclaringType();
-                    } else if (ae instanceof Parameter) {
-                        ae = ((Parameter) ae).getMethod().getDeclaringType();
-                    }
-                    if (ae instanceof Type) {
-                        try {
-                            resultSet.add(cl.loadClass(ae.getName()));
-                        } catch (Throwable t) {
-                            if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
-                                log.log(getStandaloneWarningLevel(isStandalone),
-                                    LogFacade.CLASS_LOADING_ERROR,
-                                    new Object[] {ae.getName(), t.toString()});
-                            }
-                        }     
+            Set<String> classNames = new HashSet<>();
+            if (c.isAnnotation()) {
+                for (AnnotationInstance annotation : index.getAnnotations(c.getName())) {
+                    String className = Index.getClassName(annotation);
+                    if (className != null) {
+                        classNames.add(className);
                     }
                 }
             } else {
-                Collection<ClassModel> classes;
-                if (type instanceof InterfaceModel) {
-                    classes = ((InterfaceModel) type).allImplementations();
-                } else {
-                    classes = ((ClassModel) type).allSubTypes();
+                Collection<ClassInfo> classes = c.isInterface()
+                        ? index.getAllKnownImplementors(c.getName()) : index.getAllKnownSubclasses(c.getName());
+                for (ClassInfo classInfo : classes) {
+                    classNames.add(classInfo.name().toString());
                 }
-                for (ClassModel classModel : classes) {
-                    try {
-                        resultSet.add(cl.loadClass(classModel.getName()));
-                    } catch (Throwable t) {
-                        if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
-                            log.log(getStandaloneWarningLevel(isStandalone),
-                                LogFacade.CLASS_LOADING_ERROR,
-                                new Object[] {classModel.getName(), t.toString()});
-                        }
+            }
+
+            Set<Class<?>> resultSet = new HashSet<>();
+            for (String className : classNames) {
+                try {
+                    resultSet.add(cl.loadClass(className));
+                } catch (Throwable t) {
+                    if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
+                        log.log(getStandaloneWarningLevel(isStandalone),
+                            LogFacade.CLASS_LOADING_ERROR,
+                            new Object[] {className, t.toString()});
                     }
                 }
             }
-            List<Class<? extends ServletContainerInitializer>> containerInitializers = e.getValue();
-            for(Class<? extends ServletContainerInitializer> initializer : containerInitializers) {
-                Set<Class<?>> classSet = initializerList.get(initializer);
-                if(classSet == null) {
-                    classSet = new HashSet<Class<?>>();
-                }
-                classSet.addAll(resultSet);
-                initializerList.put(initializer, classSet);
+            for (Class<? extends ServletContainerInitializer> initializer : e.getValue()) {
+                initializerList.computeIfAbsent(initializer, key -> new HashSet<>()).addAll(resultSet);
             }
-            
         }
 
         return initializerList;

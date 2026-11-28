@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,75 +37,74 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2026] Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-import jakarta.ejb.Init;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import com.sun.enterprise.deployment.util.TypeUtil;
+import jakarta.ejb.Init;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.internal.deployment.ClassHierarchy;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
 import org.jvnet.hk2.annotations.Service;
+
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.logging.Level;
 
 /**
  * This handler is responsible for handling the jakarta.ejb.Init attribute
- *
  */
 @Service
 @AnnotationHandlerFor(Init.class)
 public class InitHandler extends AbstractAttributeHandler {
-    
+
     public InitHandler() {
     }
-    
+
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
-        Init init = (Init) ainfo.getAnnotation();
+        String adaptedCreateMethodName = ainfo.stringValue("value");
+        IndexView index = ainfo.getIndex();
 
         for(EjbContext next : ejbContexts) {
-            
-            EjbSessionDescriptor sessionDescriptor = 
-                (EjbSessionDescriptor) next.getDescriptor();
 
-            Method m = (Method) ainfo.getAnnotatedElement();
+            EjbSessionDescriptor sessionDescriptor = (EjbSessionDescriptor) next.getDescriptor();
 
-            // Check for matching method on home and/or local home interface.
+            MethodInfo m = ainfo.getAnnotatedElement().asMethod();
+
+            // Check for matches in Home and/or LocalHome interfaces.
 
             int numMatches = 0;
 
-            
-            String adaptedCreateMethodName = init.value();
-
             try {
                 if( sessionDescriptor.isRemoteInterfacesSupported() ) {
-                    addInitMethod(sessionDescriptor, m, 
-                                  adaptedCreateMethodName, false);
+                    addInitMethod(index, sessionDescriptor, m, adaptedCreateMethodName, false);
                     numMatches++;
                 }
             } catch(Exception e) {
-            }                   
+            }
 
-            try {                
+            try {
                 if( sessionDescriptor.isLocalInterfacesSupported() ) {
-                    addInitMethod(sessionDescriptor, m, 
-                                  adaptedCreateMethodName, true);
+                    addInitMethod(index, sessionDescriptor, m, adaptedCreateMethodName, true);
                     numMatches++;
                 }
-            } catch(Exception e) {                
+            } catch(Exception e) {
             }
 
             if( numMatches == 0 ) {
-                log(Level.SEVERE, ainfo, 
+                log(Level.SEVERE, ainfo,
                     localStrings.getLocalString(
                     "enterprise.deployment.annotation.handlers.notmatchcreate",
                     "Unable to find matching Home create method for Init method {0} on bean {1}.",
@@ -117,27 +116,24 @@ public class InitHandler extends AbstractAttributeHandler {
         return getDefaultProcessedResult();
     }
 
-    private void addInitMethod(EjbSessionDescriptor descriptor,
-                               Method beanMethod, 
-                               String adaptedCreateMethodName, boolean local) 
-        throws Exception {
+    private void addInitMethod(IndexView index, EjbSessionDescriptor descriptor, MethodInfo beanMethod,
+                               String adaptedCreateMethodName, boolean local) throws Exception {
 
-        String homeIntfName = local ? descriptor.getLocalHomeClassName() :
-            descriptor.getHomeClassName();            
+        String homeIntfName = local ? descriptor.getLocalHomeClassName() : descriptor.getHomeClassName();
 
-        ClassLoader cl = descriptor.getEjbBundleDescriptor().getClassLoader();
+        ClassInfo homeIntf = index.getClassByName(DotName.createSimple(homeIntfName));
+        if (homeIntf == null) {
+            throw new ClassNotFoundException(homeIntfName);
+        }
 
-        Class homeIntf = cl.loadClass(homeIntfName);
-        
-        Method createMethod = null;
-        if( (adaptedCreateMethodName == null) || 
-            (adaptedCreateMethodName.equals("")) ) {
-            // Can't make any assumptions about matching method name.  Could
-            // be "create" or some form of create<METHOD>, so match based on
-            // signature.
-            for(Method next : homeIntf.getMethods()) {
-                if( next.getName().startsWith("create") &&
-                    TypeUtil.sameParamTypes(next, beanMethod) ) {
+        String[] beanParameterTypes = ClassHierarchy.javaParameterNames(beanMethod);
+        MethodInfo createMethod = null;
+        if( (adaptedCreateMethodName == null) || (adaptedCreateMethodName.equals("")) ) {
+            // Can't make any assumptions about matching method name.  Look for
+            // a method with the same parameter types.
+            for(MethodInfo next : ClassHierarchy.publicMethods(index, homeIntf)) {
+                if( next.name().startsWith("create") &&
+                    Arrays.equals(ClassHierarchy.javaParameterNames(next), beanParameterTypes) ) {
                     createMethod = next;
                     break;
                 }
@@ -148,33 +144,43 @@ public class InitHandler extends AbstractAttributeHandler {
                                                 " method " + beanMethod);
             }
         } else {
-            createMethod = homeIntf.getMethod(adaptedCreateMethodName, 
-                                              beanMethod.getParameterTypes());
+            // Find method with explicit name and matching parameter types.
+            for(MethodInfo next : ClassHierarchy.publicMethods(index, homeIntf)) {
+                if( next.name().equals(adaptedCreateMethodName) &&
+                    Arrays.equals(ClassHierarchy.javaParameterNames(next), beanParameterTypes) ) {
+                    createMethod = next;
+                    break;
+                }
+            }
+            if( createMethod == null ) {
+                throw new NoSuchMethodException(homeIntfName + "." + adaptedCreateMethodName
+                        + Arrays.toString(beanParameterTypes));
+            }
         }
-        
-        MethodDescriptor beanMethodDescriptor =
-            new MethodDescriptor(beanMethod, MethodDescriptor.EJB_BEAN);
-        
-        MethodDescriptor createMethodDescriptor = 
-            new MethodDescriptor(createMethod, 
+
+        MethodDescriptor beanMethodDescriptor = new MethodDescriptor(beanMethod, MethodDescriptor.EJB_BEAN);
+
+        MethodDescriptor createMethodDescriptor =
+            new MethodDescriptor(createMethod,
                                  ( local ?
                                    MethodDescriptor.EJB_HOME :
                                    MethodDescriptor.EJB_LOCALHOME ));
-        
+
         EjbInitInfo initInfo = new EjbInitInfo();
-                    
+
         initInfo.setBeanMethod(beanMethodDescriptor);
         initInfo.setCreateMethod(createMethodDescriptor);
 
         descriptor.addInitMethod(initInfo);
-        
+
     }
 
     /**
-     * @return an array of annotation types this annotation handler would 
-     * require to be processed (if present) before it processes it's own 
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAnnotationTypes();
     }
