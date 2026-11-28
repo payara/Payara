@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -312,7 +312,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
         BeansXml result = null;
 
         if (beansXmlURLs.size() == 1) {
-            result = weldBootstrap.parse(beansXmlURLs.get(0));
+            result = parseBeansXml(beansXmlURLs.get(0), null);
         } else {
             // This method attempts to perform a merge, but loses some
             // information (e.g., version, bean-discovery-mode)
@@ -848,13 +848,28 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
                 enableLegacyMode = in.available() == 0;
             }
         }
-        if (enableLegacyMode) {
-            result = weldBootstrap.parse(url, BeanDiscoveryMode.ALL);
-        } else {
-            result = weldBootstrap.parse(url);
-        }
+        result = parseBeansXml(url, enableLegacyMode ? BeanDiscoveryMode.ALL : null);
         JarFileUtils.closeCachedJarFiles();
         return result;
+    }
+
+    /**
+     * Parses beans.xml, reusing the immutable result for war libraries, which don't change between deployments.
+     *
+     * @param mode default discovery mode override, or null for none
+     */
+    private BeansXml parseBeansXml(URL url, BeanDiscoveryMode mode) {
+        return WeldUtils.computeForWarLibrary(context, getJarUri(url), "beansXml|" + url + "|" + mode,
+                () -> mode == null ? weldBootstrap.parse(url) : weldBootstrap.parse(url, mode));
+    }
+
+    private static URI getJarUri(URL url) {
+        // Only jar: URLs built by getBeansXMLFileURL, i.e. jar:file:/path/lib.jar!/META-INF/beans.xml
+        if (!"jar".equals(url.getProtocol())) {
+            return null;
+        }
+        String spec = url.getPath();
+        return URI.create(spec.substring(0, spec.indexOf("!/")));
     }
 
     private void addBeansXMLURL(ReadableArchive archive, String beansXMLPath) throws IOException {
